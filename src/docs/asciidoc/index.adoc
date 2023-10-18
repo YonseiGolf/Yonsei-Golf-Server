@@ -1,5 +1,5 @@
 ifndef::snippets[]
-:snippets: ../../build/generated-snippets
+:snippets: ../build/generated-snippets
 endif::[]
 = yonsei-golf REST API 문서
 :doctype: book
@@ -13,3 +13,6 @@ endif::[]
 [[Common-API]]
 = 공통 API
 include::common.adoc[]
+
+[[ Application-API ]]
+include::api/application/application.adoc[]
