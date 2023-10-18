@@ -1,5 +1,11 @@
 package yonseigolf.server.apply.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import yonseigolf.server.apply.dto.request.ApplicationRequest;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -7,6 +13,10 @@ import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Application {
 
     @Id
@@ -33,4 +43,28 @@ public class Application {
     private Boolean passFail;
     private String etc;
     private Long interviewId;
+
+    public static Application of(ApplicationRequest request) {
+
+        return Application.builder()
+                .name(request.getName())
+                .photo(request.getPhoto())
+                .age(request.getAge())
+                .studentId(request.getStudentId())
+                .major(request.getMajor())
+                .phoneNumber(request.getPhoneNumber())
+                .golfDuration(request.getGolfDuration())
+                .roundCount(request.getRoundCount())
+                .lessonStatus(request.isLessonStatus())
+                .clubStatus(request.isClubStatus())
+                .selfIntroduction(request.getSelfIntroduction())
+                .applyReason(request.getApplyReason())
+                .skillEvaluation(request.getSkillEvaluation())
+                .golfMemory(request.getGolfMemory())
+                .otherClub(request.getOtherClub())
+                .swingVideo(request.getSwingVideo())
+                .submitTime(LocalDateTime.now())
+                .build();
+
+    }
 }

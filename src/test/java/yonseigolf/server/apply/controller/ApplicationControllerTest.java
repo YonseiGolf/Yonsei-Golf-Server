@@ -3,9 +3,11 @@ package yonseigolf.server.apply.controller;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
+import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
 import java.time.LocalDateTime;
@@ -24,10 +26,13 @@ import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
 
 public class ApplicationControllerTest extends RestDocsSupport {
 
+    @Mock
+    private ApplyService applyService;
+
     @Override
     protected Object initController() {
 
-        return new ApplicationController();
+        return new ApplicationController(applyService);
     }
 
     @Test
