@@ -3,10 +3,12 @@ package yonseigolf.server.apply.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
 
@@ -14,11 +16,13 @@ import yonseigolf.server.util.CustomResponse;
 public class ApplicationController {
 
     private final ApplyService applicationService;
+    private final ApplyPeriodService applyPeriodService;
 
     @Autowired
-    public ApplicationController(ApplyService applicationService) {
+    public ApplicationController(ApplyService applicationService, ApplyPeriodService applyPeriodService) {
 
         this.applicationService = applicationService;
+        this.applyPeriodService = applyPeriodService;
     }
 
     @PostMapping("/application")
@@ -46,6 +50,19 @@ public class ApplicationController {
                         "success",
                         200,
                         "연세골프 이메일 알림 신청 성공"
+                ));
+    }
+
+    @GetMapping("/application/recruit")
+    public ResponseEntity<CustomResponse> getApplicationPeriod() {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원 기간 조회 성공",
+                        applyPeriodService.getApplicationPeriod()
                 ));
     }
 }

@@ -8,15 +8,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
+import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -29,11 +33,13 @@ public class ApplicationControllerTest extends RestDocsSupport {
 
     @Mock
     private ApplyService applyService;
+    @Mock
+    private ApplyPeriodService applyPeriodService;
 
     @Override
     protected Object initController() {
 
-        return new ApplicationController(applyService);
+        return new ApplicationController(applyService, applyPeriodService);
     }
 
     @Test
@@ -118,5 +124,49 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                 fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("지원 기간을 조회할 수 있다.")
+    void recruitPeriodTest() throws Exception {
+        // given
+        RecruitPeriodResponse response = RecruitPeriodResponse.builder()
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
+                .firstResultDate(LocalDate.now())
+                .interviewStartDate(LocalDate.now())
+                .interviewEndDate(LocalDate.now())
+                .finalResultDate(LocalDate.now())
+                .orientationDate(LocalDate.now())
+                .build();
+
+        // when
+
+        given(applyPeriodService.getApplicationPeriod()).willReturn(response);
+
+        // then
+        mockMvc.perform(get("/application/recruit"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("application-recruitPeriod-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("startDate")
+                                        .description("지원 시작 날짜"),
+                                fieldWithPath("endDate")
+                                        .description("지원 마감 날짜"),
+                                fieldWithPath("firstResultDate")
+                                        .description("1차 합격 발표 날짜"),
+                                fieldWithPath("interviewStartDate")
+                                        .description("면접 시작 날짜"),
+                                fieldWithPath("interviewEndDate")
+                                        .description("면접 마감 날짜"),
+                                fieldWithPath("finalResultDate")
+                                        .description("최종 합격 발표 날짜"),
+                                fieldWithPath("orientationDate")
+                                        .description("입회식 날짜")
+                        )));
     }
 }
