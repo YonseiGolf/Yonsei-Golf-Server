@@ -4,3 +4,8 @@
 
 include::{snippets}/application-create-doc/http-request.adoc[]
 include::{snippets}/application-create-doc/request-fields.adoc[]
+
+=== 이메일 등록
+==== HTTP Request
+include::{snippets}/application-emailAlarm-doc/http-request.adoc[]
+include::{snippets}/application-emailAlarm-doc/request-fields.adoc[]

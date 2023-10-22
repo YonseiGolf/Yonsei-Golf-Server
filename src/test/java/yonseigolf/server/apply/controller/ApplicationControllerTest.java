@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
+import yonseigolf.server.apply.dto.request.EmailRequest;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
@@ -37,7 +38,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
 
     @Test
     @DisplayName("지원자는 지원서를 작성할 수 있다.")
-    void test() throws Exception {
+    void applicationPostingTest() throws Exception {
         // given
         ApplicationRequest request = ApplicationRequest.builder()
                 .name("홍길동")
@@ -90,6 +91,32 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                 fieldWithPath("otherClub").type(JsonFieldType.STRING).description("다른동아리활동 기술"),
                                 fieldWithPath("swingVideo").type(JsonFieldType.STRING).description("스윙영상"),
                                 fieldWithPath("submitTime").type(JsonFieldType.ARRAY).description("제출시간"))
+                ));
+    }
+
+    @Test
+    @DisplayName("사용자는 지원 기간 이메일 신청을 할 수 있다.")
+    void emailAlarmTest() throws Exception {
+        // given
+        EmailRequest request = EmailRequest.builder()
+                .email("email@email.com)")
+                .build();
+
+        // when
+
+
+        // then
+        mockMvc.perform(post("/application/emailAlarm")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("application-emailAlarm-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
+                        )
                 ));
     }
 }
