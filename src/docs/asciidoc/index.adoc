@@ -14,5 +14,6 @@ endif::[]
 = 공통 API
 include::common.adoc[]
 
-[[ Application-API ]]
+[[Application-API]]
+== Application API
 include::api/application/application.adoc[]

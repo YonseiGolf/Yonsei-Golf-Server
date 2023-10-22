@@ -1,5 +1,6 @@
 package yonseigolf.server.apply.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ public class ApplicationController {
 
     private final ApplyService applicationService;
 
+    @Autowired
     public ApplicationController(ApplyService applicationService) {
 
         this.applicationService = applicationService;
