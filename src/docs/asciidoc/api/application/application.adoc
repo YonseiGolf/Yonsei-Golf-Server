@@ -9,3 +9,11 @@ include::{snippets}/application-create-doc/request-fields.adoc[]
 ==== HTTP Request
 include::{snippets}/application-emailAlarm-doc/http-request.adoc[]
 include::{snippets}/application-emailAlarm-doc/request-fields.adoc[]
+
+=== 지원 기간 조회
+==== HTTP Request
+include::{snippets}/application-recruitPeriod-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/application-recruitPeriod-doc/http-response.adoc[]
+include::{snippets}/application-recruitPeriod-doc/response-fields-data.adoc[]

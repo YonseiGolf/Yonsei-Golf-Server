@@ -22,7 +22,7 @@ public class CorsConfig implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (request.getHeader("Origin") != null) {
-            if (request.getHeader("Origin").contains("upbrella-dev.site")) {
+            if (request.getHeader("Origin").contains("yonseiGolf.co.kr")) {
                 response.setHeader("Access-Control-Allow-Origin", "http://upbrella-dev.site");
             } else {
                 response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
