@@ -169,4 +169,32 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                         .description("입회식 날짜")
                         )));
     }
+
+    @Test
+    @DisplayName("")
+    void applicationAvailableTest() throws Exception {
+        // given
+
+
+        // when
+
+
+        // then
+        mockMvc.perform(get("/application/availability"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("application-applicationAvailable-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                fieldWithPath("code").type(JsonFieldType.NUMBER)
+                                        .description("응답 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING)
+                                        .description("응답 메시지"),
+                                fieldWithPath("status").type(JsonFieldType.STRING)
+                                        .description("응답 상태"),
+                                fieldWithPath("data").type(JsonFieldType.BOOLEAN)
+                                        .description("지원 가능 여부")
+                        )));
+    }
 }
