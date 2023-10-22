@@ -17,3 +17,10 @@ include::{snippets}/application-recruitPeriod-doc/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/application-recruitPeriod-doc/http-response.adoc[]
 include::{snippets}/application-recruitPeriod-doc/response-fields-data.adoc[]
+
+=== 지원 가능한 기간인지 조회
+==== HTTP Request
+include::{snippets}/application-applicationAvailable-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/application-applicationAvailable-doc/response-fields.adoc[]
