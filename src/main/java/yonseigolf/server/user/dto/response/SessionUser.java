@@ -10,12 +10,14 @@ public class SessionUser {
 
     private long id;
     private String name;
+    private boolean adminStatus;
 
     public static SessionUser fromUser(User user) {
 
         return SessionUser.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .adminStatus(true)
                 .build();
     }
 }

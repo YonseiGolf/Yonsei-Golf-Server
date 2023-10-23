@@ -41,6 +41,7 @@ public class UserController {
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
         session.setAttribute("kakaoUser", kakaoLoginResponse.getId());
+
         return ResponseEntity
                 .ok()
                 .body(new CustomResponse(
@@ -51,7 +52,7 @@ public class UserController {
     }
 
     @PostMapping("/users/signIn")
-    public ResponseEntity<CustomResponse> signIn(HttpSession session) {
+    public ResponseEntity<CustomResponse<SessionUser>> signIn(HttpSession session) {
         Long id = (Long) session.getAttribute("kakaoUser");
 
         SessionUser sessionUser = userService.signIn(id);
@@ -59,10 +60,11 @@ public class UserController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
+                .body(new CustomResponse<>(
                         "success",
                         200,
-                        "로그인 성공"
+                        "로그인된 유저 정보 조회 성공",
+                        sessionUser
                 ));
     }
 
@@ -78,7 +80,7 @@ public class UserController {
             throw new IllegalArgumentException("[ERROR] 카카오 로그인을 먼저 해주세요.");
         }
 
-        SessionUser sessionUser = userService.signUp(request,kakaoId);
+        SessionUser sessionUser = userService.signUp(request, kakaoId);
 
         session.removeAttribute("kakaoUser");
         session.setAttribute("user", sessionUser);
