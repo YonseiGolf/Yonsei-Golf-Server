@@ -18,3 +18,12 @@ include::{snippets}/user-login-doc/response-fields-data.adoc[]
 ==== HTTP Request
 include::{snippets}/user-signUp-doc/http-request.adoc[]
 include::{snippets}/user-signUp-doc/request-fields.adoc[]
+
+
+=== 회장단 정보 조회
+==== HTTP Request
+include::{snippets}/get-leaders-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/get-leaders-doc/http-response.adoc[]
+include::{snippets}/get-leaders-doc/response-fields-data.adoc[]

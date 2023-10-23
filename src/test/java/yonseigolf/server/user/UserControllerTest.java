@@ -12,15 +12,21 @@ import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.controller.UserController;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.UserResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
+import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 
+import java.util.List;
+
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -156,6 +162,52 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("학기"))
                 ));
     }
+
+    @Test
+    @DisplayName("회장 및 부회장 정보 조회 테스트")
+    void getLeadersTest() throws Exception {
+        // given
+        AdminResponse mockAdminResponse = AdminResponse.builder()
+                .leader(UserResponse.builder()
+                        .name("name")
+                        .phoneNumber("phoneNumber")
+                        .role(UserRole.LEADER)
+                        .build())
+                .assistantLeaders(List.of(
+                        UserResponse.builder()
+                                .name("name")
+                                .phoneNumber("phoneNumber")
+                                .role(UserRole.ASSISTANT_LEADER)
+                                .build()
+                ))
+                .build();
+        given(userService.getLeaders()).willReturn(mockAdminResponse);
+
+        // when & then
+        mockMvc.perform(get("/users/leaders"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("get-leaders-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("leader.name").type(JsonFieldType.STRING)
+                                        .description("회장 이름"),
+                                fieldWithPath("leader.phoneNumber").type(JsonFieldType.STRING)
+                                        .description("회장 전화번호"),
+                                fieldWithPath("leader.role").type(JsonFieldType.STRING)
+                                        .description("직책"),
+                                fieldWithPath("assistantLeaders[].name").type(JsonFieldType.STRING)
+                                        .description("부회장 이름"),
+                                fieldWithPath("assistantLeaders[].phoneNumber").type(JsonFieldType.STRING)
+                                        .description("부회장 전화번호"),
+                                fieldWithPath("assistantLeaders[].role").type(JsonFieldType.STRING)
+                                        .description("직책")
+                        )
+                ));
+    }
+
 
     @Override
     protected Object initController() {

@@ -3,6 +3,7 @@ package yonseigolf.server.user.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.entity.UserRole;
 
 @Getter
 @Builder
@@ -17,7 +18,7 @@ public class SessionUser {
         return SessionUser.builder()
                 .id(user.getId())
                 .name(user.getName())
-                .adminStatus(true)
+                .adminStatus(user.getRole() != UserRole.MEMBER)
                 .build();
     }
 }

@@ -4,10 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
@@ -91,6 +93,19 @@ public class UserController {
                         "success",
                         200,
                         "회원가입 성공"
+                ));
+    }
+
+    @GetMapping("/users/leaders")
+    public ResponseEntity<CustomResponse<AdminResponse>> getLeaders() {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse<>(
+                        "success",
+                        200,
+                        "로그인된 유저 정보 조회 성공",
+                        userService.getLeaders()
                 ));
     }
 }

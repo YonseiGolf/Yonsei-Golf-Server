@@ -6,10 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Getter
 @Entity
@@ -28,6 +25,8 @@ public class User {
     private int studentId;
     private String major;
     private int semester;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     public static User of(SignUpUserRequest request, Long kakaoId) {
 
@@ -39,6 +38,7 @@ public class User {
                     .studentId(request.getStudentId())
                     .major(request.getMajor())
                     .semester(request.getSemester())
+                    .role(UserRole.MEMBER)
                     .build();
     }
 }
