@@ -37,8 +37,6 @@ public class UserController {
     @PostMapping("/oauth/kakao")
     public ResponseEntity<CustomResponse> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
 
-        String code1 = kakaoCode.getKakaoCode();
-
         OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo);
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
