@@ -1,0 +1,14 @@
+=== 카카오 로그인
+==== HTTP Request
+include::{snippets}/kakao-login-doc/http-request.adoc[]
+include::{snippets}/kakao-login-doc/request-body.adoc[]
+
+
+=== 연세 골프 로그인
+==== HTTP Request
+include::{snippets}/user-login-doc/http-request.adoc[]
+
+=== 회원 가입
+==== HTTP Request
+include::{snippets}/user-signUp-doc/http-request.adoc[]
+include::{snippets}/user-signUp-doc/request-fields.adoc[]
