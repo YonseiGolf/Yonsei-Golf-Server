@@ -126,13 +126,11 @@ public class UserControllerTest extends RestDocsSupport {
         // given
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("kakaoUser", 1L);
-        Long kakaoId = 1L;
         SignUpUserRequest request = SignUpUserRequest.builder()
                 .name("name")
                 .phoneNumber("phoneNumber")
                 .major("major")
                 .studentId(1)
-                .age(1)
                 .semester(10)
                 .build();
         // when
@@ -156,8 +154,6 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("전공"),
                                 fieldWithPath("studentId").type(JsonFieldType.NUMBER)
                                         .description("학번"),
-                                fieldWithPath("age").type(JsonFieldType.NUMBER)
-                                        .description("나이"),
                                 fieldWithPath("semester").type(JsonFieldType.NUMBER)
                                         .description("학기"))
                 ));

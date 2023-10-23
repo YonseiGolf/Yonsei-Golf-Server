@@ -19,7 +19,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private long kakaoId;
-    private int age;
     private String name;
     private String phoneNumber;
     private int studentId;
@@ -32,7 +31,6 @@ public class User {
 
             return User.builder()
                     .kakaoId(kakaoId)
-                    .age(request.getAge())
                     .name(request.getName())
                     .phoneNumber(request.getPhoneNumber())
                     .studentId(request.getStudentId())
