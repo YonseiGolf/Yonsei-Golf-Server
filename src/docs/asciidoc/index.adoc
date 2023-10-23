@@ -17,3 +17,8 @@ include::common.adoc[]
 [[Application-API]]
 == Application API
 include::api/application/application.adoc[]
+
+[[User-API]]
+== User API
+
+include::api/users/users.adoc[]

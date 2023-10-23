@@ -28,7 +28,6 @@ import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
 
 
 @ExtendWith(MockitoExtension.class)
-
 public class ApplicationControllerTest extends RestDocsSupport {
 
     @Mock
@@ -171,7 +170,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("지원 가능 여부를 조회할 수 있다.")
     void applicationAvailableTest() throws Exception {
         // given
 
