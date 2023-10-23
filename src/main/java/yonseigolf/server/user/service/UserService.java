@@ -26,10 +26,8 @@ public class UserService {
 
     public SessionUser signIn(Long kakaoId) {
 
-        System.out.println("kakaoId = " + kakaoId);
         User user = repository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        System.out.println("user");
         return SessionUser.fromUser(user);
     }
 }
