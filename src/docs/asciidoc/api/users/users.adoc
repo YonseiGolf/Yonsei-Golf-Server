@@ -26,4 +26,4 @@ include::{snippets}/get-leaders-doc/http-request.adoc[]
 
 ==== HTTP Response
 include::{snippets}/get-leaders-doc/http-response.adoc[]
-include::{snippets}/get-leaders-doc/http-fields.adoc[]
+include::{snippets}/get-leaders-doc/response-fields-data.adoc[]
