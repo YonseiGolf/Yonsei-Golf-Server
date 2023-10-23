@@ -8,6 +8,12 @@ include::{snippets}/kakao-login-doc/request-body.adoc[]
 ==== HTTP Request
 include::{snippets}/user-login-doc/http-request.adoc[]
 
+==== HTTP Response
+include::{snippets}/user-login-doc/http-response.adoc[]
+include::{snippets}/user-login-doc/response-fields-data.adoc[]
+
+
+
 === 회원 가입
 ==== HTTP Request
 include::{snippets}/user-signUp-doc/http-request.adoc[]

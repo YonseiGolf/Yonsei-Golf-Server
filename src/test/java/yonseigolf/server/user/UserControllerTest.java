@@ -13,6 +13,7 @@ import yonseigolf.server.user.controller.UserController;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
+import yonseigolf.server.user.dto.response.SessionUser;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.service.OauthLoginService;
@@ -21,8 +22,7 @@ import yonseigolf.server.user.service.UserService;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -84,8 +84,15 @@ public class UserControllerTest extends RestDocsSupport {
     void yonseiGolfLoginTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .adminStatus(true)
+                .build();
+        session.setAttribute("kakaoUser", 1L);
 
         // when
+        given(userService.signIn(1L)).willReturn(user); // userService mocking
 
         // then
         mockMvc.perform(post("/users/signIn")
@@ -94,8 +101,17 @@ public class UserControllerTest extends RestDocsSupport {
                 .andExpect(status().isOk())
                 .andDo(document("user-login-doc",
                         getDocumentRequest(),
-                        getDocumentResponse()
-                ));
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("유저 id"),
+                                fieldWithPath("name").type(JsonFieldType.STRING)
+                                        .description("유저 이름"),
+                                fieldWithPath("adminStatus").type(JsonFieldType.BOOLEAN)
+                                        .description("관리자 여부")))
+
+                );
     }
 
     @Test
