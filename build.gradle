@@ -63,6 +63,9 @@ dependencies {
     
     // Test용 H2 In-memory DB
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation:2.7.4'  // Spring Boot validation
 }
 
 ext {
