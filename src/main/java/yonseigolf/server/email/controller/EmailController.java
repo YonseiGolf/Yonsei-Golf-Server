@@ -21,8 +21,9 @@ public class EmailController {
     }
 
     @PostMapping("/api/email")
-    public ResponseEntity<CustomResponse> sendEmail(@RequestBody EmailSMTPRequest request) {
-        emailService.sendSimpleMessage(request.getTo(), request.getSubject(), request.getBody());
+    public ResponseEntity<CustomResponse> sendEmail() {
+
+        emailService.sendSimpleMessage();
 
         return ResponseEntity
                 .ok()

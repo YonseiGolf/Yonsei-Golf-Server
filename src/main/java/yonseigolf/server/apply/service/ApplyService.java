@@ -17,6 +17,7 @@ public class ApplyService {
 
     @Autowired
     public ApplyService(ApplicationRepository applicationRepository, EmailRepository emailRepository) {
+
         this.applicationRepository = applicationRepository;
         this.emailRepository = emailRepository;
     }
