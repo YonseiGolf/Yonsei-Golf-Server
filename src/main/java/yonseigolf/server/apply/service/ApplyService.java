@@ -3,7 +3,7 @@ package yonseigolf.server.apply.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
-import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.dto.request.EmailAlertRequest;
 import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.ApplicationRepository;
@@ -17,6 +17,7 @@ public class ApplyService {
 
     @Autowired
     public ApplyService(ApplicationRepository applicationRepository, EmailRepository emailRepository) {
+
         this.applicationRepository = applicationRepository;
         this.emailRepository = emailRepository;
     }
@@ -26,7 +27,7 @@ public class ApplyService {
         applicationRepository.save(Application.of(request));
     }
 
-    public void emailAlarm(EmailRequest request) {
+    public void emailAlarm(EmailAlertRequest request) {
 
         emailRepository.save(EmailAlarm.of(request));
     }
