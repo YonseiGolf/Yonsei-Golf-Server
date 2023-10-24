@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import yonseigolf.server.email.dto.request.EmailSMTPRequest;
 import yonseigolf.server.email.service.EmailService;
 import yonseigolf.server.util.CustomResponse;
 
@@ -20,10 +18,10 @@ public class EmailController {
         this.emailService = emailService;
     }
 
-    @PostMapping("/api/email")
-    public ResponseEntity<CustomResponse> sendEmail() {
+    @PostMapping("/email/apply-start-email")
+    public ResponseEntity<CustomResponse> sendApplyStartAlert() {
 
-        emailService.sendSimpleMessage();
+        emailService.sendApplyStartAlert();
 
         return ResponseEntity
                 .ok()

@@ -22,12 +22,16 @@ public class EmailService {
         this.emailRepository = emailRepository;
     }
 
-    public void sendSimpleMessage() {
+    public void sendApplyStartAlert() {
         List<EmailAlarm> allAlert = findAllAlert();
 
         allAlert.stream().forEach(alert -> {
-            sendEmail(alert.getEmail(), "연세대학교 골프동아리 결과입니다.", "결과입니다.");
-        });
+            sendEmail(alert.getEmail(),
+                    "연세대학교 골프동아리입니다.",
+                    "연세대학교 골프동아리 모집이 시작되었습니다.\n " +
+                            "https://yonseigolf.com/apply 에서 확인해주세요");});
+
+        emailRepository.deleteAll();
     }
 
     private List<EmailAlarm> findAllAlert() {
