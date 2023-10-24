@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
-import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.dto.request.EmailAlertRequest;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
@@ -103,7 +103,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 지원 기간 이메일 신청을 할 수 있다.")
     void emailAlarmTest() throws Exception {
         // given
-        EmailRequest request = EmailRequest.builder()
+        EmailAlertRequest request = EmailAlertRequest.builder()
                 .email("email@email.com)")
                 .build();
 

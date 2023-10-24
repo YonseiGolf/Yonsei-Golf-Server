@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
-import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.dto.request.EmailAlertRequest;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
@@ -42,7 +42,7 @@ public class ApplicationController {
     }
 
     @PostMapping("/application/emailAlarm")
-    public ResponseEntity<CustomResponse> emailAlarm(@RequestBody EmailRequest request) {
+    public ResponseEntity<CustomResponse> emailAlarm(@RequestBody EmailAlertRequest request) {
 
         applicationService.emailAlarm(request);
 

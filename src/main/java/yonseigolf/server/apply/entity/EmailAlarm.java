@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import yonseigolf.server.apply.dto.request.EmailRequest;
+import yonseigolf.server.apply.dto.request.EmailAlertRequest;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,7 +22,7 @@ public class EmailAlarm {
     private Long id;
     private String email;
 
-    public static EmailAlarm of(EmailRequest request) {
+    public static EmailAlarm of(EmailAlertRequest request) {
 
         return EmailAlarm.builder()
                 .email(request.getEmail())
