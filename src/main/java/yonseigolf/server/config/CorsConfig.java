@@ -1,7 +1,6 @@
 package yonseigolf.server.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -22,8 +21,8 @@ public class CorsConfig implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (request.getHeader("Origin") != null) {
-            if (request.getHeader("Origin").contains("yonseiGolf.co.kr")) {
-                response.setHeader("Access-Control-Allow-Origin", "http://upbrella-dev.site");
+            if (request.getHeader("Origin").contains("yonseigolf.site")) {
+                response.setHeader("Access-Control-Allow-Origin", "https://www.yonseigolf.site");
             } else {
                 response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
             }

@@ -109,4 +109,16 @@ public class UserController {
                         userService.getLeaders()
                 ));
     }
+
+    @GetMapping("/healthcheck")
+    public  ResponseEntity<CustomResponse> healthCheck() {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse<>(
+                        "success",
+                        200,
+                        "헬스체크 성공"
+                ));
+    }
 }
