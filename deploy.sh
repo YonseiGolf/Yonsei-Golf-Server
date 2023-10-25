@@ -1,5 +1,5 @@
 #!/bin/bash
-REPOSITORY=/opt/testapp
+REPOSITORY=~/be
 APP_NAME=upbrella-dev-deploy
 cd $REPOSITORY
 
@@ -20,4 +20,4 @@ echo "> $JAR_PATH 배포"
 
 cd ~/be/build/libs
 
-java -jar Yonsei-Golf-Server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+java -jar $JAR_NAME > app.log 2>&1 &
