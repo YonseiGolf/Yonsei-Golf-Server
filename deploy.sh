@@ -18,4 +18,4 @@ else
 fi
 echo "> $JAR_PATH 배포"
 
-nohup java -jar Yonsei-Golf-Server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+java -jar Yonsei-Golf-Server-0.0.1-SNAPSHOT.jar > app.log 2>&1 &

@@ -2,7 +2,7 @@ name: Upbrella DEV CI
 
 on:
   push:
-    branches: [ "feat/#27-auto-deploy" ]
+    branches: [ "main" ]
 
 env:
   WORKING_DIRECTORY: ./
