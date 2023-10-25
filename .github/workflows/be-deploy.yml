@@ -2,10 +2,9 @@ name: Upbrella DEV CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/#27-auto-deploy" ]
 
 env:
-  WORKING_DIRECTORY: ./
   CODE_DEPLOY_APPLICATION_NAME: cicd
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: cicd
   S3_BUCKET_NAME: yg-img-storage

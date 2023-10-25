@@ -3,15 +3,14 @@ os: linux
 
 files:
   - source: /
-    destination: /opt/testapp
+    destination: /home/ubuntu/be
 permissions:
-  - object: /opt/testapp/
+  - object: /home/ubuntu/be/
     owner: ubuntu
     group: ubuntu
     mode: 755
 hooks:
   AfterInstall:
-    # location은 프로젝트의 root경로를 기준
     - location: deploy.sh
       timeout: 60
       runas: root
