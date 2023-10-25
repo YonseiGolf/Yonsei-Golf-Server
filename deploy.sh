@@ -1,6 +1,6 @@
 #!/bin/bash
 REPOSITORY=~/be
-APP_NAME=upbrella-dev-deploy
+APP_NAME=yonsei-golf-dev-deploy
 cd $REPOSITORY
 
 JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep '.jar' | tail -n 1)
@@ -18,4 +18,4 @@ else
 fi
 echo "> $JAR_PATH 배포"
 
-java -jar $JAR_NAME > app.log 2>&1 &
+java -jar $JAR_PATH > app.log 2>&1 &
