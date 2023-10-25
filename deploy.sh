@@ -18,6 +18,4 @@ else
 fi
 echo "> $JAR_PATH 배포"
 
-cd ~/be/build/libs
-
 java -jar $JAR_NAME > app.log 2>&1 &
