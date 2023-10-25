@@ -2,7 +2,7 @@ name: Upbrella DEV CI
 
 on:
   push:
-    branches: [ "fix/fix-deploy" ]
+    branches: [ "main" ]
 
 env:
   WORKING_DIRECTORY: ./
