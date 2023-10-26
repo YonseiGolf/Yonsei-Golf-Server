@@ -26,17 +26,20 @@ public class User {
     private int semester;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+    @Enumerated(EnumType.STRING)
+    private UserClass userClass;
 
     public static User of(SignUpUserRequest request, Long kakaoId) {
 
-            return User.builder()
-                    .kakaoId(kakaoId)
-                    .name(request.getName())
-                    .phoneNumber(request.getPhoneNumber())
-                    .studentId(request.getStudentId())
-                    .major(request.getMajor())
-                    .semester(request.getSemester())
-                    .role(UserRole.MEMBER)
-                    .build();
+        return User.builder()
+                .kakaoId(kakaoId)
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .studentId(request.getStudentId())
+                .major(request.getMajor())
+                .semester(request.getSemester())
+                .role(UserRole.MEMBER)
+                .userClass(UserClass.NONE)
+                .build();
     }
 }

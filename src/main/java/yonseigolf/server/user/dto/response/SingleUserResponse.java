@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 
 @Getter
@@ -21,6 +22,7 @@ public class SingleUserResponse {
     private String major;
     private long semester;
     private UserRole role;
+    private UserClass userClass;
 
     public static SingleUserResponse fromUser(User user) {
 
@@ -33,6 +35,7 @@ public class SingleUserResponse {
                 .major(user.getMajor())
                 .semester(user.getSemester())
                 .role(user.getRole())
+                .userClass(user.getUserClass())
                 .build();
     }
 }
