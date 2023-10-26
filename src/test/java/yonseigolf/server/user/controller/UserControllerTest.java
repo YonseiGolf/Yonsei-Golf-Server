@@ -10,13 +10,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
-import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
+import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
@@ -217,6 +217,7 @@ public class UserControllerTest extends RestDocsSupport {
                         .studentId(1)
                         .semester(10)
                         .role(UserRole.MEMBER)
+                        .userClass(UserClass.NONE)
                         .build()
         );
 
@@ -254,6 +255,8 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("유저 기수"),
                                 fieldWithPath("content[].role").type(JsonFieldType.STRING)
                                         .description("유저 권한"),
+                                fieldWithPath("content[].userClass").type(JsonFieldType.STRING)
+                                        .description("유저 등급"),
                                 fieldWithPath("pageable").ignored(),
                                 fieldWithPath("last").type(JsonFieldType.BOOLEAN)
                                         .description("마지막 페이지 여부"),
