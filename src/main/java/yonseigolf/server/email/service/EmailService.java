@@ -1,5 +1,6 @@
 package yonseigolf.server.email.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -7,8 +8,10 @@ import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.EmailRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class EmailService {
 
@@ -29,7 +32,8 @@ public class EmailService {
             sendEmail(alert.getEmail(),
                     "연세대학교 골프동아리입니다.",
                     "연세대학교 골프동아리 모집이 시작되었습니다.\n " +
-                            "https://yonseigolf.com/apply 에서 확인해주세요");});
+                            "https://yonseigolf.com/apply 에서 확인해주세요");
+        });
 
         emailRepository.deleteAll();
     }
@@ -40,10 +44,15 @@ public class EmailService {
     }
 
     private void sendEmail(String to, String subject, String text) {
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("이메일 전송 실패 : {}", to , e.getMessage());
+        }
     }
 }

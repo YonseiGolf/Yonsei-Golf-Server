@@ -1,13 +1,14 @@
 package yonseigolf.server.apply.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
@@ -78,6 +79,21 @@ public class ApplicationController {
                         200,
                         "연세골프 지원 가능 여부 조회 성공",
                         applyPeriodService.getApplicationAvailability(LocalDate.now())
+                ));
+    }
+
+    @GetMapping("/admin/forms")
+    public ResponseEntity<CustomResponse<Page<SingleApplicationResult>>> getApplicationResults(@RequestParam(required = false) Boolean documentPass,
+                                                                                               @RequestParam(required = false) Boolean finalPass,
+                                                                                               Pageable pageable) {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 조회 성공",
+                        applicationService.getApplicationResults(documentPass, finalPass, pageable)
                 ));
     }
 }
