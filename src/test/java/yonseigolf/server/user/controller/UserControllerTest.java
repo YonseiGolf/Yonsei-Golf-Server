@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
+import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
-import yonseigolf.server.user.dto.response.AdminResponse;
-import yonseigolf.server.user.dto.response.KakaoLoginResponse;
-import yonseigolf.server.user.dto.response.SessionUser;
-import yonseigolf.server.user.dto.response.UserResponse;
+import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserRole;
@@ -23,6 +23,7 @@ import yonseigolf.server.user.service.UserService;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -201,6 +202,81 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("직책")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("모든 회원을 조회할 수 있다.")
+    void findAllUserTest() throws Exception {
+        // given
+        List<SingleUserResponse> users = List.of(
+                SingleUserResponse.builder()
+                        .id(1L)
+                        .name("name")
+                        .phoneNumber("phoneNumber")
+                        .major("major")
+                        .studentId(1)
+                        .semester(10)
+                        .role(UserRole.MEMBER)
+                        .build()
+        );
+
+        Page<SingleUserResponse> mockPage = new PageImpl<>(users);
+        given(userService.findAllUsers(any())).willReturn(mockPage);
+        given(userService.findAllUsers(any())).willReturn(mockPage);
+
+        // when
+        userService.findAllUsers(null);
+
+        // then
+        mockMvc.perform(get("/admin/users")
+                        .param("page", "0")
+                        .param("offset", "10"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("find-all-users-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
+                                        .description("유저 id"),
+                                fieldWithPath("content[].kakaoId").type(JsonFieldType.NUMBER)
+                                        .description("유저 카카오 id"),
+                                fieldWithPath("content[].name").type(JsonFieldType.STRING)
+                                        .description("유저 이름"),
+                                fieldWithPath("content[].phoneNumber").type(JsonFieldType.STRING)
+                                        .description("유저 전화번호"),
+                                fieldWithPath("content[].studentId").type(JsonFieldType.NUMBER)
+                                        .description("유저 학번"),
+                                fieldWithPath("content[].major").type(JsonFieldType.STRING)
+                                        .description("유저 전공"),
+                                fieldWithPath("content[].semester").type(JsonFieldType.NUMBER)
+                                        .description("유저 기수"),
+                                fieldWithPath("content[].role").type(JsonFieldType.STRING)
+                                        .description("유저 권한"),
+                                fieldWithPath("pageable").ignored(),
+                                fieldWithPath("last").type(JsonFieldType.BOOLEAN)
+                                        .description("마지막 페이지 여부"),
+                                fieldWithPath("totalPages").type(JsonFieldType.NUMBER)
+                                        .description("총 페이지 수"),
+                                fieldWithPath("totalElements").type(JsonFieldType.NUMBER)
+                                        .description("총 요소 수"),
+                                fieldWithPath("size").type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("number").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 번호"),
+                                fieldWithPath("sort.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 정보가 없는지 여부"),
+                                fieldWithPath("sort.sorted").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬됐는지 여부"),
+                                fieldWithPath("sort.unsorted").type(JsonFieldType.BOOLEAN)
+                                        .description("미정렬됐는지 여부"),
+                                fieldWithPath("first").type(JsonFieldType.BOOLEAN)
+                                        .description("첫 페이지인지 여부"),
+                                fieldWithPath("numberOfElements").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지의 요소 수"),
+                                fieldWithPath("empty").type(JsonFieldType.BOOLEAN)
+                                        .description("페이지가 비어있는지 여부"))));
     }
 
 

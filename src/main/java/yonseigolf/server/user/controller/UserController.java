@@ -2,6 +2,8 @@ package yonseigolf.server.user.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +15,7 @@ import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.service.OauthLoginService;
@@ -94,6 +97,19 @@ public class UserController {
                         "success",
                         200,
                         "회원가입 성공"
+                ));
+    }
+
+    @GetMapping("/admin/users")
+    public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable) {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse<>(
+                        "success",
+                        200,
+                        "유저 정보 조회 성공",
+                        userService.findAllUsers(pageable)
                 ));
     }
 
