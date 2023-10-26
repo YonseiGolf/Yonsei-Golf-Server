@@ -1,13 +1,17 @@
 package yonseigolf.server.apply.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.ApplicationRepository;
 import yonseigolf.server.apply.repository.EmailRepository;
+
 
 @Service
 public class ApplyService {
@@ -30,5 +34,10 @@ public class ApplyService {
     public void emailAlarm(EmailAlertRequest request) {
 
         emailRepository.save(EmailAlarm.of(request));
+    }
+
+    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable) {
+
+        return applicationRepository.getApplicationResults(documentPass, finalPass, pageable);
     }
 }

@@ -40,9 +40,10 @@ public class Application {
     private String otherClub;
     private String swingVideo;
     private LocalDateTime submitTime;
-    private Boolean passFail;
+    private Boolean documentPass;
+    private Boolean finalPass;
+    private LocalDateTime interviewTime;
     private String etc;
-    private Long interviewId;
 
     public static Application of(ApplicationRequest request) {
 
