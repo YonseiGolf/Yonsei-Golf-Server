@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.EmailAlarm;
@@ -39,5 +40,16 @@ public class ApplyService {
     public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable) {
 
         return applicationRepository.getApplicationResults(documentPass, finalPass, pageable);
+    }
+
+    public ApplicationResponse getApplication(Long id) {
+
+        return ApplicationResponse.fromApplication(findById(id));
+    }
+
+    private Application findById(Long id) {
+
+        return applicationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다. id"));
     }
 }

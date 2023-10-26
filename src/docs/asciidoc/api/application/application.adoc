@@ -32,3 +32,11 @@ include::{snippets}/admin-application-doc/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/admin-application-doc/http-response.adoc[]
 include::{snippets}/admin-application-doc/response-fields-data.adoc[]
+
+=== 지원서 단일 조회
+==== HTTP Request
+include::{snippets}/admin-application-find-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-application-find-doc/http-response.adoc[]
+include::{snippets}/admin-application-find-doc/response-fields-data.adoc[]

@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.service.ApplyPeriodService;
@@ -268,6 +269,96 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                         .description("현재 페이지의 요소 수"),
                                 fieldWithPath("empty").type(JsonFieldType.BOOLEAN)
                                         .description("페이지가 비어있는지 여부")
+                        )));
+    }
+
+    @Test
+    @DisplayName("지원서 단일 조회 테스트")
+    void findApplicationTest() throws Exception {
+        // given
+        Long applicationId = 1L;
+        ApplicationResponse response = ApplicationResponse.builder()
+                .id(1L)
+                .name("홍길동")
+                .photo("사진")
+                .age(20L)
+                .studentId(1L)
+                .major("체육교육")
+                .phoneNumber("010-1234-5678")
+                .golfDuration(1L)
+                .roundCount(1L)
+                .lessonStatus(true)
+                .clubStatus(true)
+                .selfIntroduction("자기소개")
+                .applyReason("지원동기")
+                .skillEvaluation("실력평가")
+                .golfMemory("골프추억")
+                .otherClub("다른동아리활동")
+                .swingVideo("스윙영상")
+                .submitTime(LocalDateTime.now())
+                .documentPass(true)
+                .finalPass(false)
+                .interviewTime(LocalDateTime.now())
+                .etc("기타")
+                .build();
+
+        given(applyService.getApplication(any())).willReturn(response);
+        // when
+
+
+        // then
+        mockMvc.perform(get("/admin/forms/{id}", applicationId))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-find-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("지원서 ID"),
+                                fieldWithPath("photo").type(JsonFieldType.STRING)
+                                        .description("사진"),
+                                fieldWithPath("name").type(JsonFieldType.STRING)
+                                        .description("이름"),
+                                fieldWithPath("age").type(JsonFieldType.NUMBER)
+                                        .description("나이"),
+                                fieldWithPath("studentId").type(JsonFieldType.NUMBER)
+                                        .description("학번"),
+                                fieldWithPath("major").type(JsonFieldType.STRING)
+                                        .description("전공"),
+                                fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
+                                        .description("전화번호"),
+                                fieldWithPath("golfDuration").type(JsonFieldType.NUMBER)
+                                        .description("골프경력"),
+                                fieldWithPath("roundCount").type(JsonFieldType.NUMBER)
+                                        .description("라운드횟수"),
+                                fieldWithPath("lessonStatus").type(JsonFieldType.BOOLEAN)
+                                        .description("레슨여부"),
+                                fieldWithPath("clubStatus").type(JsonFieldType.BOOLEAN)
+                                        .description("클럽보유여부"),
+                                fieldWithPath("selfIntroduction").type(JsonFieldType.STRING)
+                                        .description("자기소개"),
+                                fieldWithPath("applyReason").type(JsonFieldType.STRING)
+                                        .description("지원동기"),
+                                fieldWithPath("skillEvaluation").type(JsonFieldType.STRING)
+                                        .description("골프 자시 실력 평가"),
+                                fieldWithPath("golfMemory").type(JsonFieldType.STRING)
+                                        .description("골프추억"),
+                                fieldWithPath("otherClub").type(JsonFieldType.STRING)
+                                        .description("다른동아리활동 기술"),
+                                fieldWithPath("swingVideo").type(JsonFieldType.STRING)
+                                        .description("스윙영상"),
+                                fieldWithPath("submitTime").type(JsonFieldType.STRING)
+                                        .description("제출시간"),
+                                fieldWithPath("documentPass").type(JsonFieldType.BOOLEAN)
+                                        .description("서류 합격 여부"),
+                                fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
+                                        .description("최종 합격 여부"),
+                                fieldWithPath("interviewTime").type(JsonFieldType.STRING)
+                                        .description("면접 시간"),
+                                fieldWithPath("etc").type(JsonFieldType.STRING)
+                                        .description("기타")
                         )));
     }
 }

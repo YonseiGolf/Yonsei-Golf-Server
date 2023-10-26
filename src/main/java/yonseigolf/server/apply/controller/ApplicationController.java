@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
@@ -94,6 +95,19 @@ public class ApplicationController {
                         200,
                         "연세골프 지원서 조회 성공",
                         applicationService.getApplicationResults(documentPass, finalPass, pageable)
+                ));
+    }
+
+    @GetMapping("/admin/forms/{id}")
+    public ResponseEntity<CustomResponse<ApplicationResponse>> getApplication(@PathVariable Long id) {
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 조회 성공",
+                        applicationService.getApplication(id)
                 ));
     }
 }
