@@ -1,10 +1,13 @@
 package yonseigolf.server.user.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.dto.response.UserResponse;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserRole;
@@ -46,6 +49,11 @@ public class UserService {
                 .collect(Collectors.toList());
 
         return AdminResponse.of(UserResponse.fromUser(leader), assistantLeaders);
+    }
+
+    public Page<SingleUserResponse> findAllUsers(Pageable pageable) {
+
+        return repository.findAllUsers(pageable);
     }
 
     private User findById(Long id) {

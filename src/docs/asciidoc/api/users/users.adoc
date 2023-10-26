@@ -27,3 +27,12 @@ include::{snippets}/get-leaders-doc/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/get-leaders-doc/http-response.adoc[]
 include::{snippets}/get-leaders-doc/response-fields-data.adoc[]
+
+
+=== 회원 전체 조회
+==== HTTP Request
+include::{snippets}/find-all-users-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/find-all-users-doc/http-response.adoc[]
+include::{snippets}/find-all-users-doc/response-fields-data.adoc[]
