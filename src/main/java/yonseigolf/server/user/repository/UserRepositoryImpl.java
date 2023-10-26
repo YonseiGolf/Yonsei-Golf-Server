@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.entity.UserClass;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,9 +21,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<SingleUserResponse> findAllUsers(Pageable pageable) {
+    public Page<SingleUserResponse> findAllUsers(Pageable pageable, UserClass userClass) {
 
         QueryResults<User> results = queryFactory.selectFrom(user)
+                .where(user.userClass.eq(userClass))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();

@@ -7,17 +7,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.dto.request.UserClassRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
+import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
@@ -101,7 +101,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/users")
-    public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable) {
+    public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable, UserClass userClass) {
 
         return ResponseEntity
                 .ok()
@@ -109,7 +109,21 @@ public class UserController {
                         "success",
                         200,
                         "유저 정보 조회 성공",
-                        userService.findAllUsers(pageable)
+                        userService.findAllUsers(pageable, userClass)
+                ));
+    }
+
+    @PatchMapping("/admin/users/{userId}")
+    public ResponseEntity<CustomResponse> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
+
+        userService.updateUserClass(userId, userClass.getUserClass());
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "유저 정보 수정 성공"
                 ));
     }
 
@@ -127,7 +141,7 @@ public class UserController {
     }
 
     @GetMapping("/healthcheck")
-    public  ResponseEntity<CustomResponse> healthCheck() {
+    public ResponseEntity<CustomResponse> healthCheck() {
 
         return ResponseEntity
                 .ok()

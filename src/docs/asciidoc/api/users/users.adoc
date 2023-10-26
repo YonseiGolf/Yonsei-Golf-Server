@@ -36,3 +36,8 @@ include::{snippets}/find-all-users-doc/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/find-all-users-doc/http-response.adoc[]
 include::{snippets}/find-all-users-doc/response-fields-data.adoc[]
+
+=== 회원 클래스 업데이트
+==== HTTP Request
+include::{snippets}/patch-userClass-doc/http-request.adoc[]
+include::{snippets}/patch-userClass-doc/request-fields.adoc[]
