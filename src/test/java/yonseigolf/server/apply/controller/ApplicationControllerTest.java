@@ -221,7 +221,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
         given(applyService.getApplicationResults(any(), any(), any())).willReturn(mockPage);
 
         // when & then
-        mockMvc.perform(get("/admin/application")
+        mockMvc.perform(get("/admin/forms")
                         .param("documentPass", "true")
                         .param("finalPass", "false")
                         .param("page", "0")
