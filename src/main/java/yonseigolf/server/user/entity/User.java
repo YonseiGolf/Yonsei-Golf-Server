@@ -42,4 +42,9 @@ public class User {
                 .userClass(UserClass.NONE)
                 .build();
     }
+
+    public void updateUserClass(UserClass userClass) {
+
+        this.userClass = userClass;
+    }
 }

@@ -4,12 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.SessionUser;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.dto.response.UserResponse;
 import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.UserRepository;
 
@@ -51,9 +53,16 @@ public class UserService {
         return AdminResponse.of(UserResponse.fromUser(leader), assistantLeaders);
     }
 
-    public Page<SingleUserResponse> findAllUsers(Pageable pageable) {
+    public Page<SingleUserResponse> findAllUsers(Pageable pageable, UserClass userClass) {
 
-        return repository.findAllUsers(pageable);
+        return repository.findAllUsers(pageable, userClass);
+    }
+
+    @Transactional
+    public void updateUserClass(Long userId, UserClass userClass) {
+
+        User user = findById(userId);
+        user.updateUserClass(userClass);
     }
 
     private User findById(Long id) {

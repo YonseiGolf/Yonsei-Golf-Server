@@ -1,5 +1,6 @@
 package yonseigolf.server.user.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.dto.request.UserClassRequest;
 import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
@@ -24,10 +26,11 @@ import yonseigolf.server.user.service.UserService;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -222,11 +225,11 @@ public class UserControllerTest extends RestDocsSupport {
         );
 
         Page<SingleUserResponse> mockPage = new PageImpl<>(users);
-        given(userService.findAllUsers(any())).willReturn(mockPage);
-        given(userService.findAllUsers(any())).willReturn(mockPage);
+        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
+        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
 
         // when
-        userService.findAllUsers(null);
+        userService.findAllUsers(any(), any());
 
         // then
         mockMvc.perform(get("/admin/users")
@@ -282,6 +285,29 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("페이지가 비어있는지 여부"))));
     }
 
+    @Test
+    @DisplayName("사용자의 class를 업데이트 할 수 있다.")
+    void updateUserClassTest() throws Exception {
+        // given
+        Long userId = 1L;
+        UserClassRequest request = new UserClassRequest(UserClass.YB);
+        doNothing().when(userService).updateUserClass(any(), any());
+
+        // when
+
+        // then
+        mockMvc.perform(patch("/admin/users/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("patch-userClass-doc",
+                        requestFields(
+                                fieldWithPath("userClass").type(JsonFieldType.STRING)
+                                        .description("유저 구분 (YB, OB, NONE 중 하나)")
+                        )
+                ));
+    }
 
     @Override
     protected Object initController() {
