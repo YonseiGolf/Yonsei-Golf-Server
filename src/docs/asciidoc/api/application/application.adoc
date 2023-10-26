@@ -24,3 +24,11 @@ include::{snippets}/application-applicationAvailable-doc/http-request.adoc[]
 
 ==== HTTP Response
 include::{snippets}/application-applicationAvailable-doc/response-fields.adoc[]
+
+=== 지원서 조회
+==== HTTP Request
+include::{snippets}/admin-application-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/admin-application-doc/http-response.adoc[]
+include::{snippets}/admin-application-doc/response-fields-data.adoc[]

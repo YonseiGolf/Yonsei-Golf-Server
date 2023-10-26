@@ -82,7 +82,7 @@ public class ApplicationController {
                 ));
     }
 
-    @GetMapping("/admin/application")
+    @GetMapping("/admin/forms")
     public ResponseEntity<CustomResponse<Page<SingleApplicationResult>>> getApplicationResults(@RequestParam(required = false) Boolean documentPass,
                                                                                                @RequestParam(required = false) Boolean finalPass,
                                                                                                Pageable pageable) {
