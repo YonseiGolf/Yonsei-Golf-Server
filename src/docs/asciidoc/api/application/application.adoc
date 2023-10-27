@@ -40,3 +40,18 @@ include::{snippets}/admin-application-find-doc/http-request.adoc[]
 ==== HTTP Response
 include::{snippets}/admin-application-find-doc/http-response.adoc[]
 include::{snippets}/admin-application-find-doc/response-fields-data.adoc[]
+
+=== 서류 합격 불합격 처리
+==== HTTP Request
+include::{snippets}/admin-application-updateDocumentPass-doc/http-request.adoc[]
+include::{snippets}/admin-application-updateDocumentPass-doc/request-fields.adoc[]
+
+=== 최종 합격 불합격 처리
+==== HTTP Request
+include::{snippets}/admin-application-updateDocumentPass-doc/http-request.adoc[]
+include::{snippets}/admin-application-updateDocumentPass-doc/request-fields.adoc[]
+
+=== 면접 시간 변경
+==== HTTP Request
+include::{snippets}/admin-application-updateInterviewTime-doc/http-request.adoc[]
+include::{snippets}/admin-application-updateInterviewTime-doc/request-fields.adoc[]

@@ -1,5 +1,6 @@
 package yonseigolf.server.apply.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.restdocs.payload.JsonFieldType;
-import yonseigolf.server.apply.dto.request.ApplicationRequest;
-import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
@@ -24,9 +24,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -380,5 +380,88 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                 fieldWithPath("interviewTime").type(JsonFieldType.STRING)
                                         .description("면접 시간")
                         )));
+    }
+
+    @Test
+    @DisplayName("서류 합격 불합격 설정 테스트")
+    void updateDocumentPass() throws Exception {
+        // given
+        Long id = 1L;
+        DocumentPassRequest request = new DocumentPassRequest(true);
+        doNothing().when(applyService).updateDocumentPass(id, request.isDocumentPass());
+
+        // when
+
+
+        // then
+        mockMvc.perform(patch("/admin/forms/{id}/documentPass", id)
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-updateDocumentPass-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("documentPass").type(JsonFieldType.BOOLEAN)
+                                        .description("서류 합격 여부")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("최종 합격 불합격 설정 테스트")
+    void updateFinalPass() throws Exception {
+        // given
+        Long id = 1L;
+        FinalPassRequest request = new FinalPassRequest(true);
+        doNothing().when(applyService).updateFinalPass(id, request.isFinalPass());
+
+        // when
+
+
+        // then
+        mockMvc.perform(patch("/admin/forms/{id}/finalPass", id)
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-updateDocumentPass-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
+                                        .description("최종 합격 여부")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("면접 시간을 변경할 수 있다.")
+    void updateInterviewTimeTest() throws Exception {
+        // given
+        Long id = 1L;
+        UpdateInterviewTimeRequest request = new UpdateInterviewTimeRequest(LocalDateTime.now());
+        doNothing().when(applyService).updateInterviewTime(id, request.getTime());
+
+        // when
+
+
+        // then
+        mockMvc.perform(
+                        patch("/admin/forms/{id}/interviewTime", id)
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("admin-application-updateInterviewTime-doc",
+                                getDocumentRequest(),
+                                getDocumentResponse(),
+                                requestFields(
+                                        fieldWithPath("time").type(JsonFieldType.ARRAY)
+                                                .description("면접 시간")
+                                )
+                        )
+                );
     }
 }
