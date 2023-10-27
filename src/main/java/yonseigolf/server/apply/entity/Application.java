@@ -26,6 +26,7 @@ public class Application {
     private String photo;
     private long age;
     private long studentId;
+    private String email;
     private String major;
     private String phoneNumber;
     private long golfDuration;
@@ -43,7 +44,6 @@ public class Application {
     private Boolean documentPass;
     private Boolean finalPass;
     private LocalDateTime interviewTime;
-    private String etc;
 
     public static Application of(ApplicationRequest request) {
 
@@ -52,6 +52,7 @@ public class Application {
                 .photo(request.getPhoto())
                 .age(request.getAge())
                 .studentId(request.getStudentId())
+                .email(request.getEmail())
                 .major(request.getMajor())
                 .phoneNumber(request.getPhoneNumber())
                 .golfDuration(request.getGolfDuration())
@@ -67,5 +68,20 @@ public class Application {
                 .submitTime(LocalDateTime.now())
                 .build();
 
+    }
+
+    public void updateDocumentPass(boolean documentPass) {
+
+        this.documentPass = documentPass;
+    }
+
+    public void updateFinalPass(boolean finalPass) {
+
+        this.finalPass = finalPass;
+    }
+
+    public void updateInterviewTime(LocalDateTime time) {
+
+        this.interviewTime = time;
     }
 }

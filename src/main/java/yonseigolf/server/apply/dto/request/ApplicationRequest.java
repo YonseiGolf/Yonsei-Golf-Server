@@ -18,6 +18,7 @@ public class ApplicationRequest {
     private long age;
     private long studentId;
     private String major;
+    private String email;
     private String phoneNumber;
     private long golfDuration;
     private long roundCount;

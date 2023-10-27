@@ -36,7 +36,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
                         documentPassEq(documentPass),
                         finalPassEq(finalPass)
                 )
-                .orderBy(application.id.desc())
+                .orderBy(application.interviewTime.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -50,7 +50,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
     private BooleanExpression documentPassEq(Boolean documentPass) {
 
         if (documentPass == null) {
-            return null;
+            return application.documentPass.isNull();
         }
 
         return application.documentPass.eq(documentPass);
@@ -59,7 +59,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
     private BooleanExpression finalPassEq(Boolean finalPass) {
 
         if (finalPass == null) {
-            return null;
+            return application.finalPass.isNull();
         }
 
         return application.finalPass.eq(finalPass);

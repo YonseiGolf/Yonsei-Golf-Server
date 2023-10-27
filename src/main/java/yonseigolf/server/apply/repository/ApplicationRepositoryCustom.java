@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ApplicationRepositoryCustom {
 
-    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable);
+    Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable);
 }
