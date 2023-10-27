@@ -14,7 +14,6 @@ import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Controller
 public class ApplicationController {
