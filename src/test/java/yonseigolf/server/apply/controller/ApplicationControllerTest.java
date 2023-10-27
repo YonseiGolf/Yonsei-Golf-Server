@@ -464,4 +464,80 @@ public class ApplicationControllerTest extends RestDocsSupport {
                         )
                 );
     }
+
+    @Test
+    @DisplayName("서류 합격자들에게 합격 이메일을 전송할 수 있다.")
+    void sendDocumentPassEmailTest() throws Exception {
+        // given
+        doNothing().when(applyService).sendDocumentPassEmail();
+
+        // when
+        applyService.sendDocumentPassEmail();
+
+        // then
+        mockMvc.perform(post("/admin/forms/documentPassEmail"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-sendDocumentPassEmail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()
+                ));
+    }
+
+    @Test
+    @DisplayName("서류 불합격자들에게 불합격 이메일을 전송할 수 있다.")
+    void sendDocumentFailEmailTest() throws Exception {
+        // given
+        doNothing().when(applyService).sendDocumentFailEmail();
+
+        // when
+        applyService.sendDocumentFailEmail();
+
+        // then
+        mockMvc.perform(post("/admin/forms/documentFailEmail"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-sendDocumentFailEmail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()
+                ));
+    }
+
+    @Test
+    @DisplayName("최종 합격자들에게 합격 이메일을 전송할 수 있다.")
+    void sendFinalPassEmailTest() throws Exception {
+        // given
+        doNothing().when(applyService).sendFinalPassEmail();
+
+        // when
+        applyService.sendFinalPassEmail();
+
+        // then
+        mockMvc.perform(post("/admin/forms/finalPassEmail"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-sendFinalPassEmail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()
+                ));
+    }
+
+    @Test
+    @DisplayName("최종 불합격자들에게 불합격 이메일을 전송할 수 있다.")
+    void sendFinalFailEmailTest() throws Exception {
+        // given
+        doNothing().when(applyService).sendFinalFailEmail();
+
+        // when
+        applyService.sendFinalFailEmail();
+
+        // then
+        mockMvc.perform(post("/admin/forms/finalPassEmail"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("admin-application-sendFinalFailEmail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()
+                ));
+    }
 }
