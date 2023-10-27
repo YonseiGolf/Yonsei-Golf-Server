@@ -1,32 +1,37 @@
 package yonseigolf.server.apply.controller;
 
+import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
+import yonseigolf.server.apply.dto.response.ImageResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
+import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Controller
 public class ApplicationController {
 
     private final ApplyService applicationService;
     private final ApplyPeriodService applyPeriodService;
+    private final ImageService imageService;
 
     @Autowired
-    public ApplicationController(ApplyService applicationService, ApplyPeriodService applyPeriodService) {
+    public ApplicationController(ApplyService applicationService, ApplyPeriodService applyPeriodService, ImageService imageService) {
 
         this.applicationService = applicationService;
         this.applyPeriodService = applyPeriodService;
+        this.imageService = imageService;
     }
 
     @PostMapping("/application")
@@ -210,5 +215,19 @@ public class ApplicationController {
                         200,
                         "연세골프 지원서 최종 불합격자 이메일 전송 성공"
                 ));
+    }
+
+    @PostMapping("/apply/forms/image")
+    public ResponseEntity<CustomResponse<ImageResponse>> uploadImage(@RequestPart("image") MultipartFile image) {
+        String imageUrl = imageService.uploadImage(image, RandomString.make(10));
+
+        return ResponseEntity
+                    .ok()
+                    .body(new CustomResponse(
+                            "success",
+                            200,
+                            "연세골프 지원서 이미지 업로드 성공",
+                            imageUrl
+                    ));
     }
 }

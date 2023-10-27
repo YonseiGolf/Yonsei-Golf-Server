@@ -69,6 +69,11 @@ dependencies {
 
     // Email
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // aws service
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.429'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.429'
+    implementation 'software.amazon.awssdk:s3:2.16.83'
 }
 
 ext {
