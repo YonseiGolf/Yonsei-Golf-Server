@@ -57,6 +57,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 .photo("사진")
                 .age(20L)
                 .studentId(1L)
+                .email("email")
                 .major("체육교육")
                 .phoneNumber("010-1234-5678")
                 .golfDuration(1L)
@@ -86,23 +87,42 @@ public class ApplicationControllerTest extends RestDocsSupport {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestFields(
-                                fieldWithPath("name").type(JsonFieldType.STRING).description("이름"),
-                                fieldWithPath("photo").type(JsonFieldType.STRING).description("사진"),
-                                fieldWithPath("age").type(JsonFieldType.NUMBER).description("나이"),
-                                fieldWithPath("studentId").type(JsonFieldType.NUMBER).description("학번"),
-                                fieldWithPath("major").type(JsonFieldType.STRING).description("전공"),
-                                fieldWithPath("phoneNumber").type(JsonFieldType.STRING).description("전화번호"),
-                                fieldWithPath("golfDuration").type(JsonFieldType.NUMBER).description("골프경력"),
-                                fieldWithPath("roundCount").type(JsonFieldType.NUMBER).description("라운드횟수"),
-                                fieldWithPath("lessonStatus").type(JsonFieldType.BOOLEAN).description("레슨여부"),
-                                fieldWithPath("clubStatus").type(JsonFieldType.BOOLEAN).description("클럽보유여부"),
-                                fieldWithPath("selfIntroduction").type(JsonFieldType.STRING).description("자기소개"),
-                                fieldWithPath("applyReason").type(JsonFieldType.STRING).description("지원동기"),
-                                fieldWithPath("skillEvaluation").type(JsonFieldType.STRING).description("골프 자시 실력 평가"),
-                                fieldWithPath("golfMemory").type(JsonFieldType.STRING).description("골프추억"),
-                                fieldWithPath("otherClub").type(JsonFieldType.STRING).description("다른동아리활동 기술"),
-                                fieldWithPath("swingVideo").type(JsonFieldType.STRING).description("스윙영상"),
-                                fieldWithPath("submitTime").type(JsonFieldType.ARRAY).description("제출시간"))
+                                fieldWithPath("name").type(JsonFieldType.STRING)
+                                        .description("이름"),
+                                fieldWithPath("photo").type(JsonFieldType.STRING)
+                                        .description("사진"),
+                                fieldWithPath("age").type(JsonFieldType.NUMBER)
+                                        .description("나이"),
+                                fieldWithPath("studentId").type(JsonFieldType.NUMBER)
+                                        .description("학번"),
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("이메일"),
+                                fieldWithPath("major").type(JsonFieldType.STRING)
+                                        .description("전공"),
+                                fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
+                                        .description("전화번호"),
+                                fieldWithPath("golfDuration").type(JsonFieldType.NUMBER)
+                                        .description("골프경력"),
+                                fieldWithPath("roundCount").type(JsonFieldType.NUMBER)
+                                        .description("라운드횟수"),
+                                fieldWithPath("lessonStatus").type(JsonFieldType.BOOLEAN)
+                                        .description("레슨여부"),
+                                fieldWithPath("clubStatus").type(JsonFieldType.BOOLEAN)
+                                        .description("클럽보유여부"),
+                                fieldWithPath("selfIntroduction").type(JsonFieldType.STRING)
+                                        .description("자기소개"),
+                                fieldWithPath("applyReason").type(JsonFieldType.STRING)
+                                        .description("지원동기"),
+                                fieldWithPath("skillEvaluation").type(JsonFieldType.STRING)
+                                        .description("골프 자시 실력 평가"),
+                                fieldWithPath("golfMemory").type(JsonFieldType.STRING)
+                                        .description("골프추억"),
+                                fieldWithPath("otherClub").type(JsonFieldType.STRING)
+                                        .description("다른동아리활동 기술"),
+                                fieldWithPath("swingVideo").type(JsonFieldType.STRING)
+                                        .description("스윙영상"),
+                                fieldWithPath("submitTime").type(JsonFieldType.ARRAY)
+                                        .description("제출시간"))
                 ));
     }
 
@@ -283,6 +303,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 .photo("사진")
                 .age(20L)
                 .studentId(1L)
+                .email("email")
                 .major("체육교육")
                 .phoneNumber("010-1234-5678")
                 .golfDuration(1L)
@@ -299,7 +320,6 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 .documentPass(true)
                 .finalPass(false)
                 .interviewTime(LocalDateTime.now())
-                .etc("기타")
                 .build();
 
         given(applyService.getApplication(any())).willReturn(response);
@@ -325,6 +345,8 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                         .description("나이"),
                                 fieldWithPath("studentId").type(JsonFieldType.NUMBER)
                                         .description("학번"),
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("이메일"),
                                 fieldWithPath("major").type(JsonFieldType.STRING)
                                         .description("전공"),
                                 fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
@@ -356,9 +378,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                 fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
                                         .description("최종 합격 여부"),
                                 fieldWithPath("interviewTime").type(JsonFieldType.STRING)
-                                        .description("면접 시간"),
-                                fieldWithPath("etc").type(JsonFieldType.STRING)
-                                        .description("기타")
+                                        .description("면접 시간")
                         )));
     }
 }

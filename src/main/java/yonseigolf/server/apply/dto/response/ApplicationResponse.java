@@ -20,6 +20,7 @@ public class ApplicationResponse {
     private String photo;
     private long age;
     private long studentId;
+    private String email;
     private String major;
     private String phoneNumber;
     private long golfDuration;
@@ -38,7 +39,6 @@ public class ApplicationResponse {
     private Boolean finalPass;
     @JsonFormat(pattern = "MM월dd일 HH:mm")
     private LocalDateTime interviewTime;
-    private String etc;
 
     public static ApplicationResponse fromApplication(Application application) {
 
@@ -48,6 +48,7 @@ public class ApplicationResponse {
                 .photo(application.getPhoto())
                 .age(application.getAge())
                 .studentId(application.getStudentId())
+                .email(application.getEmail())
                 .major(application.getMajor())
                 .phoneNumber(application.getPhoneNumber())
                 .golfDuration(application.getGolfDuration())
@@ -64,7 +65,6 @@ public class ApplicationResponse {
                 .documentPass(application.getDocumentPass())
                 .finalPass(application.getFinalPass())
                 .interviewTime(application.getInterviewTime())
-                .etc(application.getEtc())
                 .build();
     }
 }

@@ -6,8 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import yonseigolf.server.apply.dto.request.ApplicationRequest;
-import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.service.ApplyPeriodService;
@@ -15,6 +14,7 @@ import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Controller
 public class ApplicationController {
@@ -88,6 +88,9 @@ public class ApplicationController {
                                                                                                @RequestParam(required = false) Boolean finalPass,
                                                                                                Pageable pageable) {
 
+        System.out.println("documentPass = " + documentPass);
+        System.out.println("finalPass = " + finalPass);
+
         return ResponseEntity
                 .ok()
                 .body(new CustomResponse(
@@ -108,6 +111,48 @@ public class ApplicationController {
                         200,
                         "연세골프 지원서 조회 성공",
                         applicationService.getApplication(id)
+                ));
+    }
+
+    @PatchMapping("/admin/forms/{id}/documentPass")
+    public ResponseEntity<CustomResponse> updateDocumentPass(@PathVariable Long id, @RequestBody DocumentPassRequest documentPass) {
+
+        applicationService.updateDocumentPass(id, documentPass.isDocumentPass());
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 서류 합격 수정 성공"
+                ));
+    }
+
+    @PatchMapping("/admin/forms/{id}/finalPass")
+    public ResponseEntity<CustomResponse> updateFinalPass(@PathVariable Long id, @RequestBody FinalPassRequest finalPass) {
+
+        applicationService.updateFinalPass(id, finalPass.isFinalPass());
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 최종 합격 수정 성공"
+                ));
+    }
+
+    @PatchMapping("/admin/forms/{id}/interviewTime")
+    public ResponseEntity<CustomResponse> updateInterviewTime(@PathVariable Long id, @RequestBody UpdateInterviewTimeRequest time) {
+
+        applicationService.updateInterviewTime(id, time.getTime());
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 면접 시간 수정 성공"
                 ));
     }
 }
