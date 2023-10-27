@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import yonseigolf.server.apply.dto.response.QSingleApplicationResult;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
+import yonseigolf.server.apply.entity.Application;
 
 import java.util.List;
 
@@ -45,6 +46,17 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
         long total = result.getTotal();
 
         return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public List<Application> findApplicationsForEmail(Boolean documentPass, Boolean finalPass) {
+
+        return queryFactory.selectFrom(application)
+                .where(
+                        documentPassEq(documentPass),
+                        finalPassEq(finalPass)
+                )
+                .fetch();
     }
 
     private BooleanExpression documentPassEq(Boolean documentPass) {
