@@ -13,6 +13,7 @@ import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
+import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
@@ -41,11 +42,13 @@ public class ApplicationControllerTest extends RestDocsSupport {
     private ApplyService applyService;
     @Mock
     private ApplyPeriodService applyPeriodService;
+    @Mock
+    private ImageService imageService;
 
     @Override
     protected Object initController() {
 
-        return new ApplicationController(applyService, applyPeriodService);
+        return new ApplicationController(applyService, applyPeriodService, imageService);
     }
 
     @Test
