@@ -55,3 +55,20 @@ include::{snippets}/admin-application-updateDocumentPass-doc/request-fields.adoc
 ==== HTTP Request
 include::{snippets}/admin-application-updateInterviewTime-doc/http-request.adoc[]
 include::{snippets}/admin-application-updateInterviewTime-doc/request-fields.adoc[]
+
+
+=== 서류 합격 메일
+==== HTTP Request
+include::{snippets}/admin-application-sendDocumentPassEmail-doc/http-request.adoc[]
+
+=== 서류 불합격 메일
+==== HTTP Request
+include::{snippets}/admin-application-sendDocumentFailEmail-doc/http-request.adoc[]
+
+=== 최종 합격 메일
+==== HTTP Request
+include::{snippets}/admin-application-sendFinalPassEmail-doc/http-request.adoc[]
+
+=== 최종 불합격 메일
+==== HTTP Request
+include::{snippets}/admin-application-sendFinalFailEmail-doc/http-request.adoc[]

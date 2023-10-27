@@ -38,12 +38,13 @@ public class EmailService {
         emailRepository.deleteAll();
     }
 
+
     private List<EmailAlarm> findAllAlert() {
 
         return emailRepository.findAll();
     }
 
-    private void sendEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);

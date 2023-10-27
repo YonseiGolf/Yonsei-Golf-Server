@@ -155,4 +155,60 @@ public class ApplicationController {
                         "연세골프 지원서 면접 시간 수정 성공"
                 ));
     }
+
+    @PostMapping("/admin/forms/documentPassEmail")
+    public ResponseEntity<CustomResponse> sendDocumentPassEmail() {
+
+        applicationService.sendDocumentPassEmail();
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 서류 합격자 이메일 전송 성공"
+                ));
+    }
+
+    @PostMapping("/admin/forms/finalPassEmail")
+    public ResponseEntity<CustomResponse> sendFinalPassEmail() {
+
+        applicationService.sendFinalPassEmail();
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 최종 합격자 이메일 전송 성공"
+                ));
+    }
+
+    @PostMapping("/admin/forms/documentFailEmail")
+    public ResponseEntity<CustomResponse> sendDocumentFailEmail() {
+
+        applicationService.sendDocumentFailEmail();
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 서류 불합격자 이메일 전송 성공"
+                ));
+    }
+
+    @PostMapping("/admin/forms/finalFailEmail")
+    public ResponseEntity<CustomResponse> sendFinalFailEmail() {
+
+        applicationService.sendFinalFailEmail();
+
+        return ResponseEntity
+                .ok()
+                .body(new CustomResponse(
+                        "success",
+                        200,
+                        "연세골프 지원서 최종 불합격자 이메일 전송 성공"
+                ));
+    }
 }
