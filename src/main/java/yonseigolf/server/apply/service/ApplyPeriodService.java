@@ -18,16 +18,16 @@ public class ApplyPeriodService {
         this.repository = repository;
     }
 
-    public RecruitPeriodResponse getApplicationPeriod() {
+    public RecruitPeriodResponse getApplicationPeriod(long id) {
 
         return RecruitPeriodResponse.builder()
-                .startDate(repository.getOne(1L).getStartDate())
-                .endDate(repository.getOne(1L).getEndDate())
-                .firstResultDate(repository.getOne(1L).getFirstResultDate())
-                .interviewStartDate(repository.getOne(1L).getInterviewStartDate())
-                .interviewEndDate(repository.getOne(1L).getInterviewEndDate())
-                .finalResultDate(repository.getOne(1L).getFinalResultDate())
-                .orientationDate(repository.getOne(1L).getOrientationDate())
+                .startDate(repository.findById(id).get().getStartDate())
+                .endDate(repository.findById(id).get().getEndDate())
+                .firstResultDate(repository.findById(id).get().getFirstResultDate())
+                .interviewStartDate(repository.findById(id).get().getInterviewStartDate())
+                .interviewEndDate(repository.findById(id).get().getInterviewEndDate())
+                .finalResultDate(repository.findById(id).get().getFinalResultDate())
+                .orientationDate(repository.findById(id).get().getOrientationDate())
                 .build();
     }
 

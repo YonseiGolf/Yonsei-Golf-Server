@@ -27,8 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -178,7 +177,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
 
         // when
 
-        given(applyPeriodService.getApplicationPeriod()).willReturn(response);
+        given(applyPeriodService.getApplicationPeriod(anyLong())).willReturn(response);
 
         // then
         mockMvc.perform(get("/application/recruit"))

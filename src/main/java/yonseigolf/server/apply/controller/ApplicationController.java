@@ -65,13 +65,15 @@ public class ApplicationController {
     @GetMapping("/application/recruit")
     public ResponseEntity<CustomResponse> getApplicationPeriod() {
 
+        final long defaultId = 1L;
+
         return ResponseEntity
                 .ok()
                 .body(new CustomResponse(
                         "success",
                         200,
                         "연세골프 지원 기간 조회 성공",
-                        applyPeriodService.getApplicationPeriod()
+                        applyPeriodService.getApplicationPeriod(defaultId)
                 ));
     }
 
