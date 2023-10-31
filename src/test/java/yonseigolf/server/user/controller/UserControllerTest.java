@@ -26,7 +26,6 @@ import yonseigolf.server.user.service.UserService;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -225,11 +224,11 @@ public class UserControllerTest extends RestDocsSupport {
         );
 
         Page<SingleUserResponse> mockPage = new PageImpl<>(users);
-        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
-        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
+        given(userService.findUsersByClass(any(), any())).willReturn(mockPage);
+        given(userService.findUsersByClass(any(), any())).willReturn(mockPage);
 
         // when
-        userService.findAllUsers(any(), any());
+        userService.findUsersByClass(any(), any());
 
         // then
         mockMvc.perform(get("/admin/users")

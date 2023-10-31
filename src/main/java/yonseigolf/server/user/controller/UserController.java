@@ -109,7 +109,7 @@ public class UserController {
                         "success",
                         200,
                         "유저 정보 조회 성공",
-                        userService.findAllUsers(pageable, userClass)
+                        userService.findUsersByClass(pageable, userClass)
                 ));
     }
 
