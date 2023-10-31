@@ -31,8 +31,8 @@ public class ApplyPeriodService {
                 .build();
     }
 
-    public boolean getApplicationAvailability(LocalDate today) {
-        RecruitmentPeriod period = repository.getOne(1L);
+    public boolean getApplicationAvailability(LocalDate today, long periodId) {
+        RecruitmentPeriod period = repository.getOne(periodId);
 
         return !today.isBefore(period.getStartDate()) && !today.isAfter(period.getEndDate());
     }

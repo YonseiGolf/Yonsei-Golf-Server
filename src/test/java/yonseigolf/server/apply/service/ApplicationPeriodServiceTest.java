@@ -10,7 +10,6 @@ import yonseigolf.server.apply.repository.ApplyPeriodRepository;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -62,5 +61,54 @@ class ApplicationPeriodServiceTest {
                 () -> assertThat(applicationPeriod.getFinalResultDate()).isEqualTo(result.getFinalResultDate()),
                 () -> assertThat(applicationPeriod.getOrientationDate()).isEqualTo(result.getOrientationDate())
         );
+    }
+
+    @Test
+    @DisplayName("오늘이 지원 기간이 아니라면 false를 반환")
+    void getApplicationAvailabilityTest() {
+        // given
+        RecruitmentPeriod recruitmentPeriod = RecruitmentPeriod.builder()
+                .startDate(LocalDate.of(2021, 8, 1))
+                .endDate(LocalDate.of(2021, 8, 1))
+                .firstResultDate(LocalDate.of(2021, 8, 1))
+                .interviewStartDate(LocalDate.of(2021, 8, 1))
+                .interviewEndDate(LocalDate.of(2021, 8, 1))
+                .finalResultDate(LocalDate.of(2021, 8, 1))
+                .orientationDate(LocalDate.of(2021, 8, 1))
+                .build();
+        RecruitmentPeriod saved = applyPeriodRepository.save(recruitmentPeriod);
+
+        // when
+        boolean applicationAvailability = applyPeriodService.getApplicationAvailability(LocalDate.now(), saved.getId());
+
+        // then
+        assertThat(applicationAvailability).isFalse();
+    }
+
+    @Test
+    @DisplayName("오늘이 지원 기간이라면 true를 반환")
+    void getApplicationAvailabilityTrueTest() {
+        // given
+        LocalDate now = LocalDate.now();
+        LocalDate endDate = now.plusDays(1);
+
+
+        RecruitmentPeriod recruitmentPeriod = RecruitmentPeriod.builder()
+                .startDate(now)
+                .endDate(endDate)
+                .firstResultDate(LocalDate.of(2021, 8, 1))
+                .interviewStartDate(LocalDate.of(2021, 8, 1))
+                .interviewEndDate(LocalDate.of(2021, 8, 1))
+                .finalResultDate(LocalDate.of(2021, 8, 1))
+                .orientationDate(LocalDate.of(2021, 8, 1))
+                .build();
+
+        RecruitmentPeriod saved = applyPeriodRepository.save(recruitmentPeriod);
+
+        // when
+        boolean applicationAvailability = applyPeriodService.getApplicationAvailability(now, saved.getId());
+
+        // then
+        assertThat(applicationAvailability).isTrue();
     }
 }
