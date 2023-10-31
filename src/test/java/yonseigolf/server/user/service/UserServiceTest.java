@@ -55,7 +55,10 @@ class UserServiceTest {
                 () -> assertThat(user.getStudentId()).isEqualTo(request.getStudentId()),
                 () -> assertThat(user.getMajor()).isEqualTo(request.getMajor()),
                 () -> assertThat(user.getSemester()).isEqualTo(request.getSemester()),
-                () -> assertThat(user.getKakaoId()).isEqualTo(kaKaoId)
+                () -> assertThat(user.getKakaoId()).isEqualTo(kaKaoId),
+                () -> assertThat(user.getRole()).isEqualTo(UserRole.MEMBER),
+                () -> assertThat(user.getUserClass()).isEqualTo(UserClass.NONE),
+                () -> assertThat(sessionUser.isAdminStatus()).isFalse()
         );
     }
 
