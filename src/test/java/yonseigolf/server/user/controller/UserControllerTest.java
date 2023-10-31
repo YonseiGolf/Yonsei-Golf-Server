@@ -25,6 +25,7 @@ import yonseigolf.server.user.service.UserService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -160,6 +161,32 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("학기"))
                 ));
     }
+
+    @Test
+    @DisplayName("로그인된 상태라면 에러를 발생한다.")
+    void loggedInErrorTest() throws Exception {
+        // given
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("user", SessionUser.builder().id(1L).build());
+
+        // when & then
+        mockMvc.perform(post("/users/signUp").session(session))
+                .andExpect(status().is4xxClientError())
+                .andExpect(result -> assertFalse(result.getResolvedException() instanceof IllegalArgumentException));
+    }
+
+    @Test
+    @DisplayName("카카오 로그인을 하지 않고 회원가입을 할 경우 에러를 발생한다.")
+    void kakaoLoginErrorTest() throws Exception {
+        // given
+        MockHttpSession session = new MockHttpSession();
+
+        // when & then
+        mockMvc.perform(post("/users/signUp").session(session))
+                .andExpect(status().is4xxClientError())
+                .andExpect(result -> assertFalse(result.getResolvedException() instanceof IllegalArgumentException));
+    }
+
 
     @Test
     @DisplayName("회장 및 부회장 정보 조회 테스트")
@@ -306,6 +333,18 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("유저 구분 (YB, OB, NONE 중 하나)")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("Health check test")
+    void healthCheck() throws Exception {
+
+        mockMvc.perform(get("/healthcheck"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("healthcheck-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()));
     }
 
     @Override
