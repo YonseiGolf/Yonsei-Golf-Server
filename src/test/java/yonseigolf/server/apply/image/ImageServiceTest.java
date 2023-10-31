@@ -6,14 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 
+import java.io.IOException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 @SpringBootTest
 class ImageServiceTest {
@@ -43,5 +48,21 @@ class ImageServiceTest {
 
         // then
         assertThat(expectedUrl).isEqualTo(returnUrl);
+    }
+
+    @Test
+    @DisplayName("파일에 문제가 있을 시 IllegalStateException을 반환한다.")
+    void fileUploadThrowTest() throws IOException {
+        // given
+        MultipartFile file = mock(MultipartFile.class);
+        given(file.getOriginalFilename()).willReturn("test.jpg");
+        given(file.getContentType()).willReturn("image/jpeg");
+        given(file.getSize()).willReturn(10L);
+        given(file.getInputStream()).willThrow(IOException.class);  // This will throw IOException
+
+        // when & then
+        assertThatThrownBy(() -> imageService.uploadImage(file, "id"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Failed to upload file");
     }
 }
