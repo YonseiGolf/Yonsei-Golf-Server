@@ -1,4 +1,4 @@
-package yonseigolf.server.email;
+package yonseigolf.server.email.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yonseigolf.server.docs.utils.RestDocsSupport;
-import yonseigolf.server.email.controller.EmailController;
 import yonseigolf.server.email.service.EmailService;
 
 import static org.mockito.Mockito.doNothing;
