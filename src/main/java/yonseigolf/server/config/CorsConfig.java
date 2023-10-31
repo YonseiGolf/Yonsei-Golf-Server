@@ -23,6 +23,9 @@ public class CorsConfig implements Filter {
         if (request.getHeader("Origin") != null) {
             if (request.getHeader("Origin").contains("yonseigolf.site")) {
                 response.setHeader("Access-Control-Allow-Origin", "https://www.yonseigolf.site");
+
+            }else if (request.getHeader("Origin").equals("www.yonseigolf.site")){
+                response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
             } else {
                 response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
             }
