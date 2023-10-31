@@ -177,6 +177,7 @@ public class ApplicationController {
 
     @PostMapping("/apply/forms/image")
     public ResponseEntity<CustomResponse<ImageResponse>> uploadImage(@RequestPart("image") MultipartFile image) {
+
         String imageUrl = imageService.uploadImage(image, RandomString.make(10));
 
         return ResponseEntity
@@ -185,7 +186,7 @@ public class ApplicationController {
                             "success",
                             200,
                             "연세골프 지원서 이미지 업로드 성공",
-                            imageUrl
+                            new ImageResponse(imageUrl)
                     ));
     }
 }

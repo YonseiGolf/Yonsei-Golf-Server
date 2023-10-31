@@ -1,6 +1,7 @@
 package yonseigolf.server.apply.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
@@ -18,17 +21,21 @@ import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -483,9 +490,9 @@ public class ApplicationControllerTest extends RestDocsSupport {
 
         // then
         mockMvc.perform(
-                post("/admin/forms/results")
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType("application/json")
+                        post("/admin/forms/results")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -497,6 +504,38 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                         .description("서류 합격 여부"),
                                 fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
                                         .description("최종 합격 여부")
+                        )));
+    }
+
+    @Test
+    @DisplayName("연세 골프 지원서 사진을 업로드할 수 있다.")
+    void uploadImageTest() throws Exception {
+        // given
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "image.png",
+                "image/png",
+                "image".getBytes());
+
+        given(imageService.uploadImage(any(MultipartFile.class), anyString())).willReturn("url");
+
+        // when
+        imageService.uploadImage(image, RandomString.make(10));
+        // then
+        mockMvc.perform(
+                        multipart("/apply/forms/image")
+                                .file(image)
+                                .contentType("multipart/form-data"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("admin-application-uploadImage-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestParts(partWithName("image").description("업로드할 사진")),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("image").type(JsonFieldType.STRING)
+                                        .description("업로드된 사진의 URL")
                         )));
     }
 }
