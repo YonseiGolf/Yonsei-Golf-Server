@@ -21,12 +21,12 @@ public class CorsConfig implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (request.getHeader("Origin") != null) {
-            if (request.getHeader("Origin").contains("yonseigolf.site")) {
+            if (request.getHeader("Origin").equals("https://yonseigolf.site")) {
+                response.setHeader("Access-Control-Allow-Origin", "https://yonseigolf.site");
+            }else if (request.getHeader("Origin").equals("https://www.yonseigolf.site")){
                 response.setHeader("Access-Control-Allow-Origin", "https://www.yonseigolf.site");
-
-            }else if (request.getHeader("Origin").equals("www.yonseigolf.site")){
-                response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
             } else {
+                System.out.println("other.site");
                 response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
             }
         }
