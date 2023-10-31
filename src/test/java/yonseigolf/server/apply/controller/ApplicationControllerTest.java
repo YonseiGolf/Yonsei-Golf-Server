@@ -469,78 +469,34 @@ public class ApplicationControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("서류 합격자들에게 합격 이메일을 전송할 수 있다.")
-    void sendDocumentPassEmailTest() throws Exception {
+    @DisplayName("연세 골프 지원 결과를 이메일로 전송할 수 있다.")
+    void sendResultTest() throws Exception {
         // given
-        doNothing().when(applyService).sendDocumentPassEmail();
+        ResultNotification request = ResultNotification.builder()
+                .documentPass(true)
+                .finalPass(true)
+                .build();
 
+        doNothing().when(applyService).sendEmailNotification(request.isDocumentPass(), request.getFinalPass());
         // when
-        applyService.sendDocumentPassEmail();
+        applyService.sendEmailNotification(request.isDocumentPass(), request.getFinalPass());
 
         // then
-        mockMvc.perform(post("/admin/forms/documentPassEmail"))
-                .andExpect(status().isOk())
+        mockMvc.perform(
+                post("/admin/forms/results")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json")
+                )
                 .andDo(print())
-                .andDo(document("admin-application-sendDocumentPassEmail-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse()
-                ));
-    }
-
-    @Test
-    @DisplayName("서류 불합격자들에게 불합격 이메일을 전송할 수 있다.")
-    void sendDocumentFailEmailTest() throws Exception {
-        // given
-        doNothing().when(applyService).sendDocumentFailEmail();
-
-        // when
-        applyService.sendDocumentFailEmail();
-
-        // then
-        mockMvc.perform(post("/admin/forms/documentFailEmail"))
                 .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-sendDocumentFailEmail-doc",
+                .andDo(document("admin-application-sendResult-doc",
                         getDocumentRequest(),
-                        getDocumentResponse()
-                ));
-    }
-
-    @Test
-    @DisplayName("최종 합격자들에게 합격 이메일을 전송할 수 있다.")
-    void sendFinalPassEmailTest() throws Exception {
-        // given
-        doNothing().when(applyService).sendFinalPassEmail();
-
-        // when
-        applyService.sendFinalPassEmail();
-
-        // then
-        mockMvc.perform(post("/admin/forms/finalPassEmail"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-sendFinalPassEmail-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse()
-                ));
-    }
-
-    @Test
-    @DisplayName("최종 불합격자들에게 불합격 이메일을 전송할 수 있다.")
-    void sendFinalFailEmailTest() throws Exception {
-        // given
-        doNothing().when(applyService).sendFinalFailEmail();
-
-        // when
-        applyService.sendFinalFailEmail();
-
-        // then
-        mockMvc.perform(post("/admin/forms/finalPassEmail"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-sendFinalFailEmail-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse()
-                ));
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("documentPass").type(JsonFieldType.BOOLEAN)
+                                        .description("서류 합격 여부"),
+                                fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
+                                        .description("최종 합격 여부")
+                        )));
     }
 }
