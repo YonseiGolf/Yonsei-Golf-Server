@@ -11,6 +11,7 @@ public class Image {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
+    private String url;
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
