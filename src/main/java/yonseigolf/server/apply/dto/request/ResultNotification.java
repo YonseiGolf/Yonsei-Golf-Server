@@ -1,4 +1,4 @@
-package yonseigolf.server.user.dto.request;
+package yonseigolf.server.apply.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KakaoCode {
+public class ResultNotification {
 
-    String value;
+    private boolean documentPass;
+    private Boolean finalPass;
 }
+

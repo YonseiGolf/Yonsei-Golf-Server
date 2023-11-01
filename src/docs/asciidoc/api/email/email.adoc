@@ -1,0 +1,3 @@
+=== 지원 기간 시작 시 이메일 전송
+==== HTTP Request
+include::{snippets}/email-apply-start-email/http-request.adoc[]

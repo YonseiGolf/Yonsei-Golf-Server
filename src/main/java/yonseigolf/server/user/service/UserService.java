@@ -53,7 +53,7 @@ public class UserService {
         return AdminResponse.of(UserResponse.fromUser(leader), assistantLeaders);
     }
 
-    public Page<SingleUserResponse> findAllUsers(Pageable pageable, UserClass userClass) {
+    public Page<SingleUserResponse> findUsersByClass(Pageable pageable, UserClass userClass) {
 
         return repository.findAllUsers(pageable, userClass);
     }

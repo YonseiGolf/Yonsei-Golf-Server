@@ -5,7 +5,6 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import yonseigolf.server.apply.entity.Application;
 
 import java.time.LocalDateTime;
 
@@ -31,17 +30,5 @@ public class SingleApplicationResult {
         this.interviewTime = interviewTime;
         this.documentPass = documentPass;
         this.finalPass = finalPass;
-    }
-
-    public SingleApplicationResult fromApplication(Application Application) {
-
-        return SingleApplicationResult.builder()
-                .id(Application.getId())
-                .photo(Application.getPhoto())
-                .name(Application.getName())
-                .interviewTime(Application.getInterviewTime())
-                .documentPass(Application.getDocumentPass())
-                .finalPass(Application.getFinalPass())
-                .build();
     }
 }

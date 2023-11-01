@@ -22,3 +22,7 @@ include::api/application/application.adoc[]
 == User API
 
 include::api/users/users.adoc[]
+
+[[Email-API]]
+== Email API
+include::api/email/email.adoc[]

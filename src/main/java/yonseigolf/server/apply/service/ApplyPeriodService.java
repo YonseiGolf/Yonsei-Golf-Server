@@ -18,22 +18,30 @@ public class ApplyPeriodService {
         this.repository = repository;
     }
 
-    public RecruitPeriodResponse getApplicationPeriod() {
+    public RecruitPeriodResponse getApplicationPeriod(long id) {
+
+        RecruitmentPeriod recruitmentPeriod = findById(id);
 
         return RecruitPeriodResponse.builder()
-                .startDate(repository.getOne(1L).getStartDate())
-                .endDate(repository.getOne(1L).getEndDate())
-                .firstResultDate(repository.getOne(1L).getFirstResultDate())
-                .interviewStartDate(repository.getOne(1L).getInterviewStartDate())
-                .interviewEndDate(repository.getOne(1L).getInterviewEndDate())
-                .finalResultDate(repository.getOne(1L).getFinalResultDate())
-                .orientationDate(repository.getOne(1L).getOrientationDate())
+                .startDate(recruitmentPeriod.getStartDate())
+                .endDate(recruitmentPeriod.getEndDate())
+                .firstResultDate(recruitmentPeriod.getFirstResultDate())
+                .interviewStartDate(recruitmentPeriod.getInterviewStartDate())
+                .interviewEndDate(recruitmentPeriod.getInterviewEndDate())
+                .finalResultDate(recruitmentPeriod.getFinalResultDate())
+                .orientationDate(recruitmentPeriod.getOrientationDate())
                 .build();
     }
 
-    public boolean getApplicationAvailability(LocalDate today) {
-        RecruitmentPeriod period = repository.getOne(1L);
+    public boolean getApplicationAvailability(LocalDate today, long periodId) {
+        RecruitmentPeriod period = findById(periodId);
 
         return !today.isBefore(period.getStartDate()) && !today.isAfter(period.getEndDate());
+    }
+
+    private RecruitmentPeriod findById(long periodId) {
+
+        return repository.findById(periodId).orElseThrow(
+                () -> new IllegalArgumentException("해당 모집기간이 존재하지 않습니다."));
     }
 }

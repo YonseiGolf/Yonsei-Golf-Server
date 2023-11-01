@@ -1,6 +1,7 @@
 package yonseigolf.server.apply.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
@@ -18,17 +21,20 @@ import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -171,7 +177,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
 
         // when
 
-        given(applyPeriodService.getApplicationPeriod()).willReturn(response);
+        given(applyPeriodService.getApplicationPeriod(anyLong())).willReturn(response);
 
         // then
         mockMvc.perform(get("/application/recruit"))
@@ -469,78 +475,66 @@ public class ApplicationControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("서류 합격자들에게 합격 이메일을 전송할 수 있다.")
-    void sendDocumentPassEmailTest() throws Exception {
+    @DisplayName("연세 골프 지원 결과를 이메일로 전송할 수 있다.")
+    void sendResultTest() throws Exception {
         // given
-        doNothing().when(applyService).sendDocumentPassEmail();
+        ResultNotification request = ResultNotification.builder()
+                .documentPass(true)
+                .finalPass(true)
+                .build();
 
+        doNothing().when(applyService).sendEmailNotification(request.isDocumentPass(), request.getFinalPass());
         // when
-        applyService.sendDocumentPassEmail();
+        applyService.sendEmailNotification(request.isDocumentPass(), request.getFinalPass());
 
         // then
-        mockMvc.perform(post("/admin/forms/documentPassEmail"))
-                .andExpect(status().isOk())
+        mockMvc.perform(
+                        post("/admin/forms/results")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                )
                 .andDo(print())
-                .andDo(document("admin-application-sendDocumentPassEmail-doc",
+                .andExpect(status().isOk())
+                .andDo(document("admin-application-sendResult-doc",
                         getDocumentRequest(),
-                        getDocumentResponse()
-                ));
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("documentPass").type(JsonFieldType.BOOLEAN)
+                                        .description("서류 합격 여부"),
+                                fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
+                                        .description("최종 합격 여부")
+                        )));
     }
 
     @Test
-    @DisplayName("서류 불합격자들에게 불합격 이메일을 전송할 수 있다.")
-    void sendDocumentFailEmailTest() throws Exception {
+    @DisplayName("연세 골프 지원서 사진을 업로드할 수 있다.")
+    void uploadImageTest() throws Exception {
         // given
-        doNothing().when(applyService).sendDocumentFailEmail();
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "image.png",
+                "image/png",
+                "image".getBytes());
+
+        given(imageService.uploadImage(any(MultipartFile.class), anyString())).willReturn("url");
 
         // when
-        applyService.sendDocumentFailEmail();
-
+        imageService.uploadImage(image, RandomString.make(10));
         // then
-        mockMvc.perform(post("/admin/forms/documentFailEmail"))
-                .andExpect(status().isOk())
+        mockMvc.perform(
+                        multipart("/apply/forms/image")
+                                .file(image)
+                                .contentType("multipart/form-data"))
                 .andDo(print())
-                .andDo(document("admin-application-sendDocumentFailEmail-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse()
-                ));
-    }
-
-    @Test
-    @DisplayName("최종 합격자들에게 합격 이메일을 전송할 수 있다.")
-    void sendFinalPassEmailTest() throws Exception {
-        // given
-        doNothing().when(applyService).sendFinalPassEmail();
-
-        // when
-        applyService.sendFinalPassEmail();
-
-        // then
-        mockMvc.perform(post("/admin/forms/finalPassEmail"))
                 .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-sendFinalPassEmail-doc",
+                .andDo(document("admin-application-uploadImage-doc",
                         getDocumentRequest(),
-                        getDocumentResponse()
-                ));
-    }
-
-    @Test
-    @DisplayName("최종 불합격자들에게 불합격 이메일을 전송할 수 있다.")
-    void sendFinalFailEmailTest() throws Exception {
-        // given
-        doNothing().when(applyService).sendFinalFailEmail();
-
-        // when
-        applyService.sendFinalFailEmail();
-
-        // then
-        mockMvc.perform(post("/admin/forms/finalPassEmail"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-sendFinalFailEmail-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse()
-                ));
+                        getDocumentResponse(),
+                        requestParts(partWithName("image").description("업로드할 사진")),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("image").type(JsonFieldType.STRING)
+                                        .description("업로드된 사진의 URL")
+                        )));
     }
 }

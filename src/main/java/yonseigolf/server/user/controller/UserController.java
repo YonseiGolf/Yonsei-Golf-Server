@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class UserController {
 
+    private static final String SESSION_KAKAO_USER = "kakaoUser";
     private final UserService userService;
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
@@ -41,43 +42,34 @@ public class UserController {
     }
 
     @PostMapping("/oauth/kakao")
-    public ResponseEntity<CustomResponse> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
 
-        OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo);
+        OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getValue(), kakaoOauthInfo);
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
-        session.setAttribute("kakaoUser", kakaoLoginResponse.getId());
+        session.setAttribute(SESSION_KAKAO_USER, kakaoLoginResponse.getId());
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "카카오 로그인 성공"
-                ));
+                .body(CustomResponse.successResponse("카카오 로그인 성공"));
     }
 
     @PostMapping("/users/signIn")
     public ResponseEntity<CustomResponse<SessionUser>> signIn(HttpSession session) {
-        Long id = (Long) session.getAttribute("kakaoUser");
+        Long id = (Long) session.getAttribute(SESSION_KAKAO_USER);
 
         SessionUser sessionUser = userService.signIn(id);
         session.setAttribute("user", sessionUser);
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse<>(
-                        "success",
-                        200,
-                        "로그인된 유저 정보 조회 성공",
-                        sessionUser
-                ));
+                .body(CustomResponse.successResponse("로그인 성공", sessionUser));
     }
 
     @PostMapping("/users/signUp")
-    public ResponseEntity<CustomResponse> signUp(@RequestBody @Validated SignUpUserRequest request, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> signUp(@RequestBody @Validated SignUpUserRequest request, HttpSession session) {
 
-        Long kakaoId = (Long) session.getAttribute("kakaoUser");
+        Long kakaoId = (Long) session.getAttribute(SESSION_KAKAO_USER);
 
         if (session.getAttribute("user") != null) {
             throw new IllegalArgumentException("[ERROR] 이미 로그인된 상태입니다.");
@@ -88,67 +80,50 @@ public class UserController {
 
         SessionUser sessionUser = userService.signUp(request, kakaoId);
 
-        session.removeAttribute("kakaoUser");
+        session.removeAttribute(SESSION_KAKAO_USER);
         session.setAttribute("user", sessionUser);
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "회원가입 성공"
-                ));
+                .body(CustomResponse.successResponse("회원가입 성공"));
     }
 
     @GetMapping("/admin/users")
     public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable, UserClass userClass) {
 
+        Page<SingleUserResponse> users = userService.findUsersByClass(pageable, userClass);
+
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse<>(
-                        "success",
-                        200,
-                        "유저 정보 조회 성공",
-                        userService.findAllUsers(pageable, userClass)
-                ));
+                .body(CustomResponse.successResponse("유저 조회 성공", users));
     }
 
     @PatchMapping("/admin/users/{userId}")
-    public ResponseEntity<CustomResponse> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
+    public ResponseEntity<CustomResponse<Void>> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
 
         userService.updateUserClass(userId, userClass.getUserClass());
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "유저 정보 수정 성공"
-                ));
+                .body(CustomResponse.successResponse("유저 정보 변경 성공"));
     }
 
     @GetMapping("/users/leaders")
     public ResponseEntity<CustomResponse<AdminResponse>> getLeaders() {
 
+        AdminResponse leaders = userService.getLeaders();
+
+
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse<>(
-                        "success",
-                        200,
-                        "로그인된 유저 정보 조회 성공",
-                        userService.getLeaders()
-                ));
+                .body(CustomResponse.successResponse("리더 조회 성공", leaders));
     }
 
     @GetMapping("/healthcheck")
-    public ResponseEntity<CustomResponse> healthCheck() {
+    public ResponseEntity<CustomResponse<Void>> healthCheck() {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse<>(
-                        "success",
-                        200,
-                        "헬스체크 성공"
-                ));
+                .body(CustomResponse.successResponse("서버 정상 작동 중"));
     }
 }

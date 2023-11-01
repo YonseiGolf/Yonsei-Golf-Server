@@ -25,8 +25,8 @@ import yonseigolf.server.user.service.UserService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -54,7 +54,7 @@ public class UserControllerTest extends RestDocsSupport {
         MockHttpSession session = new MockHttpSession();
 
         KakaoCode kakaoCode = KakaoCode.builder()
-                .kakaoCode("kakaoCode")
+                .value("kakaoCode")
                 .build();
 
         OauthToken oauthToken = OauthToken.builder()
@@ -68,7 +68,7 @@ public class UserControllerTest extends RestDocsSupport {
                 .id(1L)
                 .build();
 
-        given(oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo)).willReturn(oauthToken);
+        given(oauthLoginService.getOauthToken(kakaoCode.getValue(), kakaoOauthInfo)).willReturn(oauthToken);
         given(oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri())).willReturn(kakaoLoginResponse);
 
         // when
@@ -78,7 +78,7 @@ public class UserControllerTest extends RestDocsSupport {
         mockMvc.perform(
                         post("/oauth/kakao")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(kakaoCode.getKakaoCode()))
+                                .content(objectMapper.writeValueAsString(kakaoCode.getValue()))
                                 .session(session)
                 ).andDo(print())
                 .andExpect(status().isOk())
@@ -163,6 +163,32 @@ public class UserControllerTest extends RestDocsSupport {
     }
 
     @Test
+    @DisplayName("로그인된 상태라면 에러를 발생한다.")
+    void loggedInErrorTest() throws Exception {
+        // given
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("user", SessionUser.builder().id(1L).build());
+
+        // when & then
+        mockMvc.perform(post("/users/signUp").session(session))
+                .andExpect(status().is4xxClientError())
+                .andExpect(result -> assertFalse(result.getResolvedException() instanceof IllegalArgumentException));
+    }
+
+    @Test
+    @DisplayName("카카오 로그인을 하지 않고 회원가입을 할 경우 에러를 발생한다.")
+    void kakaoLoginErrorTest() throws Exception {
+        // given
+        MockHttpSession session = new MockHttpSession();
+
+        // when & then
+        mockMvc.perform(post("/users/signUp").session(session))
+                .andExpect(status().is4xxClientError())
+                .andExpect(result -> assertFalse(result.getResolvedException() instanceof IllegalArgumentException));
+    }
+
+
+    @Test
     @DisplayName("회장 및 부회장 정보 조회 테스트")
     void getLeadersTest() throws Exception {
         // given
@@ -225,11 +251,11 @@ public class UserControllerTest extends RestDocsSupport {
         );
 
         Page<SingleUserResponse> mockPage = new PageImpl<>(users);
-        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
-        given(userService.findAllUsers(any(), any())).willReturn(mockPage);
+        given(userService.findUsersByClass(any(), any())).willReturn(mockPage);
+        given(userService.findUsersByClass(any(), any())).willReturn(mockPage);
 
         // when
-        userService.findAllUsers(any(), any());
+        userService.findUsersByClass(any(), any());
 
         // then
         mockMvc.perform(get("/admin/users")
@@ -307,6 +333,18 @@ public class UserControllerTest extends RestDocsSupport {
                                         .description("유저 구분 (YB, OB, NONE 중 하나)")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("Health check test")
+    void healthCheck() throws Exception {
+
+        mockMvc.perform(get("/healthcheck"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("healthcheck-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse()));
     }
 
     @Override
