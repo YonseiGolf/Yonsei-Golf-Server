@@ -1,18 +1,22 @@
 package yonseigolf.server.board.entity;
 
+import lombok.*;
+
 import javax.persistence.*;
 
-import static javax.persistence.FetchType.LAZY;
-import static javax.persistence.GenerationType.*;
 
+@Getter
 @Entity
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Image {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String url;
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
 }

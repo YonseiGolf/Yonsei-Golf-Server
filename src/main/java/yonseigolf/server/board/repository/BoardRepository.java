@@ -3,5 +3,5 @@ package yonseigolf.server.board.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import yonseigolf.server.board.entity.Board;
 
-public interface BoardRepository extends JpaRepository<Board, Long> {
+public interface BoardRepository extends JpaRepository<Board, Long>, BoardRepositoryCustom{
 }
