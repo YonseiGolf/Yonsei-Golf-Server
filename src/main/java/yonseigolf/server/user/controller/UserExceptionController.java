@@ -17,7 +17,7 @@ public class UserExceptionController {
         log.error("existingMember: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(new CustomErrorResponse(
                         "fail",
                         401,
