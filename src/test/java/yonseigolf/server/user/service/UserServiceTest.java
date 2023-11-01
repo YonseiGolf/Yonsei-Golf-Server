@@ -18,6 +18,7 @@ import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Transactional
@@ -153,5 +154,40 @@ class UserServiceTest {
                 .role(userRole)
                 .userClass(userClass)
                 .build();
+    }
+
+    @Test
+    @DisplayName("로그인을 하는데 카카오 아이디가 없다면 예외가 발생한다.")
+    void noKakaoIdExceptionTest() {
+        // given
+        Long notExistKakaoId = 100L;
+
+        // when & then
+        assertThatThrownBy(() -> userService.signIn(notExistKakaoId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("존재하지 않는 유저입니다.");
+    }
+
+    @Test
+    @DisplayName("회장을 지정해주지 않은 경우 예외가 발생한다.")
+    void noLeaderException() {
+
+        // when & then
+        assertThatThrownBy(() -> userService.getLeaders())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("회장이 존재하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("없는 유저에게 메서드로 유저 클래스를 변경하려고 하면 예외가 발생한다.")
+    void notExistingUserExceptionTest() {
+        // given
+        Long notExistingUserId = 100L;
+
+        // then
+        assertThatThrownBy(() -> userService.updateUserClass(notExistingUserId, UserClass.OB))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("존재하지 않는 유저입니다.");
+
     }
 }

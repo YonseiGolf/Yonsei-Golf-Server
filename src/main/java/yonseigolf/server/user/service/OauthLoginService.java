@@ -19,6 +19,7 @@ public class OauthLoginService {
     private final RestTemplate restTemplate;
 
     @Autowired
+
     public OauthLoginService(RestTemplate restTemplate) {
 
         this.restTemplate = restTemplate;
@@ -46,6 +47,11 @@ public class OauthLoginService {
         return response.getBody();
     }
 
+    public KakaoLoginResponse processKakaoLogin(String accessToken, String loginUri) {
+
+        return processLogin(accessToken, loginUri, KakaoLoginResponse.class);
+    }
+
     private  <T> T processLogin(String accessToken, String loginUri, Class<T> responseType) {
 
         HttpHeaders headers = new HttpHeaders();
@@ -60,11 +66,5 @@ public class OauthLoginService {
                         requestEntity,
                         responseType)
                 .getBody();
-    }
-
-    public KakaoLoginResponse processKakaoLogin(String accessToken, String loginUri) {
-
-        KakaoLoginResponse response = processLogin(accessToken, loginUri, KakaoLoginResponse.class);
-        return response;
     }
 }
