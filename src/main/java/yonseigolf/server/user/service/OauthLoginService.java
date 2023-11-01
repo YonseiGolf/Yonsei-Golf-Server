@@ -26,7 +26,17 @@ public class OauthLoginService {
     }
 
     public OauthToken getOauthToken(String code, KakaoOauthInfo oauthInfo) {
+        HttpEntity<?> request = createRequestEntity(code, oauthInfo);
+        ResponseEntity<OauthToken> response = restTemplate.postForEntity(oauthInfo.getRedirectUri(), request, OauthToken.class);
 
+        return response.getBody();
+    }
+
+    public KakaoLoginResponse processKakaoLogin(String accessToken, String loginUri) {
+        return processLogin(accessToken, loginUri);
+    }
+
+    private HttpEntity<?> createRequestEntity(String code, KakaoOauthInfo oauthInfo) {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         Map<String, String> header = new HashMap<>();
         header.put("Accept", "application/json");
@@ -41,19 +51,10 @@ public class OauthLoginService {
         requestPayload.put("code", code);
         requestPayloads.setAll(requestPayload);
 
-        HttpEntity<?> request = new HttpEntity<>(requestPayloads, headers);
-        ResponseEntity<OauthToken> response = restTemplate.postForEntity(oauthInfo.getRedirectUri(), request, OauthToken.class);
-
-        return response.getBody();
+        return new HttpEntity<>(requestPayloads, headers);
     }
 
-    public KakaoLoginResponse processKakaoLogin(String accessToken, String loginUri) {
-
-        return processLogin(accessToken, loginUri, KakaoLoginResponse.class);
-    }
-
-    private  <T> T processLogin(String accessToken, String loginUri, Class<T> responseType) {
-
+    private KakaoLoginResponse processLogin(String accessToken, String loginUri) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -64,7 +65,7 @@ public class OauthLoginService {
                         loginUri,
                         HttpMethod.GET,
                         requestEntity,
-                        responseType)
+                        KakaoLoginResponse.class)
                 .getBody();
     }
 }

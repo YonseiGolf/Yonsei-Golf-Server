@@ -5,9 +5,11 @@ import lombok.Getter;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserRole;
 
+import java.io.Serializable;
+
 @Getter
 @Builder
-public class SessionUser {
+public class SessionUser implements Serializable {
 
     private long id;
     private String name;

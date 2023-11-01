@@ -54,7 +54,7 @@ public class UserControllerTest extends RestDocsSupport {
         MockHttpSession session = new MockHttpSession();
 
         KakaoCode kakaoCode = KakaoCode.builder()
-                .kakaoCode("kakaoCode")
+                .value("kakaoCode")
                 .build();
 
         OauthToken oauthToken = OauthToken.builder()
@@ -68,7 +68,7 @@ public class UserControllerTest extends RestDocsSupport {
                 .id(1L)
                 .build();
 
-        given(oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo)).willReturn(oauthToken);
+        given(oauthLoginService.getOauthToken(kakaoCode.getValue(), kakaoOauthInfo)).willReturn(oauthToken);
         given(oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri())).willReturn(kakaoLoginResponse);
 
         // when
@@ -78,7 +78,7 @@ public class UserControllerTest extends RestDocsSupport {
         mockMvc.perform(
                         post("/oauth/kakao")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(kakaoCode.getKakaoCode()))
+                                .content(objectMapper.writeValueAsString(kakaoCode.getValue()))
                                 .session(session)
                 ).andDo(print())
                 .andExpect(status().isOk())
