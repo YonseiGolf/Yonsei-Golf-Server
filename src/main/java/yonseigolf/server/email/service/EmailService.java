@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.EmailRepository;
+import yonseigolf.server.email.dto.NotificationType;
 
 import java.util.List;
 
@@ -27,12 +28,9 @@ public class EmailService {
     public void sendApplyStartAlert() {
         List<EmailAlarm> allAlert = findAllAlert();
 
-        allAlert.stream().forEach(alert -> {
-            sendEmail(alert.getEmail(),
-                    "연세대학교 골프동아리입니다.",
-                    "연세대학교 골프동아리 모집이 시작되었습니다.\n " +
-                            "https://yonseigolf.com/apply 에서 확인해주세요");
-        });
+        allAlert.forEach(alert -> sendEmail(alert.getEmail(),
+                "연세대학교 골프동아리입니다.",
+                NotificationType.CLUB_RECRUITMENT.generateMessage(null)));
 
         emailRepository.deleteAll();
     }

@@ -23,6 +23,14 @@ public enum NotificationType {
                     "바쁘신 와중에 지원해주셔서 감사합니다. \n\n" +
                     "연세 골프 운영진 드림";
         }
+    },
+    CLUB_RECRUITMENT{
+        @Override
+        public String generateMessage(String name) {
+            return "연세대학교 골프동아리입니다. \n" +
+            "연세대학교 골프동아리 모집이 시작되었습니다.\n " +
+                    "https://yonseigolf.com/apply 에서 확인해주세요";
+        }
     };
 
     public abstract String generateMessage(String name);

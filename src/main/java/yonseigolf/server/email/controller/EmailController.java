@@ -25,10 +25,6 @@ public class EmailController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "이메일 전송 성공"
-                ));
+                .body(CustomResponse.successResponse("지원 시작 이메일 전송 성공"));
     }
 }
