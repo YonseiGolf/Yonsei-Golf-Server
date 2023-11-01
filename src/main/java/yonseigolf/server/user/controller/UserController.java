@@ -42,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping("/oauth/kakao")
-    public ResponseEntity<CustomResponse> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
 
         OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getValue(), kakaoOauthInfo);
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
@@ -67,7 +67,7 @@ public class UserController {
     }
 
     @PostMapping("/users/signUp")
-    public ResponseEntity<CustomResponse> signUp(@RequestBody @Validated SignUpUserRequest request, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> signUp(@RequestBody @Validated SignUpUserRequest request, HttpSession session) {
 
         Long kakaoId = (Long) session.getAttribute(SESSION_KAKAO_USER);
 
@@ -99,7 +99,7 @@ public class UserController {
     }
 
     @PatchMapping("/admin/users/{userId}")
-    public ResponseEntity<CustomResponse> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
+    public ResponseEntity<CustomResponse<Void>> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
 
         userService.updateUserClass(userId, userClass.getUserClass());
 
@@ -120,7 +120,7 @@ public class UserController {
     }
 
     @GetMapping("/healthcheck")
-    public ResponseEntity<CustomResponse> healthCheck() {
+    public ResponseEntity<CustomResponse<Void>> healthCheck() {
 
         return ResponseEntity
                 .ok()

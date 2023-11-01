@@ -19,7 +19,7 @@ public class EmailController {
     }
 
     @PostMapping("/admin/email/apply-start-email")
-    public ResponseEntity<CustomResponse> sendApplyStartAlert() {
+    public ResponseEntity<CustomResponse<Void>> sendApplyStartAlert() {
 
         emailService.sendApplyStartAlert();
 

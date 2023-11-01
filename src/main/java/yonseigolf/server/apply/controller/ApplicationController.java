@@ -36,7 +36,7 @@ public class ApplicationController {
     }
 
     @PostMapping("/application")
-    public ResponseEntity<CustomResponse> apply(@RequestBody ApplicationRequest request) {
+    public ResponseEntity<CustomResponse<Void>> apply(@RequestBody ApplicationRequest request) {
 
         applicationService.apply(request);
 
@@ -46,7 +46,7 @@ public class ApplicationController {
     }
 
     @PostMapping("/application/emailAlarm")
-    public ResponseEntity<CustomResponse> emailAlarm(@RequestBody EmailAlertRequest request) {
+    public ResponseEntity<CustomResponse<Void>> emailAlarm(@RequestBody EmailAlertRequest request) {
 
         applicationService.emailAlarm(request);
 
@@ -102,7 +102,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/admin/forms/{id}/documentPass")
-    public ResponseEntity<CustomResponse> updateDocumentPass(@PathVariable Long id, @RequestBody DocumentPassRequest documentPass) {
+    public ResponseEntity<CustomResponse<Void>> updateDocumentPass(@PathVariable Long id, @RequestBody DocumentPassRequest documentPass) {
 
         applicationService.updateDocumentPass(id, documentPass.isDocumentPass());
 
@@ -112,7 +112,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/admin/forms/{id}/finalPass")
-    public ResponseEntity<CustomResponse> updateFinalPass(@PathVariable Long id, @RequestBody FinalPassRequest finalPass) {
+    public ResponseEntity<CustomResponse<Void>> updateFinalPass(@PathVariable Long id, @RequestBody FinalPassRequest finalPass) {
 
         applicationService.updateFinalPass(id, finalPass.isFinalPass());
 
@@ -122,7 +122,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/admin/forms/{id}/interviewTime")
-    public ResponseEntity<CustomResponse> updateInterviewTime(@PathVariable Long id, @RequestBody UpdateInterviewTimeRequest time) {
+    public ResponseEntity<CustomResponse<Void>> updateInterviewTime(@PathVariable Long id, @RequestBody UpdateInterviewTimeRequest time) {
 
         applicationService.updateInterviewTime(id, time.getTime());
 
@@ -132,7 +132,7 @@ public class ApplicationController {
     }
 
     @PostMapping("/admin/forms/results")
-    public ResponseEntity<CustomResponse> sendEmailNotification(@RequestBody ResultNotification request) {
+    public ResponseEntity<CustomResponse<Void>> sendEmailNotification(@RequestBody ResultNotification request) {
 
         applicationService.sendEmailNotification(request.isDocumentPass(), request.getFinalPass());
 
