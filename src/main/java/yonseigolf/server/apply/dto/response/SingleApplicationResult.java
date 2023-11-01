@@ -5,7 +5,6 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import yonseigolf.server.apply.entity.Application;
 
 import java.time.LocalDateTime;
 

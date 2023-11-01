@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.ImageResponse;
+import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.service.ApplyPeriodService;
@@ -41,11 +42,7 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원서 제출 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 제출 성공"));
     }
 
     @PostMapping("/application/emailAlarm")
@@ -55,26 +52,18 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 이메일 알림 신청 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 이메일 알림 설정 성공"));
     }
 
     @GetMapping("/application/recruit")
-    public ResponseEntity<CustomResponse> getApplicationPeriod() {
+    public ResponseEntity<CustomResponse<RecruitPeriodResponse>> getApplicationPeriod() {
 
         final long defaultId = 1L;
 
+        RecruitPeriodResponse applicationPeriod = applyPeriodService.getApplicationPeriod(defaultId);
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원 기간 조회 성공",
-                        applyPeriodService.getApplicationPeriod(defaultId)
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원 기간 조회 성공", applicationPeriod));
     }
 
     @GetMapping("/application/availability")
@@ -84,30 +73,22 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse<>(
-                        "success",
-                        200,
+                .body(CustomResponse.successResponse(
                         "연세골프 지원 가능 여부 조회 성공",
-                        applyPeriodService.getApplicationAvailability(LocalDate.now(), defaultId)
-                ));
+                        applyPeriodService.getApplicationAvailability(LocalDate.now(), defaultId)));
     }
 
     @GetMapping("/admin/forms")
-    public ResponseEntity<CustomResponse<Page<SingleApplicationResult>>> getApplicationResults(@RequestParam(required = false) Boolean documentPass,
-                                                                                               @RequestParam(required = false) Boolean finalPass,
-                                                                                               Pageable pageable) {
-
-        System.out.println("documentPass = " + documentPass);
-        System.out.println("finalPass = " + finalPass);
+    public ResponseEntity<CustomResponse<Page<SingleApplicationResult>>> getApplicationResults(
+            @RequestParam(required = false) Boolean documentPass,
+            @RequestParam(required = false) Boolean finalPass,
+            Pageable pageable) {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
+                .body(CustomResponse.successResponse(
                         "연세골프 지원서 조회 성공",
-                        applicationService.getApplicationResults(documentPass, finalPass, pageable)
-                ));
+                        applicationService.getApplicationResults(documentPass, finalPass, pageable)));
     }
 
     @GetMapping("/admin/forms/{id}")
@@ -115,12 +96,9 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
+                .body(CustomResponse.successResponse(
                         "연세골프 지원서 조회 성공",
-                        applicationService.getApplication(id)
-                ));
+                        applicationService.getApplication(id)));
     }
 
     @PatchMapping("/admin/forms/{id}/documentPass")
@@ -130,11 +108,7 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원서 서류 합격 수정 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 서류 합격 수정 성공"));
     }
 
     @PatchMapping("/admin/forms/{id}/finalPass")
@@ -144,11 +118,7 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원서 최종 합격 수정 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 최종 합격 수정 성공"));
     }
 
     @PatchMapping("/admin/forms/{id}/interviewTime")
@@ -158,11 +128,7 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원서 면접 시간 수정 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 면접 시간 수정 성공"));
     }
 
     @PostMapping("/admin/forms/results")
@@ -172,11 +138,7 @@ public class ApplicationController {
 
         return ResponseEntity
                 .ok()
-                .body(new CustomResponse(
-                        "success",
-                        200,
-                        "연세골프 지원서 결과 이메일 전송 성공"
-                ));
+                .body(CustomResponse.successResponse("연세골프 지원서 결과 이메일 발송 성공"));
     }
 
     @PostMapping("/apply/forms/image")
@@ -185,12 +147,9 @@ public class ApplicationController {
         String imageUrl = imageService.uploadImage(image, RandomString.make(10));
 
         return ResponseEntity
-                    .ok()
-                    .body(new CustomResponse(
-                            "success",
-                            200,
-                            "연세골프 지원서 이미지 업로드 성공",
-                            new ImageResponse(imageUrl)
-                    ));
+                .ok()
+                .body(CustomResponse.successResponse(
+                        "연세골프 지원서 사진 업로드 성공",
+                        new ImageResponse(imageUrl)));
     }
 }

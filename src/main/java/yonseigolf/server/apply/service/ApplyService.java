@@ -85,7 +85,6 @@ public class ApplyService {
         final String subject = "안녕하세요. 연세대학교 골프동아리 결과 메일입니다.";
 
         findApplicationsByPassFail(isDocumentPass, isFinalPass)
-                .stream()
                 .forEach(application -> {
                     final String message = type.generateMessage(application.getName());
                     emailService.sendEmail(application.getEmail(), subject, message);
@@ -97,7 +96,7 @@ public class ApplyService {
         if (isDocumentPass && isFinalPass == null) {
             return NotificationType.DOCUMENT_PASS;
         }
-        if (isDocumentPass && isFinalPass == true) {
+        if (isDocumentPass && isFinalPass) {
             return NotificationType.FINAL_PASS;
         }
         return NotificationType.FAIL;
