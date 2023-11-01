@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.EmailRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class EmailService {
         try {
             mailSender.send(message);
         } catch (Exception e) {
-            log.error("이메일 전송 실패 : {}", to , e.getMessage());
+            throw new IllegalArgumentException("이메일 전송에 실패했습니다.");
         }
     }
 }

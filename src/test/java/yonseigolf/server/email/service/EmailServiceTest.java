@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -51,5 +52,21 @@ public class EmailServiceTest {
                 () -> verify(mailSender, times(alerts.size())).send(any(SimpleMailMessage.class)),
                 () -> verify(emailRepository, times(1)).deleteAll()
                 );
+    }
+
+    @Test
+    @DisplayName("이메일 전송 시 예외가 발생했을 경우, catch 후 illeagalArgumentException을 발생시킨다.")
+    void testSendEmail_ExceptionThrown() {
+        // given
+        String to = "test@example.com";
+        String subject = "Test Subject";
+        String text = "Test Text";
+
+        doThrow(new IllegalArgumentException()).when(mailSender).send(any(SimpleMailMessage.class));
+
+        // then
+        assertThrows(IllegalArgumentException.class, () -> {
+            emailService.sendEmail(to, subject, text);
+        });
     }
 }

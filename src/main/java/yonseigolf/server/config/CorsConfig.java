@@ -1,12 +1,14 @@
 package yonseigolf.server.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Profile("!test")
 @Configuration
 public class CorsConfig implements Filter {
 

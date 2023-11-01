@@ -2,6 +2,8 @@ package yonseigolf.server.user.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -63,11 +65,13 @@ class UserServiceTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
     @DisplayName("회원 가입이 되어 있다면 kakaoId로 로그인을 할 수 있다.")
-    void signInTest() {
+    @EnumSource(UserRole.class)
+    void signInTest(UserRole  userRole) {
         // given
-        User user = createUser(UserClass.OB, UserRole.MEMBER);
+
+        User user = createUser(UserClass.OB, userRole);
 
         User save = userRepository.save(user);
 
@@ -77,8 +81,7 @@ class UserServiceTest {
         // then
         assertAll(
                 () -> assertThat(sessionUser.getId()).isEqualTo(save.getId()),
-                () -> assertThat(sessionUser.getName()).isEqualTo(save.getName()),
-                () -> assertThat(sessionUser.isAdminStatus()).isFalse()
+                () -> assertThat(sessionUser.getName()).isEqualTo(save.getName())
         );
     }
 

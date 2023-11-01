@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -84,11 +85,17 @@ class ApplyServiceTest {
         assertThat(emailRepository.findById(saved.getId()).get().getEmail()).isEqualTo("email");
     }
 
-    @Test
+    @ParameterizedTest
     @DisplayName("지원서 조회 테스트")
-    void getApplicationResultsTest() {
+    @ValueSource(strings = {"true", "false", "null"})
+    void getApplicationResultsTest(String documentPassStr) {
         // given
-        Boolean documentPass = true;
+        Boolean documentPass = null;
+
+        if(!documentPassStr.equals("null")) {
+            documentPass = Boolean.parseBoolean(documentPassStr);
+        }
+
         Boolean finalPass = true;
         Application application = Application.builder()
                 .documentPass(documentPass)
