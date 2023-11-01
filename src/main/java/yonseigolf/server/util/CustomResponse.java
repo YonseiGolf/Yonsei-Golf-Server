@@ -21,9 +21,9 @@ public class CustomResponse<T> {
         this.message = message;
     }
 
-    public static CustomResponse successResponse(String message) {
+    public static CustomResponse<Void> successResponse(String message) {
 
-        return new CustomResponse(
+        return new CustomResponse<>(
                 HTTP_STATUS_SUCCESS,
                 HttpStatus.OK.value(),
                 message
@@ -32,7 +32,7 @@ public class CustomResponse<T> {
 
     public static <T> CustomResponse<T> successResponse(String message, T data) {
 
-        return new CustomResponse(
+        return new CustomResponse<>(
                 HTTP_STATUS_SUCCESS,
                 HttpStatus.OK.value(),
                 message,
