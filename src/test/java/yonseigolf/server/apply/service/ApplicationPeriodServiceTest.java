@@ -64,12 +64,34 @@ class ApplicationPeriodServiceTest {
     }
 
     @Test
-    @DisplayName("오늘이 지원 기간이 아니라면 false를 반환")
+    @DisplayName("오늘이 지원 기간 이전이라면 false를 반환")
     void getApplicationAvailabilityTest() {
         // given
         RecruitmentPeriod recruitmentPeriod = RecruitmentPeriod.builder()
                 .startDate(LocalDate.of(2021, 8, 1))
                 .endDate(LocalDate.of(2021, 8, 1))
+                .firstResultDate(LocalDate.of(2021, 8, 1))
+                .interviewStartDate(LocalDate.of(2021, 8, 1))
+                .interviewEndDate(LocalDate.of(2021, 8, 1))
+                .finalResultDate(LocalDate.of(2021, 8, 1))
+                .orientationDate(LocalDate.of(2021, 8, 1))
+                .build();
+        RecruitmentPeriod saved = applyPeriodRepository.save(recruitmentPeriod);
+
+        // when
+        boolean applicationAvailability = applyPeriodService.getApplicationAvailability(LocalDate.now(), saved.getId());
+
+        // then
+        assertThat(applicationAvailability).isFalse();
+    }
+
+    @Test
+    @DisplayName("오늘이 지원 기간 이전이라면 false를 반환")
+    void getApplicationAvailabilityFalseTest() {
+        // given
+        RecruitmentPeriod recruitmentPeriod = RecruitmentPeriod.builder()
+                .startDate(LocalDate.of(2024, 8, 1))
+                .endDate(LocalDate.of(2024, 8, 1))
                 .firstResultDate(LocalDate.of(2021, 8, 1))
                 .interviewStartDate(LocalDate.of(2021, 8, 1))
                 .interviewEndDate(LocalDate.of(2021, 8, 1))

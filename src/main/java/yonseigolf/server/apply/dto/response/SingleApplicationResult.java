@@ -32,16 +32,4 @@ public class SingleApplicationResult {
         this.documentPass = documentPass;
         this.finalPass = finalPass;
     }
-
-    public SingleApplicationResult fromApplication(Application Application) {
-
-        return SingleApplicationResult.builder()
-                .id(Application.getId())
-                .photo(Application.getPhoto())
-                .name(Application.getName())
-                .interviewTime(Application.getInterviewTime())
-                .documentPass(Application.getDocumentPass())
-                .finalPass(Application.getFinalPass())
-                .build();
-    }
 }
