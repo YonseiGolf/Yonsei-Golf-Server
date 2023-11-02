@@ -8,11 +8,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.entity.Image;
 import yonseigolf.server.board.entity.Reply;
+import yonseigolf.server.board.exception.BoardNotFoundException;
 import yonseigolf.server.board.repository.BoardRepository;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
@@ -90,6 +93,61 @@ class BoardServiceTest {
 
     }
 
+    @Test
+    @DisplayName("게시글 업데이트 테스트")
+    void boardUpdateTest() {
+        // given
+        User savedUser = userRepository.save(createUser());
+        Board board = createBoard(savedUser);
+        Board savedBoard = boardRepository.save(board);
+
+        UpdateBoardRequest update = UpdateBoardRequest.builder()
+                .category(Category.NOTICE)
+                .title("title update")
+                .content("content update")
+                .build();
+
+        // when
+        boardService.updateBoard(savedBoard.getId(), update);
+
+        Board updatedBoard = boardRepository.findById(savedBoard.getId()).get();
+
+        // then
+        assertAll(
+                () -> assertThat(updatedBoard.getTitle()).isEqualTo(update.getTitle()),
+                () -> assertThat(updatedBoard.getContent()).isEqualTo(update.getContent()),
+                () -> assertThat(updatedBoard.getCategory()).isEqualTo(update.getCategory())
+        );
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글을 업데이트하면 예외가 발생한다.")
+    void notExistErrorTest() {
+        // given
+        Long notExistId = 1L;
+        UpdateBoardRequest request = UpdateBoardRequest.builder().build();
+
+        // when & then
+        assertThatThrownBy(() -> boardService.updateBoard(notExistId, request))
+                .isInstanceOf(BoardNotFoundException.class)
+                .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 테스트")
+    void test() {
+        // given
+        User savedUser = userRepository.save(createUser());
+        Board board = createBoard(savedUser);
+        Board savedBoard = boardRepository.save(board);
+
+        // when
+        savedBoard.deleteBoard();
+
+        // then
+        assertThat(savedBoard.isDeleted()).isTrue();
+    }
+
     private Board createBoard(User user) {
         return Board.builder()
                 .title("title")
@@ -98,6 +156,7 @@ class BoardServiceTest {
                 .deleted(false)
                 .build();
     }
+
 
     private User createUser() {
 
