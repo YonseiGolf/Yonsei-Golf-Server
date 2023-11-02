@@ -14,4 +14,10 @@ include::{snippets}/board-create-doc/request-fields.adoc[]
 === 게시글 수정
 ==== HTTP Request
 include::{snippets}/board-update-doc/http-request.adoc[]
+include::{snippets}/board-update-doc/path-parameters.adoc[]
 include::{snippets}/board-update-doc/request-fields.adoc[]
+
+=== 게시글 삭제
+==== HTTP Request
+include::{snippets}/board-delete-doc/http-request.adoc[]
+include::{snippets}/board-delete-doc/path-parameters.adoc[]

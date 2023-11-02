@@ -1,6 +1,5 @@
 package yonseigolf.server.board.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,10 +30,13 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -153,15 +155,16 @@ class BoardControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(
-                patch("/boards/{boardId}", boardId)
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType("application/json")
-        )
+                        patch("/boards/{boardId}", boardId)
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("board-update-doc",
                         getDocumentRequest(),
                         getDocumentResponse(),
+                        pathParameters(parameterWithName("boardId").description("게시글 ID")),
                         requestFields(
                                 fieldWithPath("category").type(JsonFieldType.STRING)
                                         .description("게시글 카테고리"),
@@ -171,6 +174,25 @@ class BoardControllerTest extends RestDocsSupport {
                                         .description("게시글 내용")
                         )));
 
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제할 수 있다.")
+    void deleteBoardTest() throws Exception {
+        // given
+        Long boardId = 1L;
+
+        // when & then
+        mockMvc.perform(
+                        delete("/boards/{boardId}", boardId)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-delete-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(parameterWithName("boardId").description("게시글 ID"))
+                ));
     }
 
     private Board createBoard(User user) {
