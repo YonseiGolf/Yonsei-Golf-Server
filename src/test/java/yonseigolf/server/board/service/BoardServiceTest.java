@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
+import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.entity.Image;
 import yonseigolf.server.board.entity.Reply;
 import yonseigolf.server.board.repository.BoardRepository;
@@ -56,6 +58,36 @@ class BoardServiceTest {
                 () -> assertThat(content).hasSize(1),
                 () -> assertThat(content.get(0)).isEqualTo(SingleBoardResponse.fromBoard(savedBoard))
         );
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글을 등록할 수 있다.")
+    void postBoardTest() {
+        // given
+        User savedUser = userRepository.save(createUser());
+
+        CreateBoardRequest request = CreateBoardRequest.builder()
+                .category(Category.NOTICE)
+                .title("title")
+                .content("content")
+                .build();
+
+        // when
+        boardService.postBoard(request, savedUser.getId());
+
+        List<Board> all = boardRepository.findAll();
+        Board board = all.get(0);
+
+        // then
+        assertAll(
+                () -> assertThat(all).hasSize(1),
+                () -> assertThat(board.getWriter().getId()).isEqualTo(savedUser.getId()),
+                () -> assertThat(board.getTitle()).isEqualTo("title"),
+                () -> assertThat(board.getContent()).isEqualTo("content"),
+                () -> assertThat(board.getCategory()).isEqualTo(Category.NOTICE),
+                () -> assertThat(board.isDeleted()).isFalse()
+        );
+
     }
 
     private Board createBoard(User user) {
