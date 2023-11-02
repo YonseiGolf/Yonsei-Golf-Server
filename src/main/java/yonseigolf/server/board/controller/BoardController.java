@@ -67,6 +67,16 @@ public class BoardController {
                 .body(CustomResponse.successResponse("게시글 수정 성공"));
     }
 
+    @DeleteMapping("/boards/{boardId}")
+    public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId) {
+
+        boardService.deleteBoard(boardId);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 삭제 성공"));
+    }
+
     private SessionUser getSessionUser(HttpSession session) {
         SessionUser user = (SessionUser) session.getAttribute("user");
 

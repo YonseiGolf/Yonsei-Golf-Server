@@ -41,6 +41,13 @@ public class BoardService {
         board.updateBoard(createBoardRequest);
     }
 
+    @Transactional
+    public void deleteBoard(Long boardId) {
+
+        Board board = findById(boardId);
+        board.deleteBoard();
+    }
+
     private Board findById(Long boardId) {
 
         return boardRepository.findById(boardId).
