@@ -43,6 +43,13 @@ public class User {
                 .build();
     }
 
+    public static User createUserForForeignKey(Long id) {
+
+        return User.builder()
+                .id(id)
+                .build();
+    }
+
     public void updateUserClass(UserClass userClass) {
 
         this.userClass = userClass;

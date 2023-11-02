@@ -8,10 +8,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import yonseigolf.server.board.dto.response.QSingleBoardResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
-import yonseigolf.server.board.entity.Board;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static yonseigolf.server.board.entity.QBoard.board;
 import static yonseigolf.server.user.entity.QUser.user;
@@ -34,7 +32,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                         board.category,
                         board.title,
                         board.writer.name,
-                        board.date
+                        board.createdAt
                 ))
                 .from(board)
                 .join(board.writer, user)

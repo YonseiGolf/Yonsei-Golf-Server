@@ -19,15 +19,15 @@ public class SingleBoardResponse {
     private String title;
     private String writer;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
     @QueryProjection
-    public SingleBoardResponse(Long id, Category category, String title, String writer, LocalDateTime date) {
+    public SingleBoardResponse(Long id, Category category, String title, String writer, LocalDateTime createdAt) {
         this.id = id;
         this.category = category;
         this.title = title;
         this.writer = writer;
-        this.date = date;
+        this.createdAt = createdAt;
     }
 
     public static SingleBoardResponse fromBoard(Board board) {
@@ -37,7 +37,7 @@ public class SingleBoardResponse {
                 .category(board.getCategory())
                 .title(board.getTitle())
                 .writer(board.getWriter().getName())
-                .date(board.getDate())
+                .createdAt(board.getCreatedAt())
                 .build();
     }
 }
