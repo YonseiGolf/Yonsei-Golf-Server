@@ -1,5 +1,6 @@
 package yonseigolf.server.board.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
@@ -32,6 +34,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
@@ -135,6 +138,39 @@ class BoardControllerTest extends RestDocsSupport {
                                 fieldWithPath("content").type(JsonFieldType.STRING)
                                         .description("게시글 내용")
                         )));
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글을 수정할 수 있다.")
+    void updateBoardTest() throws Exception {
+        // given
+        Long boardId = 1L;
+        UpdateBoardRequest request = UpdateBoardRequest.builder()
+                .category(Category.NOTICE)
+                .title("title")
+                .content("content")
+                .build();
+
+        // when & then
+        mockMvc.perform(
+                patch("/boards/{boardId}", boardId)
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json")
+        )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-update-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("category").type(JsonFieldType.STRING)
+                                        .description("게시글 카테고리"),
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 제목"),
+                                fieldWithPath("content").type(JsonFieldType.STRING)
+                                        .description("게시글 내용")
+                        )));
+
     }
 
     private Board createBoard(User user) {

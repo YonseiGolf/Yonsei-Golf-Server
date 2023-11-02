@@ -10,3 +10,8 @@ include::{snippets}/board-findAll-doc/response-fields-data.adoc[]
 ==== HTTP Request
 include::{snippets}/board-create-doc/http-request.adoc[]
 include::{snippets}/board-create-doc/request-fields.adoc[]
+
+=== 게시글 수정
+==== HTTP Request
+include::{snippets}/board-update-doc/http-request.adoc[]
+include::{snippets}/board-update-doc/request-fields.adoc[]
