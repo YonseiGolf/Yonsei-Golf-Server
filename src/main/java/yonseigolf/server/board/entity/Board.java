@@ -2,6 +2,7 @@ package yonseigolf.server.board.entity;
 
 import lombok.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.user.entity.User;
 
 import javax.persistence.*;
@@ -38,5 +39,12 @@ public class Board {
                 .content(request.getContent())
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
+
+    public void updateBoard(UpdateBoardRequest request) {
+
+        this.category = request.getCategory();
+        this.title = request.getTitle();
+        this.content = request.getContent();
     }
 }

@@ -6,10 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
@@ -56,6 +55,16 @@ public class BoardController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("게시글 생성 성공"));
+    }
+
+    @PatchMapping("/boards/{boardId}")
+    public ResponseEntity<CustomResponse<Void>> updateBoard(@PathVariable Long boardId, @RequestBody UpdateBoardRequest updateBoardRequest, HttpSession session) {
+
+        boardService.updateBoard(boardId, updateBoardRequest);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 수정 성공"));
     }
 
     private SessionUser getSessionUser(HttpSession session) {
