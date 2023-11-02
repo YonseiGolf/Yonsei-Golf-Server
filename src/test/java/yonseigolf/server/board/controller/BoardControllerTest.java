@@ -11,7 +11,10 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
+import yonseigolf.server.board.dto.response.AllReplyResponse;
+import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
+import yonseigolf.server.board.dto.response.SingleReplyResponse;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.entity.Image;
@@ -193,6 +196,70 @@ class BoardControllerTest extends RestDocsSupport {
                         getDocumentResponse(),
                         pathParameters(parameterWithName("boardId").description("게시글 ID"))
                 ));
+    }
+
+    @Test
+    @DisplayName("게시글을 상세조회할 수 있다.")
+    void findBoardDetailTest() throws Exception {
+        // given
+        Long boardId = 1L;
+        BoardDetailResponse response = BoardDetailResponse.builder()
+                .id(1L)
+                .writer("writer")
+                .category(Category.NOTICE)
+                .title("title")
+                .content("content")
+                .createdAt(LocalDateTime.now())
+                .replies(
+                        AllReplyResponse.fromReplies(
+                                List.of(
+                                        SingleReplyResponse.builder()
+                                                .id(1L)
+                                                .writer("reply writer")
+                                                .content("reply content")
+                                                .createdAt(LocalDateTime.now())
+                                                .build()
+                                )
+                        )
+                ).build();
+        given(boardService.findBoardDetail(any())).willReturn(response);
+
+
+        // when & then
+        mockMvc.perform(
+                        get("/boards/{boardId}", boardId)
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-findDetail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(parameterWithName("boardId").description("게시글 ID")),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("게시글 ID"),
+                                fieldWithPath("writer").type(JsonFieldType.STRING)
+                                        .description("게시글 작성자"),
+                                fieldWithPath("category").type(JsonFieldType.STRING)
+                                        .description("게시글 카테고리"),
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 제목"),
+                                fieldWithPath("content").type(JsonFieldType.STRING)
+                                        .description("게시글 내용"),
+                                fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                                        .description("게시글 작성일"),
+                                fieldWithPath("replies").type(JsonFieldType.OBJECT)
+                                        .description("게시글 댓글"),
+                                fieldWithPath("replies.replies[].id").type(JsonFieldType.NUMBER)
+                                        .description("댓글 ID"),
+                                fieldWithPath("replies.replies[].writer").type(JsonFieldType.STRING)
+                                        .description("댓글 작성자"),
+                                fieldWithPath("replies.replies[].content").type(JsonFieldType.STRING)
+                                        .description("댓글 내용"),
+                                fieldWithPath("replies.replies[].createdAt").type(JsonFieldType.STRING)
+                                        .description("댓글 작성일")
+                        )));
+
     }
 
     private Board createBoard(User user) {

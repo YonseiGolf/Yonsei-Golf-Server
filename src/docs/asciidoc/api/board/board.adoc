@@ -21,3 +21,12 @@ include::{snippets}/board-update-doc/request-fields.adoc[]
 ==== HTTP Request
 include::{snippets}/board-delete-doc/http-request.adoc[]
 include::{snippets}/board-delete-doc/path-parameters.adoc[]
+
+=== 게시글 상세 조회
+==== HTTP Request
+include::{snippets}/board-findDetail-doc/http-request.adoc[]
+include::{snippets}/board-findDetail-doc/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/board-findDetail-doc/http-response.adoc[]
+include::{snippets}/board-findDetail-doc/response-fields-data.adoc[]
