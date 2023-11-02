@@ -7,7 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
+import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
@@ -27,6 +29,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -74,7 +77,7 @@ class BoardControllerTest extends RestDocsSupport {
                                         .description("게시글 제목"),
                                 fieldWithPath("content[].writer").type(JsonFieldType.STRING)
                                         .description("게시글 작성자"),
-                                fieldWithPath("content[].date").type(JsonFieldType.STRING)
+                                fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
                                         .description("게시글 작성일"),
                                 fieldWithPath("pageable").ignored(),
                                 fieldWithPath("last").type(JsonFieldType.BOOLEAN)
@@ -102,6 +105,38 @@ class BoardControllerTest extends RestDocsSupport {
                         )));
     }
 
+    @Test
+    @DisplayName("사용자는 게시글을 작성할 수 있다.")
+    void createBoardTest() throws Exception {
+        // given
+        MockHttpSession httpSession = new MockHttpSession();
+        CreateBoardRequest request = CreateBoardRequest.builder()
+                .category(Category.NOTICE)
+                .title("title")
+                .content("content")
+                .build();
+
+        // when & then
+        mockMvc.perform(
+                        post("/boards")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-create-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("category").type(JsonFieldType.STRING)
+                                        .description("게시글 카테고리"),
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 제목"),
+                                fieldWithPath("content").type(JsonFieldType.STRING)
+                                        .description("게시글 내용")
+                        )));
+    }
+
     private Board createBoard(User user) {
         return Board.builder()
                 .id(1L)
@@ -109,7 +144,7 @@ class BoardControllerTest extends RestDocsSupport {
                 .title("title")
                 .content("content")
                 .writer(user)
-                .date(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 

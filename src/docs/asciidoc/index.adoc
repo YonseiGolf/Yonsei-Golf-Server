@@ -26,3 +26,8 @@ include::api/users/users.adoc[]
 [[Email-API]]
 == Email API
 include::api/email/email.adoc[]
+
+
+[[Board-API]]
+== Board API
+include::api/board/board.adoc[]
