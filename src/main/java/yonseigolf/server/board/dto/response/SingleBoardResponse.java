@@ -1,5 +1,6 @@
 package yonseigolf.server.board.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 import yonseigolf.server.board.entity.Board;
@@ -17,6 +18,7 @@ public class SingleBoardResponse {
     private Category category;
     private String title;
     private String writer;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime date;
 
     @QueryProjection
