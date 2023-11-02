@@ -92,7 +92,7 @@ class BoardServiceTest {
 
         return Reply.builder()
                 .content("content")
-                .date(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .board(board)
                 .user(user)
                 .build();

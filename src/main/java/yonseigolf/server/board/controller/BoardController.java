@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
+import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
@@ -55,6 +56,16 @@ public class BoardController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("게시글 생성 성공"));
+    }
+
+    @GetMapping("/boards/{boardId}")
+    public ResponseEntity<CustomResponse<BoardDetailResponse>> findBoardDetail(@PathVariable Long boardId) {
+
+        BoardDetailResponse board = boardService.findBoardDetail(boardId);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 조회 성공", board));
     }
 
     @PatchMapping("/boards/{boardId}")

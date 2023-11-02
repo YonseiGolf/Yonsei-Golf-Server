@@ -235,7 +235,7 @@ class BoardControllerTest extends RestDocsSupport {
         return Reply.builder()
                 .id(1L)
                 .content("content")
-                .date(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .board(board)
                 .user(user)
                 .build();
