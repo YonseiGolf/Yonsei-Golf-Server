@@ -9,6 +9,7 @@ import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
+import yonseigolf.server.board.exception.BoardNotFoundException;
 import yonseigolf.server.board.repository.BoardRepository;
 
 
@@ -43,6 +44,6 @@ public class BoardService {
     private Board findById(Long boardId) {
 
         return boardRepository.findById(boardId).
-                orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                orElseThrow(() -> new BoardNotFoundException("해당 게시글이 존재하지 않습니다."));
     }
 }

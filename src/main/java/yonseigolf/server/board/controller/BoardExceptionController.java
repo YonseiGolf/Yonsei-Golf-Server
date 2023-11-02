@@ -1,26 +1,23 @@
-package yonseigolf.server.user.controller;
+package yonseigolf.server.board.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import yonseigolf.server.board.exception.BoardNotFoundException;
 import yonseigolf.server.util.CustomErrorResponse;
 
-@Slf4j
 @RestControllerAdvice
-public class UserExceptionController {
+public class BoardExceptionController {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<CustomErrorResponse> existingMember(IllegalArgumentException ex) {
-
-        log.error("existingMember: {}", ex.getMessage());
+    @ExceptionHandler(BoardNotFoundException.class)
+    public ResponseEntity boardNotFound(BoardNotFoundException ex) {
 
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+                .status(HttpStatus.NOT_FOUND)
                 .body(new CustomErrorResponse(
-                        "fail",
-                        401,
+                        "not found",
+                        404,
                         ex.getMessage()
                 ));
     }

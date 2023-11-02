@@ -63,6 +63,7 @@ class BoardServiceTest {
                 .title("title")
                 .content("content")
                 .writer(user)
+                .deleted(false)
                 .build();
     }
 

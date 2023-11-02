@@ -29,6 +29,7 @@ public class Board {
     private String title;
     private String content;
     private LocalDateTime createdAt;
+    private boolean deleted;
 
     public static Board createBoardForPost(CreateBoardRequest request, long userId) {
 
@@ -38,6 +39,7 @@ public class Board {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .createdAt(LocalDateTime.now())
+                .deleted(false)
                 .build();
     }
 
