@@ -1,0 +1,32 @@
+=== 게시글 목록 조회
+==== HTTP Request
+include::{snippets}/board-findAll-doc/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/board-findAll-doc/http-response.adoc[]
+include::{snippets}/board-findAll-doc/response-fields-data.adoc[]
+
+=== 게시글 작성
+==== HTTP Request
+include::{snippets}/board-create-doc/http-request.adoc[]
+include::{snippets}/board-create-doc/request-fields.adoc[]
+
+=== 게시글 수정
+==== HTTP Request
+include::{snippets}/board-update-doc/http-request.adoc[]
+include::{snippets}/board-update-doc/path-parameters.adoc[]
+include::{snippets}/board-update-doc/request-fields.adoc[]
+
+=== 게시글 삭제
+==== HTTP Request
+include::{snippets}/board-delete-doc/http-request.adoc[]
+include::{snippets}/board-delete-doc/path-parameters.adoc[]
+
+=== 게시글 상세 조회
+==== HTTP Request
+include::{snippets}/board-findDetail-doc/http-request.adoc[]
+include::{snippets}/board-findDetail-doc/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/board-findDetail-doc/http-response.adoc[]
+include::{snippets}/board-findDetail-doc/response-fields-data.adoc[]

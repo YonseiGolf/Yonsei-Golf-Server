@@ -21,7 +21,7 @@ public class UserExceptionController {
                 .body(new CustomErrorResponse(
                         "fail",
                         401,
-                        "이미 가입된 회원입니다."
+                        ex.getMessage()
                 ));
     }
 }

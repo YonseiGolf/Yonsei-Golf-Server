@@ -20,18 +20,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserIntegrateControllerTest {
 
     private MockMvc mockMvc;
-
     @Autowired
-    private UserController userController; // UserController 주입
-
+    private UserController userController;
     @Autowired
-    private UserExceptionController userExceptionController; // UserExceptionController 주입
+    private UserExceptionController userExceptionController;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
-                .standaloneSetup(userController) // standalone 설정
-                .setControllerAdvice(userExceptionController) // UserExceptionController 추가
+                .standaloneSetup(userController)
+                .setControllerAdvice(userExceptionController)
                 .build();
     }
 

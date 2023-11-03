@@ -8,3 +8,6 @@ spring:
     properties:
       hibernate:
         ddl-auto: create-drop
+
+server:
+  port: 8888

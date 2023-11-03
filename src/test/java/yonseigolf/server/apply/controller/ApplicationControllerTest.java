@@ -1,6 +1,5 @@
 package yonseigolf.server.apply.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;

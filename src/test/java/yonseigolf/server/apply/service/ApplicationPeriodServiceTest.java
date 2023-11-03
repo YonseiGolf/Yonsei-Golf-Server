@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Transactional
@@ -132,5 +133,17 @@ class ApplicationPeriodServiceTest {
 
         // then
         assertThat(applicationAvailability).isTrue();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 지원 기간을 찾을 시 에러가 발생한다.")
+    void findByIdExceptionTest() {
+        // given
+        long notExistId = 100L;
+
+        // when & then
+        assertThatThrownBy(() -> applyPeriodService.getApplicationPeriod(notExistId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 모집기간이 존재하지 않습니다.");
     }
 }
