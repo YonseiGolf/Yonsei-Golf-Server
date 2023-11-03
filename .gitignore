@@ -98,5 +98,3 @@ out
 daemon
 bin
 .jqwik-database
-
-lombok.config
