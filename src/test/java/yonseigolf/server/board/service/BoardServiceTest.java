@@ -7,20 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
+import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.entity.Image;
 import yonseigolf.server.board.entity.Reply;
 import yonseigolf.server.board.exception.BoardNotFoundException;
+import yonseigolf.server.board.exception.DeletedBoardException;
 import yonseigolf.server.board.repository.BoardRepository;
+import yonseigolf.server.board.repository.ReplyRepository;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.UserRepository;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,6 +43,10 @@ class BoardServiceTest {
     private BoardRepository boardRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ReplyRepository replyRepository;
+    @Autowired
+    private EntityManager em;
 
     @BeforeEach
     void setUpd() {
@@ -110,7 +119,8 @@ class BoardServiceTest {
         // when
         boardService.updateBoard(savedBoard.getId(), update);
 
-        Board updatedBoard = boardRepository.findById(savedBoard.getId()).get();
+        Board updatedBoard = boardRepository.findById(savedBoard.getId())
+                .orElseGet(() -> Board.builder().build());
 
         // then
         assertAll(
@@ -135,17 +145,82 @@ class BoardServiceTest {
 
     @Test
     @DisplayName("게시글 삭제 테스트")
-    void test() {
+    void deleteBoardTest() {
         // given
         User savedUser = userRepository.save(createUser());
         Board board = createBoard(savedUser);
         Board savedBoard = boardRepository.save(board);
 
         // when
-        savedBoard.deleteBoard();
+        boardService.deleteBoard(savedBoard.getId());
+
+        Board deletedBoard = boardRepository.findById(savedBoard.getId())
+                .orElseGet(() -> Board.builder().build());
 
         // then
-        assertThat(savedBoard.isDeleted()).isTrue();
+        assertThat(deletedBoard.isDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("게시글이 삭제되었는데 삭제하려고 하면 DeltedBoardException이 발생한다.")
+    void deleteExceptionTest() {
+        // given
+        User user = userRepository.save(createUser());
+        Board board = createBoard(user);
+        Board saved = boardRepository.save(board);
+
+        boardService.deleteBoard(saved.getId());
+
+        // when & then
+        assertThatThrownBy(() -> boardService.deleteBoard(saved.getId()))
+                .isInstanceOf(DeletedBoardException.class)
+                .hasMessage("이미 삭제된 게시글 입니다.");
+    }
+
+    @Test
+    @DisplayName("게시글이 삭제되었는데 수정하려고 하면 DeltedBoardException이 발생한다.")
+    void updateExceptionTest() {
+        // given
+        User user = userRepository.save(createUser());
+        Board board = createBoard(user);
+        Board saved = boardRepository.save(board);
+
+        boardService.deleteBoard(saved.getId());
+
+
+        // when & then
+        assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build()))
+                .isInstanceOf(DeletedBoardException.class)
+                .hasMessage("이미 삭제된 게시글 입니다.");
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("게시글 상세 조회 테스트")
+    void findBoardDetailTest() {
+        // given
+        User user = createUser();
+        userRepository.save(user);
+
+        Board board = createBoard(user);
+        Board savedBoard = boardRepository.save(board);
+
+        Reply reply = createReply(board, user);
+        replyRepository.save(reply);
+        em.flush();
+
+        // when
+        BoardDetailResponse boardDetail = boardService.findBoardDetail(board.getId());
+
+        // then
+        assertAll(
+                () -> assertThat(boardDetail.getId()).isEqualTo(savedBoard.getId()),
+                () -> assertThat(boardDetail.getTitle()).isEqualTo(savedBoard.getTitle()),
+                () -> assertThat(boardDetail.getContent()).isEqualTo(savedBoard.getContent()),
+                () -> assertThat(boardDetail.getCategory()).isEqualTo(savedBoard.getCategory()),
+                () -> assertThat(boardDetail.getCreatedAt()).isEqualTo(savedBoard.getCreatedAt()),
+                () -> assertThat(boardDetail.getReplies().getReplies()).hasSize(1)
+        );
     }
 
     private Board createBoard(User user) {
@@ -171,6 +246,7 @@ class BoardServiceTest {
                 .userClass(UserClass.OB)
                 .build();
     }
+
     private Image createImage(Board board) {
 
         return Image.builder()

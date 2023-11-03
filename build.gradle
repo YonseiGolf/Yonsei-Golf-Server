@@ -150,8 +150,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 0.0
-                // 최소 커버리지 비율 설정 -> 임시로 0% 설정
+                minimum = 0.8
             }
 
             excludes = ["*.Q*"]
