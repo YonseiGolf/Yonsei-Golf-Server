@@ -44,6 +44,13 @@ public class Board {
                 .build();
     }
 
+    public static Board createBoardForForeignKey(long boardId) {
+
+        return Board.builder()
+                .id(boardId)
+                .build();
+    }
+
     public void updateBoard(UpdateBoardRequest request) {
 
         if (this.deleted == true) {

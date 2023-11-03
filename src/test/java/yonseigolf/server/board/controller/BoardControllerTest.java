@@ -1,5 +1,6 @@
 package yonseigolf.server.board.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.AllReplyResponse;
 import yonseigolf.server.board.dto.response.BoardDetailResponse;
@@ -260,6 +262,55 @@ class BoardControllerTest extends RestDocsSupport {
                                         .description("댓글 작성일")
                         )));
 
+    }
+
+    @Test
+    @DisplayName("사용자는 댓글을 작성할 수 있다.")
+    void createReplyTest() throws Exception {
+        // given
+        PostReplyRequest replyRequest = PostReplyRequest.builder()
+                .content("content")
+                .build();
+        long boardId = 1L;
+
+        // when & then
+        mockMvc.perform(
+                        post("/boards/{boardId}/replies", boardId
+                        )
+                                .content(objectMapper.writeValueAsString(replyRequest))
+                                .contentType("application/json"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("board-createReply-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(parameterWithName("boardId").description("게시글 ID")),
+                        requestFields(
+                                fieldWithPath("content").type(JsonFieldType.STRING)
+                                        .description("댓글 내용")
+                        )));
+    }
+
+    @Test
+    @DisplayName("사용자는 댓글을 삭제할 수 있다.")
+    void deleteReplyTest() throws Exception {
+        // given
+        long boardId = 1L;
+        long replyId = 1L;
+
+        // when & then
+        mockMvc.perform(
+                        delete("/boards/{boardId}/replies/{replyId}", boardId, replyId)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-deleteReply-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(
+                                parameterWithName("boardId").description("게시글 ID"),
+                                parameterWithName("replyId").description("댓글 ID")
+                        )));
     }
 
     private Board createBoard(User user) {
