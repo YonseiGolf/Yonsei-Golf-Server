@@ -1,6 +1,7 @@
 package yonseigolf.server.board.entity;
 
 import lombok.*;
+import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.user.entity.User;
 
 import javax.persistence.*;
@@ -26,4 +27,14 @@ public class Reply {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public static Reply createReplyForPost(long writerId, long boardId, PostReplyRequest request) {
+
+        return Reply.builder()
+                .content(request.getContent())
+                .createdAt(LocalDateTime.now())
+                .board(Board.createBoardForForeignKey(boardId))
+                .user(User.createUserForForeignKey(writerId))
+                .build();
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
@@ -86,6 +87,28 @@ public class BoardController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("게시글 삭제 성공"));
+    }
+
+    @PostMapping("/boards/{boardId}/replies")
+    public ResponseEntity<CustomResponse<Void>> createReply(@PathVariable Long boardId, @RequestBody PostReplyRequest replyRequest, HttpSession session) {
+
+//        SessionUser user = getSessionUser(session);
+        User user = User.builder().id(2L).build();
+        replyService.postReply(user.getId(), boardId, replyRequest);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("댓글 생성 성공"));
+    }
+
+    @DeleteMapping("/boards/{boardId}/replies/{replyId}")
+    public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId) {
+
+        replyService.deleteReply(replyId);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("댓글 삭제 성공"));
     }
 
     private SessionUser getSessionUser(HttpSession session) {
