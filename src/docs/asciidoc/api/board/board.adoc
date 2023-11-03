@@ -30,3 +30,14 @@ include::{snippets}/board-findDetail-doc/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/board-findDetail-doc/http-response.adoc[]
 include::{snippets}/board-findDetail-doc/response-fields-data.adoc[]
+
+=== 게시글 댓글 작성
+==== HTTP Request
+include::{snippets}/board-createReply-doc/http-request.adoc[]
+include::{snippets}/board-createReply-doc/path-parameters.adoc[]
+include::{snippets}/board-createReply-doc/request-fields.adoc[]
+
+=== 게시글 댓글 삭제
+==== HTTP Request
+include::{snippets}/board-deleteReply-doc/http-request.adoc[]
+include::{snippets}/board-deleteReply-doc/path-parameters.adoc[]
