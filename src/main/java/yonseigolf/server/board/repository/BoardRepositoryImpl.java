@@ -1,6 +1,7 @@
 package yonseigolf.server.board.repository;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import yonseigolf.server.board.dto.response.QSingleBoardResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
+import yonseigolf.server.board.entity.Category;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
     }
 
     @Override
-    public Page<SingleBoardResponse> findAllBoardPaging(Pageable pageable) {
+    public Page<SingleBoardResponse> findAllBoardPaging(Pageable pageable, Category category) {
 
         QueryResults<SingleBoardResponse> results = queryFactory.select(new QSingleBoardResponse(
                         board.id,
@@ -37,6 +39,7 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
                 .from(board)
                 .join(board.writer, user)
                 .where(board.deleted.eq(false))
+                .where(eqCategory(category))
                 .orderBy(board.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -49,5 +52,12 @@ public class BoardRepositoryImpl implements BoardRepositoryCustom {
 
 
         return new PageImpl<>(boards, pageable, total);
+    }
+
+    private BooleanExpression eqCategory(Category category) {
+        if (category == null) {
+            return null;
+        }
+        return board.category.eq(category);
     }
 }

@@ -12,6 +12,7 @@ import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
+import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
 import yonseigolf.server.board.service.ReplyService;
@@ -38,9 +39,9 @@ public class BoardController {
     }
 
     @GetMapping("/boards")
-    public ResponseEntity<CustomResponse<Page<SingleBoardResponse>>> findAll(Pageable pageable) {
+    public ResponseEntity<CustomResponse<Page<SingleBoardResponse>>> findAll(Pageable pageable, @RequestParam(required = false) Category category) {
 
-        Page<SingleBoardResponse> boards = boardService.findAllBoard(pageable);
+        Page<SingleBoardResponse> boards = boardService.findAllBoard(pageable, category);
 
         return ResponseEntity
                 .ok()

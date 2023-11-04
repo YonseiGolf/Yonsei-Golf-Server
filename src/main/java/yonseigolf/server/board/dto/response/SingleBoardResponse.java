@@ -18,7 +18,7 @@ public class SingleBoardResponse {
     private Category category;
     private String title;
     private String writer;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yy-MM-dd")
     private LocalDateTime createdAt;
 
     @QueryProjection
