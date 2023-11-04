@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class KakaoCode {
 
-    String value;
+    String kakaoCode;
 }
