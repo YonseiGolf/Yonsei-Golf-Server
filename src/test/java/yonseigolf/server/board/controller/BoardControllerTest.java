@@ -67,7 +67,7 @@ class BoardControllerTest extends RestDocsSupport {
         List<SingleBoardResponse> mockResults = List.of(SingleBoardResponse.fromBoard(board));
         Page<SingleBoardResponse> mockPage = new PageImpl<>(mockResults);
 
-        given(boardService.findAllBoard(any())).willReturn(mockPage);
+        given(boardService.findAllBoard(any(), any())).willReturn(mockPage);
 
 
         // when & then

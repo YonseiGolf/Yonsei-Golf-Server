@@ -62,7 +62,7 @@ class BoardServiceTest {
         Board savedBoard = boardRepository.save(board);
 
         // when
-        Page<SingleBoardResponse> boards = boardService.findAllBoard(PageRequest.of(0, 10));
+        Page<SingleBoardResponse> boards = boardService.findAllBoard(PageRequest.of(0, 10), null);
         List<SingleBoardResponse> content = boards.getContent();
 
         // then
