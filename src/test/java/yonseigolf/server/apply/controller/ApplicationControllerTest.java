@@ -390,60 +390,6 @@ public class ApplicationControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("서류 합격 불합격 설정 테스트")
-    void updateDocumentPass() throws Exception {
-        // given
-        Long id = 1L;
-        DocumentPassRequest request = new DocumentPassRequest(true);
-        doNothing().when(applyService).updateDocumentPass(id, request.isDocumentPass());
-
-        // when
-
-
-        // then
-        mockMvc.perform(patch("/admin/forms/{id}/documentPass", id)
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType("application/json"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-updateDocumentPass-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        requestFields(
-                                fieldWithPath("documentPass").type(JsonFieldType.BOOLEAN)
-                                        .description("서류 합격 여부")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("최종 합격 불합격 설정 테스트")
-    void updateFinalPass() throws Exception {
-        // given
-        Long id = 1L;
-        FinalPassRequest request = new FinalPassRequest(true);
-        doNothing().when(applyService).updateFinalPass(id, request.isFinalPass());
-
-        // when
-
-
-        // then
-        mockMvc.perform(patch("/admin/forms/{id}/finalPass", id)
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType("application/json"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andDo(document("admin-application-updateDocumentPass-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        requestFields(
-                                fieldWithPath("finalPass").type(JsonFieldType.BOOLEAN)
-                                        .description("최종 합격 여부")
-                        )
-                ));
-    }
-
-    @Test
     @DisplayName("면접 시간을 변경할 수 있다.")
     void updateInterviewTimeTest() throws Exception {
         // given

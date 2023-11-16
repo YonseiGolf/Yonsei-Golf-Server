@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.request.UpdatePassRequest;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.entity.Application;
@@ -62,16 +63,22 @@ public class ApplyService {
     }
 
     @Transactional
-    public void updateDocumentPass(Long id, Boolean updatePass) {
+    public void updatePass(Long id, UpdatePassRequest request) {
 
-        findById(id).updateDocumentPass(updatePass);
+        findById(id).updatePass(request);
     }
 
-    @Transactional
-    public void updateFinalPass(Long id, boolean finalPass) {
-
-        findById(id).updateFinalPass(finalPass);
-    }
+//    @Transactional
+//    public void updateDocumentPass(Long id, Boolean updatePass) {
+//
+//        findById(id).updateDocumentPass(updatePass);
+//    }
+//
+//    @Transactional
+//    public void updateFinalPass(Long id, Boolean finalPass) {
+//
+//        findById(id).updateFinalPass(finalPass);
+//    }
 
     @Transactional
     public void updateInterviewTime(Long id, LocalDateTime time) {

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
+import yonseigolf.server.apply.dto.request.UpdatePassRequest;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -70,14 +71,10 @@ public class Application {
 
     }
 
-    public void updateDocumentPass(boolean documentPass) {
+    public void updatePass(UpdatePassRequest request) {
 
-        this.documentPass = documentPass;
-    }
-
-    public void updateFinalPass(boolean finalPass) {
-
-        this.finalPass = finalPass;
+        this.documentPass = request.getDocumentPass();
+        this.finalPass = request.getFinalPass();
     }
 
     public void updateInterviewTime(LocalDateTime time) {

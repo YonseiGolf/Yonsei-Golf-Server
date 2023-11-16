@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.repository.EmailRepository;
 import yonseigolf.server.email.dto.NotificationType;
+import yonseigolf.server.email.dto.response.AllWaitingEmail;
 
 import java.util.List;
 
@@ -23,6 +24,13 @@ public class EmailService {
 
         this.mailSender = mailSender;
         this.emailRepository = emailRepository;
+    }
+
+    public AllWaitingEmail findAllWaitingEmail() {
+
+        return AllWaitingEmail.builder()
+                .emailAlarms(findAllAlert())
+                .build();
     }
 
     public void sendApplyStartAlert() {

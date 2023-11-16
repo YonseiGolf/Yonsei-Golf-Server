@@ -29,6 +29,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserClass userClass;
 
+    // TODO: 회원가입 시 멤버로 설정할 것
     public static User of(SignUpUserRequest request, Long kakaoId) {
 
         return User.builder()
@@ -38,7 +39,7 @@ public class User {
                 .studentId(request.getStudentId())
                 .major(request.getMajor())
                 .semester(request.getSemester())
-                .role(UserRole.MEMBER)
+                .role(UserRole.OB_ASSISTANT_LEADER)
                 .userClass(UserClass.NONE)
                 .build();
     }

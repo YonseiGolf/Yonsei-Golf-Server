@@ -24,13 +24,14 @@ public class SingleUserResponse {
     private UserRole role;
     private UserClass userClass;
 
+    // TODO: 전화번호 변경할 것
     public static SingleUserResponse fromUser(User user) {
 
         return SingleUserResponse.builder()
                 .id(user.getId())
                 .kakaoId(user.getKakaoId())
                 .name(user.getName())
-                .phoneNumber(user.getPhoneNumber())
+                .phoneNumber("QA 비활성화중")
                 .studentId(user.getStudentId())
                 .major(user.getMajor())
                 .semester(user.getSemester())
