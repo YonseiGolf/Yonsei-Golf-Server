@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class BoardDetailResponse {
 
     private Long id;
+    private long writerId;
     private String writer;
     private Category category;
     private String title;
@@ -25,6 +26,7 @@ public class BoardDetailResponse {
 
         return BoardDetailResponse.builder()
                 .id(board.getId())
+                .writerId(board.getWriter().getId())
                 .writer(board.getWriter().getName())
                 .category(board.getCategory())
                 .title(board.getTitle())

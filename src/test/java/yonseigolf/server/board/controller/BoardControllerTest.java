@@ -25,6 +25,7 @@ import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
 import yonseigolf.server.board.service.ReplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
+import yonseigolf.server.user.dto.response.SessionUser;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
@@ -120,6 +121,13 @@ class BoardControllerTest extends RestDocsSupport {
     void createBoardTest() throws Exception {
         // given
         MockHttpSession httpSession = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .build();
+        httpSession.setAttribute("user", user);
+
+
         CreateBoardRequest request = CreateBoardRequest.builder()
                 .category(Category.NOTICE)
                 .title("title")
@@ -131,6 +139,7 @@ class BoardControllerTest extends RestDocsSupport {
                         post("/boards")
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType("application/json")
+                                .session(httpSession)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -151,6 +160,12 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 게시글을 수정할 수 있다.")
     void updateBoardTest() throws Exception {
         // given
+        MockHttpSession httpSession = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .build();
+        httpSession.setAttribute("user", user);
         Long boardId = 1L;
         UpdateBoardRequest request = UpdateBoardRequest.builder()
                 .category(Category.NOTICE)
@@ -163,6 +178,7 @@ class BoardControllerTest extends RestDocsSupport {
                         patch("/boards/{boardId}", boardId)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType("application/json")
+                                .session(httpSession)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -185,11 +201,19 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("게시글을 삭제할 수 있다.")
     void deleteBoardTest() throws Exception {
         // given
+        MockHttpSession httpSession = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .build();
+        httpSession.setAttribute("user", user);
+
         Long boardId = 1L;
 
         // when & then
         mockMvc.perform(
                         delete("/boards/{boardId}", boardId)
+                                .session(httpSession)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -207,6 +231,7 @@ class BoardControllerTest extends RestDocsSupport {
         Long boardId = 1L;
         BoardDetailResponse response = BoardDetailResponse.builder()
                 .id(1L)
+                .writerId(1L)
                 .writer("writer")
                 .category(Category.NOTICE)
                 .title("title")
@@ -217,6 +242,7 @@ class BoardControllerTest extends RestDocsSupport {
                                 List.of(
                                         SingleReplyResponse.builder()
                                                 .id(1L)
+                                                .writerId(1L)
                                                 .writer("reply writer")
                                                 .content("reply content")
                                                 .createdAt(LocalDateTime.now())
@@ -240,6 +266,8 @@ class BoardControllerTest extends RestDocsSupport {
                                 beneathPath("data").withSubsectionId("data"),
                                 fieldWithPath("id").type(JsonFieldType.NUMBER)
                                         .description("게시글 ID"),
+                                fieldWithPath("writerId").type(JsonFieldType.NUMBER)
+                                        .description("게시글 작성자 ID"),
                                 fieldWithPath("writer").type(JsonFieldType.STRING)
                                         .description("게시글 작성자"),
                                 fieldWithPath("category").type(JsonFieldType.STRING)
@@ -254,6 +282,8 @@ class BoardControllerTest extends RestDocsSupport {
                                         .description("게시글 댓글"),
                                 fieldWithPath("replies.replies[].id").type(JsonFieldType.NUMBER)
                                         .description("댓글 ID"),
+                                fieldWithPath("replies.replies[].writerId").type(JsonFieldType.NUMBER)
+                                        .description("댓글 작성자 ID"),
                                 fieldWithPath("replies.replies[].writer").type(JsonFieldType.STRING)
                                         .description("댓글 작성자"),
                                 fieldWithPath("replies.replies[].content").type(JsonFieldType.STRING)
@@ -268,6 +298,13 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 댓글을 작성할 수 있다.")
     void createReplyTest() throws Exception {
         // given
+        MockHttpSession session = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .build();
+        session.setAttribute("user", user);
+
         PostReplyRequest replyRequest = PostReplyRequest.builder()
                 .content("content")
                 .build();
@@ -278,7 +315,8 @@ class BoardControllerTest extends RestDocsSupport {
                         post("/boards/{boardId}/replies", boardId
                         )
                                 .content(objectMapper.writeValueAsString(replyRequest))
-                                .contentType("application/json"))
+                                .contentType("application/json")
+                                .session(session))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andDo(document("board-createReply-doc",
@@ -295,12 +333,19 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 댓글을 삭제할 수 있다.")
     void deleteReplyTest() throws Exception {
         // given
-        long boardId = 1L;
+        MockHttpSession session = new MockHttpSession();
+        SessionUser user = SessionUser.builder()
+                .id(1L)
+                .name("name")
+                .build();
+        session.setAttribute("user", user);
+
         long replyId = 1L;
 
         // when & then
         mockMvc.perform(
-                        delete("/boards/{boardId}/replies/{replyId}", boardId, replyId)
+                        delete("/replies/{replyId}", replyId)
+                                .session(session)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -308,7 +353,6 @@ class BoardControllerTest extends RestDocsSupport {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         pathParameters(
-                                parameterWithName("boardId").description("게시글 ID"),
                                 parameterWithName("replyId").description("댓글 ID")
                         )));
     }

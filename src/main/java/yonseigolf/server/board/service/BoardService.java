@@ -45,17 +45,25 @@ public class BoardService {
         boardRepository.save(Board.createBoardForPost(createBoardRequest, userId));
     }
 
+    // TODO: 작성자와 수정하려는 사람이 같은 지 확인
     @Transactional
-    public void updateBoard(Long boardId, UpdateBoardRequest createBoardRequest) {
+    public void updateBoard(Long boardId, UpdateBoardRequest createBoardRequest, Long userId) {
 
         Board board = findById(boardId);
+        if (board.getWriter().getId() != userId) {
+            throw new IllegalArgumentException("작성자와 수정하려는 사람이 다릅니다.");
+        }
         board.updateBoard(createBoardRequest);
     }
 
+    // TODO: 작성자와 삭제하려는 사람이 같은지 확인
     @Transactional
-    public void deleteBoard(Long boardId) {
+    public void deleteBoard(Long boardId, Long userId) {
 
         Board board = findById(boardId);
+        if (board.getWriter().getId() != userId) {
+            throw new IllegalArgumentException("작성자만 게시글을 삭제할 수 있습니다.");
+        }
         board.deleteBoard();
     }
 

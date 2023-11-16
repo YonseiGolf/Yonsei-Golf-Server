@@ -22,7 +22,18 @@ public class ReplyService {
         replyRepository.save(reply);
     }
 
-    public void deleteReply(long replyId) {
+    // TODO: 작성자와 삭제하려는 사람이 같은지 확인
+    public void deleteReply(long replyId, long userId) {
+        Reply reply = findReply(replyId);
+        if (reply.getUser().getId() != userId){
+            throw new IllegalArgumentException("작성자가 아닙니다.");
+        }
         replyRepository.deleteById(replyId);
+    }
+
+    private Reply findReply(long replyId) {
+
+        return replyRepository.findById(replyId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
     }
 }

@@ -117,7 +117,7 @@ class BoardServiceTest {
                 .build();
 
         // when
-        boardService.updateBoard(savedBoard.getId(), update);
+        boardService.updateBoard(savedBoard.getId(), update, savedUser.getId());
 
         Board updatedBoard = boardRepository.findById(savedBoard.getId())
                 .orElseGet(() -> Board.builder().build());
@@ -138,7 +138,7 @@ class BoardServiceTest {
         UpdateBoardRequest request = UpdateBoardRequest.builder().build();
 
         // when & then
-        assertThatThrownBy(() -> boardService.updateBoard(notExistId, request))
+        assertThatThrownBy(() -> boardService.updateBoard(notExistId, request, 1L))
                 .isInstanceOf(BoardNotFoundException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
@@ -152,7 +152,7 @@ class BoardServiceTest {
         Board savedBoard = boardRepository.save(board);
 
         // when
-        boardService.deleteBoard(savedBoard.getId());
+        boardService.deleteBoard(savedBoard.getId(), savedUser.getId());
 
         Board deletedBoard = boardRepository.findById(savedBoard.getId())
                 .orElseGet(() -> Board.builder().build());
@@ -169,10 +169,10 @@ class BoardServiceTest {
         Board board = createBoard(user);
         Board saved = boardRepository.save(board);
 
-        boardService.deleteBoard(saved.getId());
+        boardService.deleteBoard(saved.getId(), user.getId());
 
         // when & then
-        assertThatThrownBy(() -> boardService.deleteBoard(saved.getId()))
+        assertThatThrownBy(() -> boardService.deleteBoard(saved.getId(), user.getId()))
                 .isInstanceOf(DeletedBoardException.class)
                 .hasMessage("이미 삭제된 게시글 입니다.");
     }
@@ -185,11 +185,11 @@ class BoardServiceTest {
         Board board = createBoard(user);
         Board saved = boardRepository.save(board);
 
-        boardService.deleteBoard(saved.getId());
+        boardService.deleteBoard(saved.getId(), user.getId());
 
 
         // when & then
-        assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build()))
+        assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build(), user.getId()))
                 .isInstanceOf(DeletedBoardException.class)
                 .hasMessage("이미 삭제된 게시글 입니다.");
     }
