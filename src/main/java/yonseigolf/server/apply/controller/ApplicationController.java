@@ -101,24 +101,14 @@ public class ApplicationController {
                         applicationService.getApplication(id)));
     }
 
-    @PatchMapping("/admin/forms/{id}/documentPass")
-    public ResponseEntity<CustomResponse<Void>> updateDocumentPass(@PathVariable Long id, @RequestBody DocumentPassRequest documentPass) {
+    @PatchMapping("/admin/forms/{id}/pass")
+    public ResponseEntity<CustomResponse<Void>> updatePass(@PathVariable Long id, @RequestBody UpdatePassRequest pass) {
 
-        applicationService.updateDocumentPass(id, documentPass.isDocumentPass());
-
-        return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("연세골프 지원서 서류 합격 수정 성공"));
-    }
-
-    @PatchMapping("/admin/forms/{id}/finalPass")
-    public ResponseEntity<CustomResponse<Void>> updateFinalPass(@PathVariable Long id, @RequestBody FinalPassRequest finalPass) {
-
-        applicationService.updateFinalPass(id, finalPass.isFinalPass());
+        applicationService.updatePass(id, pass);
 
         return ResponseEntity
                 .ok()
-                .body(CustomResponse.successResponse("연세골프 지원서 최종 합격 수정 성공"));
+                .body(CustomResponse.successResponse("연세골프 지원서 합격 여부 수정 성공"));
     }
 
     @PatchMapping("/admin/forms/{id}/interviewTime")

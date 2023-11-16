@@ -136,43 +136,7 @@ class ApplyServiceTest {
                 () -> assertThat(response.getEmail()).isEqualTo(application.getEmail())
         );
     }
-
-    @ParameterizedTest
-    @DisplayName("서류 결과를 업데이트 할 수 있다.")
-    @CsvSource({"true,true", "false,false"})
-    void updateDocumentPassTest(boolean documentPass, boolean expected) {
-        // given
-        Application application = Application.builder()
-                .documentPass(!documentPass)
-                .build();
-        Application saved = applicationRepository.save(application);
-
-        // when
-        applyService.updateDocumentPass(saved.getId(), documentPass);
-        Application result = applicationRepository.findById(saved.getId()).get();
-
-        // then
-        assertThat(result.getDocumentPass()).isEqualTo(expected);
-    }
-
-    @ParameterizedTest
-    @DisplayName("최종 결과를 업데이트 할 수 있다.")
-    @CsvSource({"true,true", "false,false"})
-    void updateFinalPassTest(boolean finalPass, boolean expected) {
-        // given
-        Application application = Application.builder()
-                .finalPass(!finalPass)
-                .build();
-        Application saved = applicationRepository.save(application);
-
-        // when
-        applyService.updateFinalPass(saved.getId(), finalPass);
-        Application result = applicationRepository.findById(saved.getId()).get();
-
-        // then
-        assertThat(result.getFinalPass()).isEqualTo(expected);
-    }
-
+    
     @Test
     @DisplayName("면접 시간을 업데이트할 수 있다.")
     void interviewUpdateTest() {
