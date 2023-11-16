@@ -31,11 +31,15 @@ public class CorsConfig implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (request.getHeader(ORIGIN) != null) {
+
             if (request.getHeader(ORIGIN).equals(PROD_CLIENT)) {
+
                 response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, PROD_CLIENT);
             } else if (request.getHeader(ORIGIN).equals(PROD_CLIENT_WWW)) {
+
                 response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, PROD_CLIENT_WWW);
             } else {
+
                 response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, LOCAL_CLIENT);
             }
         } else {

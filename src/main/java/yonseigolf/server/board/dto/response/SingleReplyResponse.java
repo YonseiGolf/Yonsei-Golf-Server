@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class SingleReplyResponse {
 
     private Long id;
+    private long writerId;
     private String writer;
     private String content;
     @JsonFormat(pattern = "yyyy년 MM월 dd일 HH:mm:ss")
@@ -21,6 +22,7 @@ public class SingleReplyResponse {
 
         return SingleReplyResponse.builder()
                 .id(reply.getId())
+                .writerId(reply.getUser().getId())
                 .writer(reply.getUser().getName())
                 .content(reply.getContent())
                 .createdAt(reply.getCreatedAt())

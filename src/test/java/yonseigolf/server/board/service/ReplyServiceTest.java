@@ -97,7 +97,7 @@ class ReplyServiceTest {
         Reply savedReply = replyRepository.save(reply);
 
         // when
-        replyService.deleteReply(savedReply.getId());
+        replyService.deleteReply(savedReply.getId(), savedUser.getId());
 
         // then
         assertThat(replyRepository.findAll().size()).isEqualTo(0);

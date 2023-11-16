@@ -51,8 +51,7 @@ public class BoardController {
     @PostMapping("/boards")
     public ResponseEntity<CustomResponse<Void>> createBoard(@RequestBody CreateBoardRequest createBoardRequest, HttpSession session) {
 
-//        SessionUser user = getSessionUser(session);
-        User user = User.builder().id(2L).build();
+        SessionUser user = getSessionUser(session);
         boardService.postBoard(createBoardRequest, user.getId());
 
         return ResponseEntity
@@ -73,7 +72,8 @@ public class BoardController {
     @PatchMapping("/boards/{boardId}")
     public ResponseEntity<CustomResponse<Void>> updateBoard(@PathVariable Long boardId, @RequestBody UpdateBoardRequest updateBoardRequest, HttpSession session) {
 
-        boardService.updateBoard(boardId, updateBoardRequest);
+        SessionUser user = getSessionUser(session);
+        boardService.updateBoard(boardId, updateBoardRequest, user.getId());
 
         return ResponseEntity
                 .ok()
@@ -81,9 +81,10 @@ public class BoardController {
     }
 
     @DeleteMapping("/boards/{boardId}")
-    public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId) {
+    public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId, HttpSession session) {
 
-        boardService.deleteBoard(boardId);
+        SessionUser user = getSessionUser(session);
+        boardService.deleteBoard(boardId, user.getId());
 
         return ResponseEntity
                 .ok()
@@ -93,8 +94,7 @@ public class BoardController {
     @PostMapping("/boards/{boardId}/replies")
     public ResponseEntity<CustomResponse<Void>> createReply(@PathVariable Long boardId, @RequestBody PostReplyRequest replyRequest, HttpSession session) {
 
-//        SessionUser user = getSessionUser(session);
-        User user = User.builder().id(2L).build();
+        SessionUser user = getSessionUser(session);
         replyService.postReply(user.getId(), boardId, replyRequest);
 
         return ResponseEntity
@@ -102,10 +102,12 @@ public class BoardController {
                 .body(CustomResponse.successResponse("댓글 생성 성공"));
     }
 
-    @DeleteMapping("/boards/{boardId}/replies/{replyId}")
-    public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId) {
+    @DeleteMapping("/replies/{replyId}")
+    public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId, HttpSession session) {
 
-        replyService.deleteReply(replyId);
+        SessionUser user = getSessionUser(session);
+
+        replyService.deleteReply(replyId, user.getId());
 
         return ResponseEntity
                 .ok()

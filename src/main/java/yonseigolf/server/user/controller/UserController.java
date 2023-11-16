@@ -48,7 +48,6 @@ public class UserController {
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
         session.setAttribute(SESSION_KAKAO_USER, kakaoLoginResponse.getId());
-
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("카카오 로그인 성공"));
@@ -64,6 +63,16 @@ public class UserController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("로그인 성공", sessionUser));
+    }
+
+    @PostMapping("/users/logout")
+    public ResponseEntity<CustomResponse<Void>> logOut(HttpSession session) {
+
+        session.removeAttribute("user");
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("로그아웃 성공"));
     }
 
     @PostMapping("/users/signUp")
