@@ -11,18 +11,18 @@ import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.request.UserClassRequest;
-import yonseigolf.server.user.dto.response.AdminResponse;
-import yonseigolf.server.user.dto.response.KakaoLoginResponse;
-import yonseigolf.server.user.dto.response.SessionUser;
-import yonseigolf.server.user.dto.response.SingleUserResponse;
+import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
+import yonseigolf.server.user.jwt.JwtUtil;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Slf4j
 @Controller
@@ -32,39 +32,54 @@ public class UserController {
     private final UserService userService;
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo) {
+    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtUtil jwtUtil) {
 
         this.userService = userService;
         this.oauthLoginService = oauthLoginService;
         this.kakaoOauthInfo = kakaoOauthInfo;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/oauth/kakao")
-    public ResponseEntity<CustomResponse<Void>> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpSession session) {
-
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> kakaoLogin(@RequestBody KakaoCode kakaoCode) {
         OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo);
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
-        session.setAttribute(SESSION_KAKAO_USER, kakaoLoginResponse.getId());
+        String token = jwtUtil.createToken(
+                JwtTokenUser.builder()
+                        .id(kakaoLoginResponse.getId())
+                        .build(),
+                new Date(new Date().getTime() + 360000)
+        );
+
         return ResponseEntity
                 .ok()
-                .body(CustomResponse.successResponse("카카오 로그인 성공"));
+                .body(CustomResponse.successResponse("카카오 로그인 성공", JwtTokenResponse.builder().accessToken(token).build()));
     }
 
+    // TODO: 세션이 아닌 JWT Token으로부터 userId 가져와야 함, user의 refresh token이 없거나 만료된 경우 재발급
     @PostMapping("/users/signIn")
-    public ResponseEntity<CustomResponse<SessionUser>> signIn(HttpSession session) {
-        Long id = (Long) session.getAttribute(SESSION_KAKAO_USER);
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId) {
 
-        SessionUser sessionUser = userService.signIn(id);
-        session.setAttribute("user", sessionUser);
+        LoggedInUser loggedInUser = userService.signIn(kakaoId);
+
+        // 30분 시간 제한
+        Date date = new Date(new Date().getTime() + 1800000);
+        String tokenReponse = jwtUtil.createLoggedInUserToken(loggedInUser, date);
 
         return ResponseEntity
                 .ok()
-                .body(CustomResponse.successResponse("로그인 성공", sessionUser));
+                .body(CustomResponse.successResponse("로그인 성공",
+                        JwtTokenResponse.builder()
+                                .accessToken(tokenReponse)
+                                .build())
+                );
     }
 
+    // TODO: refreshToken 무효화 시키고, 클라이언트에서 access token 폐기
     @PostMapping("/users/logout")
     public ResponseEntity<CustomResponse<Void>> logOut(HttpSession session) {
 
@@ -87,7 +102,7 @@ public class UserController {
             throw new IllegalArgumentException("[ERROR] 카카오 로그인을 먼저 해주세요.");
         }
 
-        SessionUser sessionUser = userService.signUp(request, kakaoId);
+        LoggedInUser sessionUser = userService.signUp(request, kakaoId);
 
         session.removeAttribute(SESSION_KAKAO_USER);
         session.setAttribute("user", sessionUser);

@@ -6,10 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
-import yonseigolf.server.user.dto.response.AdminResponse;
-import yonseigolf.server.user.dto.response.SessionUser;
-import yonseigolf.server.user.dto.response.SingleUserResponse;
-import yonseigolf.server.user.dto.response.UserResponse;
+import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
@@ -28,17 +25,17 @@ public class UserService {
         this.repository = repository;
     }
 
-    public SessionUser signUp(SignUpUserRequest request, Long kakaoId) {
+    public LoggedInUser signUp(SignUpUserRequest request, Long kakaoId) {
 
         User savedUser = repository.save(User.of(request, kakaoId));
 
-        return SessionUser.fromUser(savedUser);
+        return LoggedInUser.fromUser(savedUser);
     }
 
-    public SessionUser signIn(Long kakaoId) {
+    public LoggedInUser signIn(Long kakaoId) {
 
         User user = findByKakaoId(kakaoId);
-        return SessionUser.fromUser(user);
+        return LoggedInUser.fromUser(user);
     }
 
     public AdminResponse getLeaders() {

@@ -55,4 +55,18 @@ public class User {
 
         this.userClass = userClass;
     }
+
+    public boolean isAdmin() {
+
+        return this.role == UserRole.LEADER ||
+                this.role == UserRole.ASSISTANT_LEADER ||
+                this.role == UserRole.OB_LEADER ||
+                this.role == UserRole.OB_ASSISTANT_LEADER;
+    }
+
+    public boolean isMember() {
+
+            return this.userClass == UserClass.YB ||
+                    this.userClass == UserClass.OB;
+    }
 }

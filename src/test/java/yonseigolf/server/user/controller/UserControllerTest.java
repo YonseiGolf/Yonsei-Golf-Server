@@ -20,6 +20,7 @@ import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
+import yonseigolf.server.user.jwt.JwtUtil;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 
@@ -46,6 +47,8 @@ public class UserControllerTest extends RestDocsSupport {
     private OauthLoginService oauthLoginService;
     @Mock
     private KakaoOauthInfo kakaoOauthInfo;
+    @Mock
+    private JwtUtil jwtUtil;
 
     @Test
     @DisplayName("카카오톡 로그인을 할 수 있다.")
@@ -93,7 +96,7 @@ public class UserControllerTest extends RestDocsSupport {
     void yonseiGolfLoginTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .adminStatus(true)
@@ -167,7 +170,7 @@ public class UserControllerTest extends RestDocsSupport {
     void loggedInErrorTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("user", SessionUser.builder().id(1L).build());
+        session.setAttribute("user", LoggedInUser.builder().id(1L).build());
 
         // when & then
         mockMvc.perform(post("/users/signUp").session(session))
@@ -349,6 +352,6 @@ public class UserControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new UserController(userService, oauthLoginService, kakaoOauthInfo);
+        return new UserController(userService, oauthLoginService, kakaoOauthInfo, jwtUtil);
     }
 }

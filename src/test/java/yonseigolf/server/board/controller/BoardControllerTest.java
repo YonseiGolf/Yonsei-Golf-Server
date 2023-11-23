@@ -1,6 +1,5 @@
 package yonseigolf.server.board.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +24,7 @@ import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
 import yonseigolf.server.board.service.ReplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
-import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
@@ -121,7 +120,7 @@ class BoardControllerTest extends RestDocsSupport {
     void createBoardTest() throws Exception {
         // given
         MockHttpSession httpSession = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .build();
@@ -161,7 +160,7 @@ class BoardControllerTest extends RestDocsSupport {
     void updateBoardTest() throws Exception {
         // given
         MockHttpSession httpSession = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .build();
@@ -202,7 +201,7 @@ class BoardControllerTest extends RestDocsSupport {
     void deleteBoardTest() throws Exception {
         // given
         MockHttpSession httpSession = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .build();
@@ -299,7 +298,7 @@ class BoardControllerTest extends RestDocsSupport {
     void createReplyTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .build();
@@ -334,7 +333,7 @@ class BoardControllerTest extends RestDocsSupport {
     void deleteReplyTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
-        SessionUser user = SessionUser.builder()
+        LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .build();

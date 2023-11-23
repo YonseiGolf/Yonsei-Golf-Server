@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
-import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
@@ -47,7 +47,7 @@ class UserServiceTest {
         Long kaKaoId = 1L;
 
         // when
-        SessionUser sessionUser = userService.signUp(request, kaKaoId);
+        LoggedInUser sessionUser = userService.signUp(request, kaKaoId);
         long userId = sessionUser.getId();
         User user = userRepository.findById(userId).get();
 
@@ -76,7 +76,7 @@ class UserServiceTest {
         User save = userRepository.save(user);
 
         // when
-        SessionUser sessionUser = userService.signIn(save.getKakaoId());
+        LoggedInUser sessionUser = userService.signIn(save.getKakaoId());
 
         // then
         assertAll(

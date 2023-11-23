@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.repository.BoardRepository;
-import yonseigolf.server.user.dto.response.SessionUser;
+import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.repository.UserRepository;
 
@@ -56,7 +56,7 @@ class BoardIntegrateControllerTest {
     void deletedBoardTest() throws Exception {
         // given
         MockHttpSession session = new MockHttpSession();
-        SessionUser sessionUser = SessionUser.builder()
+        LoggedInUser sessionUser = LoggedInUser.builder()
                 .id(1L)
                 .name("test")
                 .build();

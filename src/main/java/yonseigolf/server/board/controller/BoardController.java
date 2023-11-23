@@ -16,8 +16,7 @@ import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
 import yonseigolf.server.board.service.ReplyService;
-import yonseigolf.server.user.dto.response.SessionUser;
-import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.util.CustomResponse;
 
 import javax.servlet.http.HttpSession;
@@ -51,7 +50,7 @@ public class BoardController {
     @PostMapping("/boards")
     public ResponseEntity<CustomResponse<Void>> createBoard(@RequestBody CreateBoardRequest createBoardRequest, HttpSession session) {
 
-        SessionUser user = getSessionUser(session);
+        LoggedInUser user = getSessionUser(session);
         boardService.postBoard(createBoardRequest, user.getId());
 
         return ResponseEntity
@@ -72,7 +71,7 @@ public class BoardController {
     @PatchMapping("/boards/{boardId}")
     public ResponseEntity<CustomResponse<Void>> updateBoard(@PathVariable Long boardId, @RequestBody UpdateBoardRequest updateBoardRequest, HttpSession session) {
 
-        SessionUser user = getSessionUser(session);
+        LoggedInUser user = getSessionUser(session);
         boardService.updateBoard(boardId, updateBoardRequest, user.getId());
 
         return ResponseEntity
@@ -83,7 +82,7 @@ public class BoardController {
     @DeleteMapping("/boards/{boardId}")
     public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId, HttpSession session) {
 
-        SessionUser user = getSessionUser(session);
+        LoggedInUser user = getSessionUser(session);
         boardService.deleteBoard(boardId, user.getId());
 
         return ResponseEntity
@@ -94,7 +93,7 @@ public class BoardController {
     @PostMapping("/boards/{boardId}/replies")
     public ResponseEntity<CustomResponse<Void>> createReply(@PathVariable Long boardId, @RequestBody PostReplyRequest replyRequest, HttpSession session) {
 
-        SessionUser user = getSessionUser(session);
+        LoggedInUser user = getSessionUser(session);
         replyService.postReply(user.getId(), boardId, replyRequest);
 
         return ResponseEntity
@@ -105,7 +104,7 @@ public class BoardController {
     @DeleteMapping("/replies/{replyId}")
     public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId, HttpSession session) {
 
-        SessionUser user = getSessionUser(session);
+        LoggedInUser user = getSessionUser(session);
 
         replyService.deleteReply(replyId, user.getId());
 
@@ -114,8 +113,8 @@ public class BoardController {
                 .body(CustomResponse.successResponse("댓글 삭제 성공"));
     }
 
-    private SessionUser getSessionUser(HttpSession session) {
-        SessionUser user = (SessionUser) session.getAttribute("user");
+    private LoggedInUser getSessionUser(HttpSession session) {
+        LoggedInUser user = (LoggedInUser) session.getAttribute("user");
 
         if (user == null) {
             throw new IllegalArgumentException("세션에 유저 정보가 없습니다.");
