@@ -21,7 +21,6 @@ import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
 import javax.servlet.http.HttpSession;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Slf4j
