@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import yonseigolf.server.user.dto.response.LoggedInUser;
+import yonseigolf.server.user.dto.response.JwtTokenUser;
 import yonseigolf.server.user.jwt.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,18 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LoginInterceptor implements HandlerInterceptor {
-
+public class OauthInterceptor implements HandlerInterceptor {
     private final JwtUtil jwtUtil;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         if(request.getMethod().equals("OPTIONS")) {
-            return true;
-        }
-
-        if (request.getRequestURI().startsWith("/boards") && request.getMethod().equals("GET")) {
             return true;
         }
 
@@ -51,8 +46,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             throw new IllegalArgumentException("Token is manipulated");
         }
 
-        LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
-        request.setAttribute("userId", loggedInUser.getId());
+        JwtTokenUser loggedInUser = jwtUtil.extractedUserFromToken(token);
+        request.setAttribute("kakaoId", loggedInUser.getId());
 
         return true;
     }

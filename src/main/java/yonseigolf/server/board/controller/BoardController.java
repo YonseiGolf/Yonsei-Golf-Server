@@ -16,10 +16,8 @@ import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
 import yonseigolf.server.board.service.ReplyService;
-import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.util.CustomResponse;
 
-import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Controller
@@ -48,10 +46,9 @@ public class BoardController {
     }
 
     @PostMapping("/boards")
-    public ResponseEntity<CustomResponse<Void>> createBoard(@RequestBody CreateBoardRequest createBoardRequest, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> createBoard(@RequestBody CreateBoardRequest createBoardRequest, @RequestAttribute Long userId) {
 
-        LoggedInUser user = getSessionUser(session);
-        boardService.postBoard(createBoardRequest, user.getId());
+        boardService.postBoard(createBoardRequest, userId);
 
         return ResponseEntity
                 .ok()
@@ -69,10 +66,9 @@ public class BoardController {
     }
 
     @PatchMapping("/boards/{boardId}")
-    public ResponseEntity<CustomResponse<Void>> updateBoard(@PathVariable Long boardId, @RequestBody UpdateBoardRequest updateBoardRequest, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> updateBoard(@PathVariable Long boardId, @RequestBody UpdateBoardRequest updateBoardRequest, @RequestAttribute Long userId) {
 
-        LoggedInUser user = getSessionUser(session);
-        boardService.updateBoard(boardId, updateBoardRequest, user.getId());
+        boardService.updateBoard(boardId, updateBoardRequest, userId);
 
         return ResponseEntity
                 .ok()
@@ -80,10 +76,9 @@ public class BoardController {
     }
 
     @DeleteMapping("/boards/{boardId}")
-    public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> deleteBoard(@PathVariable Long boardId, @RequestAttribute Long userId) {
 
-        LoggedInUser user = getSessionUser(session);
-        boardService.deleteBoard(boardId, user.getId());
+        boardService.deleteBoard(boardId, userId);
 
         return ResponseEntity
                 .ok()
@@ -91,10 +86,9 @@ public class BoardController {
     }
 
     @PostMapping("/boards/{boardId}/replies")
-    public ResponseEntity<CustomResponse<Void>> createReply(@PathVariable Long boardId, @RequestBody PostReplyRequest replyRequest, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> createReply(@PathVariable Long boardId, @RequestBody PostReplyRequest replyRequest, @RequestAttribute Long userId) {
 
-        LoggedInUser user = getSessionUser(session);
-        replyService.postReply(user.getId(), boardId, replyRequest);
+        replyService.postReply(userId, boardId, replyRequest);
 
         return ResponseEntity
                 .ok()
@@ -102,23 +96,12 @@ public class BoardController {
     }
 
     @DeleteMapping("/replies/{replyId}")
-    public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> deleteReply(@PathVariable Long replyId, @RequestAttribute Long userId) {
 
-        LoggedInUser user = getSessionUser(session);
-
-        replyService.deleteReply(replyId, user.getId());
+        replyService.deleteReply(replyId, userId);
 
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("댓글 삭제 성공"));
-    }
-
-    private LoggedInUser getSessionUser(HttpSession session) {
-        LoggedInUser user = (LoggedInUser) session.getAttribute("user");
-
-        if (user == null) {
-            throw new IllegalArgumentException("세션에 유저 정보가 없습니다.");
-        }
-        return user;
     }
 }

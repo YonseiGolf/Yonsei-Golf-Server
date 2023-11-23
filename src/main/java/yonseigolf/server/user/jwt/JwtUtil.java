@@ -107,4 +107,36 @@ public class JwtUtil {
 
         return loggedInUser;
     }
+
+    public LoggedInUser extractedUserInfoFromToken(String token) {
+
+        String[] jwtParts = token.split("\\.");
+        String encodedPayload = jwtParts[1]; // 페이로드는 두 번째 부분
+
+        byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedPayload);
+        String decodedPayload = new String(decodedBytes);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return parseUserInfoFromJwt(decodedPayload, objectMapper);
+    }
+
+    private LoggedInUser parseUserInfoFromJwt(String decodedPayload, ObjectMapper objectMapper) {
+
+        LoggedInUser loggedInUser;
+
+        try {
+
+            LinkedHashMap<String, Object> payloadMap = objectMapper.readValue(decodedPayload, LinkedHashMap.class);
+
+            Object userProfile = payloadMap.get("userProfile");
+            String userProfileJson = objectMapper.writeValueAsString(userProfile);// JSON 문자열로 변환 (로그인 유저 정보)
+            loggedInUser = objectMapper.readValue(userProfileJson, LoggedInUser.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("로그인 유저 정보를 가져올 수 없습니다.");
+
+        }
+
+        return loggedInUser;
+    }
 }

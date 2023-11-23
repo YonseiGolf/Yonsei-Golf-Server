@@ -1,5 +1,6 @@
 package yonseigolf.server.config;
 
+import com.amazonaws.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
+    private final OauthInterceptor oauthInterceptor;
     private final LoginInterceptor loginInterceptor;
 
 
@@ -31,8 +33,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
+        registry.addInterceptor(oauthInterceptor)
+                        .addPathPatterns("/users/signIn");
+
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/users/signIn")
+                .addPathPatterns("/boards/**")
                 .excludePathPatterns("/oauth/kakao");
     }
 }
