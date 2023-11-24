@@ -1,4 +1,4 @@
-package yonseigolf.server.user.jwt;
+package yonseigolf.server.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 
 @Slf4j
 @Component
-public class JwtUtil {
+public class JwtService {
 
     @Value("${JWT_SECRET_KEY}")
     private String secret; // 시크릿 키를 설정
@@ -44,7 +44,32 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String createRefreshToken(Long userId, Date expireDate) {
+
+        // refresh token 만료 기한은 2주일
+        return Jwts.builder()
+                .setHeaderParam("typ", "JWT")
+                .setSubject("refresh_token")
+                .claim("userId", userId)
+                .setExpiration(expireDate)
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+
     public boolean validateTokenIsExpired(String token) {
+
+        try {
+            Jws<Claims> claimsJws = Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token);
+
+            return !claimsJws.getBody().getExpiration().before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean validateRefreshTokenIsExpired(String token) {
 
         try {
             Jws<Claims> claimsJws = Jwts.parser()

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.service.JwtService;
 
 import javax.persistence.*;
 
@@ -28,6 +29,9 @@ public class User {
     private UserRole role;
     @Enumerated(EnumType.STRING)
     private UserClass userClass;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "refresh_token_id")
+    private RefreshToken refreshToken;
 
     // TODO: 회원가입 시 멤버로 설정할 것
     public static User of(SignUpUserRequest request, Long kakaoId) {
@@ -68,5 +72,24 @@ public class User {
 
             return this.userClass == UserClass.YB ||
                     this.userClass == UserClass.OB;
+    }
+
+    public boolean validateRefreshToken(JwtService jwtUtil) {
+        // refresh token이 없을 경우 발급한다.
+        if (this.refreshToken == null) {
+            return false;
+        }
+        // refresh token이 만료된 경우 재발급한다.
+        return this.refreshToken.isBeforeExpired(jwtUtil);
+    }
+
+    public void saveRefreshToken(RefreshToken refreshToken) {
+
+        this.refreshToken = refreshToken;
+    }
+
+    public void deleteRefreshToken() {
+
+        this.refreshToken = null;
     }
 }

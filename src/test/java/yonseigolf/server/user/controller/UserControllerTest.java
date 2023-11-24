@@ -20,7 +20,7 @@ import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
-import yonseigolf.server.user.jwt.JwtUtil;
+import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 
@@ -48,7 +48,7 @@ public class UserControllerTest extends RestDocsSupport {
     @Mock
     private KakaoOauthInfo kakaoOauthInfo;
     @Mock
-    private JwtUtil jwtUtil;
+    private JwtService jwtUtil;
 
     @Test
     @DisplayName("카카오톡 로그인을 할 수 있다.")

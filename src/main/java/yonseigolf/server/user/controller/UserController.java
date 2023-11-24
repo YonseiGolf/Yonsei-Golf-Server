@@ -15,11 +15,13 @@ import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
-import yonseigolf.server.user.jwt.JwtUtil;
+import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 
@@ -31,10 +33,10 @@ public class UserController {
     private final UserService userService;
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtUtil;
 
     @Autowired
-    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtUtil jwtUtil) {
+    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil) {
 
         this.userService = userService;
         this.oauthLoginService = oauthLoginService;
@@ -56,18 +58,31 @@ public class UserController {
 
         return ResponseEntity
                 .ok()
-                .body(CustomResponse.successResponse("카카오 로그인 성공", JwtTokenResponse.builder().accessToken(token).build()));
+                .body(CustomResponse.successResponse(
+                        "카카오 로그인 성공",
+                        JwtTokenResponse.builder().accessToken(token).build())
+                );
     }
 
     // TODO: 세션이 아닌 JWT Token으로부터 userId 가져와야 함, user의 refresh token이 없거나 만료된 경우 재발급
     @PostMapping("/users/signIn")
-    public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId) {
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
 
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
         // 30분 시간 제한
         Date date = new Date(new Date().getTime() + 1800000);
         String tokenReponse = jwtUtil.createLoggedInUserToken(loggedInUser, date);
+
+        // refresh token 검증후 발급
+        // 만료 기한은 2주일
+        if (!userService.validateRefreshToken(kakaoId, jwtUtil)) {
+            System.out.println("refresh token 발급");
+            Date expireDate = new Date(new Date().getTime() + 1209600000);
+            String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
+            userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
+            createRefreshToken(response, refreshToken);
+        }
 
         return ResponseEntity
                 .ok()
@@ -76,6 +91,15 @@ public class UserController {
                                 .accessToken(tokenReponse)
                                 .build())
                 );
+    }
+
+    private void createRefreshToken(HttpServletResponse response, String refreshToken) {
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true); // HTTP Only 설정
+        cookie.setSecure(true); // Secure 설정, TODO: 배포할 땐 true로 변경
+        cookie.setPath("/"); // 경로 설정
+        cookie.setMaxAge(60 * 60 * 24 * 14); // 2주일
+        response.addCookie(cookie); // 응답에 쿠키 추가
     }
 
     // TODO: refreshToken 무효화 시키고, 클라이언트에서 access token 폐기

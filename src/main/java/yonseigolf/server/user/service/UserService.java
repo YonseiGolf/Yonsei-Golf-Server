@@ -7,27 +7,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.*;
+import yonseigolf.server.user.entity.RefreshToken;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
+import yonseigolf.server.user.repository.RefreshTokenRepository;
 import yonseigolf.server.user.repository.UserRepository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    public UserService(UserRepository repository) {
-        this.repository = repository;
+    public UserService(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
+
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public LoggedInUser signUp(SignUpUserRequest request, Long kakaoId) {
 
-        User savedUser = repository.save(User.of(request, kakaoId));
+        User savedUser = userRepository.save(User.of(request, kakaoId));
 
         return LoggedInUser.fromUser(savedUser);
     }
@@ -40,10 +46,10 @@ public class UserService {
 
     public AdminResponse getLeaders() {
 
-        User leader = repository.findLeaderByRole(UserRole.LEADER)
+        User leader = userRepository.findLeaderByRole(UserRole.LEADER)
                 .orElseThrow(() -> new IllegalArgumentException("회장이 존재하지 않습니다."));
 
-        List<UserResponse> assistantLeaders = repository.findAssistantLeadersByRole(UserRole.ASSISTANT_LEADER).stream()
+        List<UserResponse> assistantLeaders = userRepository.findAssistantLeadersByRole(UserRole.ASSISTANT_LEADER).stream()
                 .map(UserResponse::fromUser)
                 .collect(Collectors.toList());
 
@@ -52,7 +58,7 @@ public class UserService {
 
     public Page<SingleUserResponse> findUsersByClass(Pageable pageable, UserClass userClass) {
 
-        return repository.findAllUsers(pageable, userClass);
+        return userRepository.findAllUsers(pageable, userClass);
     }
 
     @Transactional
@@ -62,15 +68,32 @@ public class UserService {
         user.updateUserClass(userClass);
     }
 
+    public boolean validateRefreshToken(long kakaoId, JwtService jwtUtil) {
+
+        User user = findByKakaoId(kakaoId);
+        return user.validateRefreshToken(jwtUtil);
+    }
+
+    @Transactional
+    public void saveRefreshToken(long id, String token) {
+
+        User user = findById(id);
+        RefreshToken refreshToken = RefreshToken.builder()
+                .refreshToken(token)
+                .build();
+        RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
+        user.saveRefreshToken(savedRefreshToken);
+    }
+
     private User findById(Long id) {
 
-        return repository.findById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 
     private User findByKakaoId(Long kakaoId) {
 
-        return repository.findByKakaoId(kakaoId)
+        return userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 }
