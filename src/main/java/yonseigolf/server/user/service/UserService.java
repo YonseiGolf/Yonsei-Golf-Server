@@ -68,9 +68,9 @@ public class UserService {
         user.updateUserClass(userClass);
     }
 
-    public boolean validateRefreshToken(long kakaoId, JwtService jwtUtil) {
+    public boolean validateRefreshToken(long userId, JwtService jwtUtil) {
 
-        User user = findByKakaoId(kakaoId);
+        User user = findById(userId);
         return user.validateRefreshToken(jwtUtil);
     }
 
@@ -83,6 +83,13 @@ public class UserService {
                 .build();
         RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
         user.saveRefreshToken(savedRefreshToken);
+    }
+
+    @Transactional
+    public void invalidateRefreshToken(long id) {
+
+        User user = findById(id);
+        user.invalidateRefreshToken();
     }
 
     private User findById(Long id) {

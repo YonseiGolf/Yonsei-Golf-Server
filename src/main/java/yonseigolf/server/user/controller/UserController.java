@@ -76,13 +76,7 @@ public class UserController {
 
         // refresh token 검증후 발급
         // 만료 기한은 2주일
-        if (!userService.validateRefreshToken(kakaoId, jwtUtil)) {
-            System.out.println("refresh token 발급");
-            Date expireDate = new Date(new Date().getTime() + 1209600000);
-            String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
-            userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
-            createRefreshToken(response, refreshToken);
-        }
+        validateRefreshTokenAndRefresh(loggedInUser.getId(), response, loggedInUser);
 
         return ResponseEntity
                 .ok()
@@ -91,6 +85,15 @@ public class UserController {
                                 .accessToken(tokenReponse)
                                 .build())
                 );
+    }
+
+    private void validateRefreshTokenAndRefresh(Long userId, HttpServletResponse response, LoggedInUser loggedInUser) {
+        if (!userService.validateRefreshToken(userId, jwtUtil)) {
+            Date expireDate = new Date(new Date().getTime() + 1209600000);
+            String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
+            userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
+            createRefreshToken(response, refreshToken);
+        }
     }
 
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
@@ -104,13 +107,26 @@ public class UserController {
 
     // TODO: refreshToken 무효화 시키고, 클라이언트에서 access token 폐기
     @PostMapping("/users/logout")
-    public ResponseEntity<CustomResponse<Void>> logOut(HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId, HttpServletResponse response) {
 
-        session.removeAttribute("user");
+        // refresh toekn 무효화
+        userService.invalidateRefreshToken(userId);
+
+        // Cookie 삭제
+        invalidateCookie(response);
 
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("로그아웃 성공"));
+    }
+
+    private void invalidateCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", null); // 쿠키 이름을 Refresh Token 쿠키 이름과 동일하게 설정
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // 프로덕션 환경에서는 true로 설정
+        cookie.setPath("/"); // Refresh Token 쿠키와 동일한 경로 설정
+        cookie.setMaxAge(0); // 쿠키의 만료 시간을 0으로 설정하여 즉시 만료
+        response.addCookie(cookie);
     }
 
     @PostMapping("/users/signUp")

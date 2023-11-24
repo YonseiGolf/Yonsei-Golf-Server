@@ -88,7 +88,7 @@ public class User {
         this.refreshToken = refreshToken;
     }
 
-    public void deleteRefreshToken() {
+    public void invalidateRefreshToken() {
 
         this.refreshToken = null;
     }

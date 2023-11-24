@@ -38,6 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/boards/**")
+                .addPathPatterns("/users/logout")
                 .excludePathPatterns("/oauth/kakao");
     }
 }
