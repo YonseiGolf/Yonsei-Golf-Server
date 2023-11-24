@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.docs.utils.RestDocsSupport;
@@ -39,7 +40,7 @@ import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
 
 @ExtendWith(MockitoExtension.class)
-public class UserControllerTest extends RestDocsSupport {
+class UserControllerTest extends RestDocsSupport {
 
     @Mock
     private UserService userService;
@@ -95,20 +96,19 @@ public class UserControllerTest extends RestDocsSupport {
     @DisplayName("카톡 로그인 후 연세 골프 로그인을 할 수 있다.")
     void yonseiGolfLoginTest() throws Exception {
         // given
-        MockHttpSession session = new MockHttpSession();
         LoggedInUser user = LoggedInUser.builder()
                 .id(1L)
                 .name("name")
                 .adminStatus(true)
                 .build();
-        session.setAttribute("kakaoUser", 1L);
 
-        // when
-        given(userService.signIn(1L)).willReturn(user); // userService mocking
+        given(userService.signIn(any())).willReturn(user);
+        given(jwtUtil.createLoggedInUserToken(any(), any())).willReturn("token");
 
-        // then
-        mockMvc.perform(post("/users/signIn")
-                        .session(session))
+        // when & then
+        mockMvc.perform(
+                        post("/users/signIn")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-login-doc",
@@ -116,14 +116,11 @@ public class UserControllerTest extends RestDocsSupport {
                         getDocumentResponse(),
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("id").type(JsonFieldType.NUMBER)
-                                        .description("유저 id"),
-                                fieldWithPath("name").type(JsonFieldType.STRING)
-                                        .description("유저 이름"),
-                                fieldWithPath("adminStatus").type(JsonFieldType.BOOLEAN)
-                                        .description("관리자 여부")))
+                                fieldWithPath("accessToken").type(JsonFieldType.STRING)
+                                        .description("JWT Access Token")
+                        )
 
-                );
+                ));
     }
 
     @Test
@@ -143,9 +140,9 @@ public class UserControllerTest extends RestDocsSupport {
 
         // then
         mockMvc.perform(post("/users/signUp")
-                .session(session)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("user-signUp-doc",

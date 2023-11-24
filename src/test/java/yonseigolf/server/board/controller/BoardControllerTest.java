@@ -1,14 +1,21 @@
 package yonseigolf.server.board.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import yonseigolf.server.TestInterceptor;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
@@ -48,6 +55,7 @@ import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
 
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureRestDocs
 class BoardControllerTest extends RestDocsSupport {
 
     @Mock
@@ -56,6 +64,17 @@ class BoardControllerTest extends RestDocsSupport {
     private BoardImageService boardImageService;
     @Mock
     private ReplyService replyService;
+
+    @BeforeEach
+    void setUp(RestDocumentationContextProvider restDocumentation) {
+        this.mockMvc = MockMvcBuilders
+                .standaloneSetup(initController())
+                .addInterceptors(new TestInterceptor()) // TestInterceptor 추가
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
+                .setControllerAdvice(new BoardExceptionController())
+                .build();
+    }
 
     @Test
     @DisplayName("사용자는 전체 게시글 목록을 조회할 수 있다.")
@@ -71,7 +90,11 @@ class BoardControllerTest extends RestDocsSupport {
 
 
         // when & then
-        mockMvc.perform(get("/boards"))
+        mockMvc.perform(
+                get("/boards")
+                        .param("page", "0")
+                        .param("size", "10")
+                )
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andDo(document("board-findAll-doc",
@@ -119,14 +142,6 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 게시글을 작성할 수 있다.")
     void createBoardTest() throws Exception {
         // given
-        MockHttpSession httpSession = new MockHttpSession();
-        LoggedInUser user = LoggedInUser.builder()
-                .id(1L)
-                .name("name")
-                .build();
-        httpSession.setAttribute("user", user);
-
-
         CreateBoardRequest request = CreateBoardRequest.builder()
                 .category(Category.NOTICE)
                 .title("title")
@@ -138,7 +153,6 @@ class BoardControllerTest extends RestDocsSupport {
                         post("/boards")
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType("application/json")
-                                .session(httpSession)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -297,13 +311,6 @@ class BoardControllerTest extends RestDocsSupport {
     @DisplayName("사용자는 댓글을 작성할 수 있다.")
     void createReplyTest() throws Exception {
         // given
-        MockHttpSession session = new MockHttpSession();
-        LoggedInUser user = LoggedInUser.builder()
-                .id(1L)
-                .name("name")
-                .build();
-        session.setAttribute("user", user);
-
         PostReplyRequest replyRequest = PostReplyRequest.builder()
                 .content("content")
                 .build();
@@ -315,7 +322,7 @@ class BoardControllerTest extends RestDocsSupport {
                         )
                                 .content(objectMapper.writeValueAsString(replyRequest))
                                 .contentType("application/json")
-                                .session(session))
+                )
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andDo(document("board-createReply-doc",
