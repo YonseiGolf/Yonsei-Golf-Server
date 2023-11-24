@@ -103,7 +103,7 @@ public class UserController {
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true); // HTTP Only 설정
-        cookie.setSecure(false); // Secure 설정, TODO: 배포할 땐 true로 변경
+        cookie.setSecure(true); // Secure 설정, TODO: 배포할 땐 true로 변경
         cookie.setPath("/"); // 경로 설정
         cookie.setMaxAge(60 * 60 * 24 * 14); // 2주일
         response.addCookie(cookie); // 응답에 쿠키 추가
