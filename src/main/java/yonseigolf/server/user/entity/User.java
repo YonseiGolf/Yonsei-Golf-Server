@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
+import yonseigolf.server.user.exception.RefreshTokenExpiredException;
 import yonseigolf.server.user.service.JwtService;
 
 import javax.persistence.*;
@@ -74,13 +75,14 @@ public class User {
                     this.userClass == UserClass.OB;
     }
 
-    public boolean validateRefreshToken(JwtService jwtUtil) {
+    public void validateRefreshToken(JwtService jwtUtil) {
         // refresh token이 없을 경우 발급한다.
         if (this.refreshToken == null) {
-            return false;
+            return;
+//            throw new RefreshTokenExpiredException("Refresh Token이 존재하지 않습니다.");
         }
         // refresh token이 만료된 경우 재발급한다.
-        return this.refreshToken.isBeforeExpired(jwtUtil);
+        this.refreshToken.isBeforeExpired(jwtUtil);
     }
 
     public void saveRefreshToken(RefreshToken refreshToken) {

@@ -50,7 +50,7 @@ public class JwtService {
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setSubject("refresh_token")
-                .claim("userId", userId)
+                .claim("userProfile", userId)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -76,7 +76,8 @@ public class JwtService {
                     .setSigningKey(secret)
                     .parseClaimsJws(token);
 
-            return !claimsJws.getBody().getExpiration().before(new Date());
+            // 토큰 만료 시간이 현재 시간보다 이전인 경우 true 반환 (토큰이 만료되었음을 의미)
+            return claimsJws.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }

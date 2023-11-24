@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import yonseigolf.server.user.exception.RefreshTokenExpiredException;
 import yonseigolf.server.user.service.JwtService;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Date;
 
 @Getter
 @Entity
@@ -24,7 +24,11 @@ public class RefreshToken {
     private Long id;
     private String refreshToken;
 
-    public boolean isBeforeExpired(JwtService jwtUtil) {
-        return jwtUtil.validateRefreshTokenIsExpired(this.refreshToken);
+    public void isBeforeExpired(JwtService jwtUtil) {
+
+        if (jwtUtil.validateRefreshTokenIsExpired(this.refreshToken)) {
+
+            throw new RefreshTokenExpiredException("Refresh Token이 만료되었습니다..");
+        }
     }
 }

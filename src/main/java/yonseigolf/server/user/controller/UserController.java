@@ -15,12 +15,14 @@ import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
+import yonseigolf.server.user.exception.RefreshTokenExpiredException;
 import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
@@ -56,6 +58,8 @@ public class UserController {
                 new Date(new Date().getTime() + 360000)
         );
 
+
+        System.out.println("kakao oauth token" + token);
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
@@ -67,15 +71,14 @@ public class UserController {
     // TODO: 세션이 아닌 JWT Token으로부터 userId 가져와야 함, user의 refresh token이 없거나 만료된 경우 재발급
     @PostMapping("/users/signIn")
     public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
-
+        System.out.println(kakaoId);
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
         // 30분 시간 제한
         Date date = new Date(new Date().getTime() + 1800000);
         String tokenReponse = jwtUtil.createLoggedInUserToken(loggedInUser, date);
 
-        // refresh token 검증후 발급
-        // 만료 기한은 2주일
+        // refresh token 검증후 발급 - 2주기한
         validateRefreshTokenAndRefresh(loggedInUser.getId(), response, loggedInUser);
 
         return ResponseEntity
@@ -88,22 +91,80 @@ public class UserController {
     }
 
     private void validateRefreshTokenAndRefresh(Long userId, HttpServletResponse response, LoggedInUser loggedInUser) {
-        if (!userService.validateRefreshToken(userId, jwtUtil)) {
-            Date expireDate = new Date(new Date().getTime() + 1209600000);
-            String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
-            userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
-            createRefreshToken(response, refreshToken);
-        }
+        // refresh token이 없거나 만료된 경우 재발급
+        userService.validateRefreshToken(userId, jwtUtil);
+
+        Date expireDate = new Date(new Date().getTime() + 1209600000);
+        String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
+        userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
+        createRefreshToken(response, refreshToken);
     }
 
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true); // HTTP Only 설정
-        cookie.setSecure(true); // Secure 설정, TODO: 배포할 땐 true로 변경
+        cookie.setSecure(false); // Secure 설정, TODO: 배포할 땐 true로 변경
         cookie.setPath("/"); // 경로 설정
         cookie.setMaxAge(60 * 60 * 24 * 14); // 2주일
         response.addCookie(cookie); // 응답에 쿠키 추가
     }
+
+    @PostMapping("/users/signIn/refresh")
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> refreshAccessToken(HttpServletRequest request) {
+
+        String refreshToken = findRefreshToken(request);
+
+        // refresh token 검증 (null, 만료, 조작)
+        validateRefreshToken(refreshToken);
+
+        JwtTokenUser jwtTokenUser = jwtUtil.extractedUserFromToken(refreshToken);
+        userService.validateRefreshToken(jwtTokenUser.getId(), jwtUtil);
+
+        // access token 재발급
+        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 360000));
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse(
+                        "토큰 재발급 성공",
+                        JwtTokenResponse.builder()
+                                .accessToken(accessToken)
+                                .build()
+                ));
+    }
+
+    private void validateRefreshToken(String refreshToken) {
+
+        validateRefreshTokenNull(refreshToken);
+
+        if (!jwtUtil.validateTokenIsManipulated(refreshToken) || jwtUtil.validateRefreshTokenIsExpired(refreshToken)) {
+            throw new RefreshTokenExpiredException("[ERROR] Refresh Token이 만료되었습니다.");
+        }
+    }
+
+    private void validateRefreshTokenNull(String refreshToken) {
+
+        if (refreshToken == null) {
+            throw new RefreshTokenExpiredException("[ERROR] Refresh Token이 존재하지 않습니다.");
+        }
+    }
+
+    private String findRefreshToken(HttpServletRequest request) {
+        String refreshToken = null;
+
+        // 쿠키에서 Refresh Token 추출
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        return refreshToken;
+    }
+
 
     // TODO: refreshToken 무효화 시키고, 클라이언트에서 access token 폐기
     @PostMapping("/users/logout")

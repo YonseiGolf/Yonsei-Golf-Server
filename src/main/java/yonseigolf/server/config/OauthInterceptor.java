@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import yonseigolf.server.user.dto.response.JwtTokenUser;
+import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.service.JwtService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +46,7 @@ public class OauthInterceptor implements HandlerInterceptor {
             throw new IllegalArgumentException("Token is manipulated");
         }
 
-        JwtTokenUser loggedInUser = jwtUtil.extractedUserFromToken(token);
+        LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
         request.setAttribute("kakaoId", loggedInUser.getId());
 
         return true;

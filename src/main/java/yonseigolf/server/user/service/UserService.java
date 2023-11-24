@@ -68,10 +68,10 @@ public class UserService {
         user.updateUserClass(userClass);
     }
 
-    public boolean validateRefreshToken(long userId, JwtService jwtUtil) {
-
+    public void validateRefreshToken(long userId, JwtService jwtUtil) {
+        // refresh token이 없거나 만료된 경우 재발급
         User user = findById(userId);
-        return user.validateRefreshToken(jwtUtil);
+        user.validateRefreshToken(jwtUtil);
     }
 
     @Transactional
@@ -90,6 +90,13 @@ public class UserService {
 
         User user = findById(id);
         user.invalidateRefreshToken();
+    }
+
+    public String generateAccessToken(Long userId, JwtService jwtService, Date expiredAt) {
+        User user = findById(userId);
+        LoggedInUser loggedInUser = LoggedInUser.fromUser(user);
+
+        return jwtService.createLoggedInUserToken(loggedInUser, expiredAt);
     }
 
     private User findById(Long id) {
