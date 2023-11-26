@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.exception.AccessTokenExpiredException;
 import yonseigolf.server.user.exception.NoAuthorizationException;
 import yonseigolf.server.user.exception.NotBearerTypeException;
@@ -22,8 +21,6 @@ public class DefaultInterceptor implements HandlerInterceptor {
     private final JwtService jwtUtil;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-
-        System.out.println(request.getRequestURI());
 
         if(request.getMethod().equals("OPTIONS")) {
             return true;
@@ -52,13 +49,7 @@ public class DefaultInterceptor implements HandlerInterceptor {
             throw new NotBearerTypeException("Authorization header is not Bearer type");
         }
 
-        System.out.println(token);
-        LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
-        System.out.println(loggedInUser.getId());
-
         if (!jwtUtil.validateTokenIsExpired(token)) {
-            System.out.println(request.getRequestURI());
-            System.out.println(request.getMethod());
             throw new AccessTokenExpiredException("Token is expired");
         }
 
