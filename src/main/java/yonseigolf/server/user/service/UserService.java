@@ -6,47 +6,50 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
-import yonseigolf.server.user.dto.response.AdminResponse;
-import yonseigolf.server.user.dto.response.SessionUser;
-import yonseigolf.server.user.dto.response.SingleUserResponse;
-import yonseigolf.server.user.dto.response.UserResponse;
+import yonseigolf.server.user.dto.response.*;
+import yonseigolf.server.user.entity.RefreshToken;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
+import yonseigolf.server.user.repository.RefreshTokenRepository;
 import yonseigolf.server.user.repository.UserRepository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    public UserService(UserRepository repository) {
-        this.repository = repository;
+    public UserService(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
+
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    public SessionUser signUp(SignUpUserRequest request, Long kakaoId) {
+    public LoggedInUser signUp(SignUpUserRequest request, Long kakaoId) {
 
-        User savedUser = repository.save(User.of(request, kakaoId));
+        User savedUser = userRepository.save(User.of(request, kakaoId));
 
-        return SessionUser.fromUser(savedUser);
+        return LoggedInUser.fromUser(savedUser);
     }
 
-    public SessionUser signIn(Long kakaoId) {
+    public LoggedInUser signIn(Long kakaoId) {
 
         User user = findByKakaoId(kakaoId);
-        return SessionUser.fromUser(user);
+        return LoggedInUser.fromUser(user);
     }
 
     public AdminResponse getLeaders() {
 
-        User leader = repository.findLeaderByRole(UserRole.LEADER)
+        User leader = userRepository.findLeaderByRole(UserRole.LEADER)
                 .orElseThrow(() -> new IllegalArgumentException("회장이 존재하지 않습니다."));
 
-        List<UserResponse> assistantLeaders = repository.findAssistantLeadersByRole(UserRole.ASSISTANT_LEADER).stream()
+        List<UserResponse> assistantLeaders = userRepository.findAssistantLeadersByRole(UserRole.ASSISTANT_LEADER).stream()
                 .map(UserResponse::fromUser)
                 .collect(Collectors.toList());
 
@@ -55,7 +58,7 @@ public class UserService {
 
     public Page<SingleUserResponse> findUsersByClass(Pageable pageable, UserClass userClass) {
 
-        return repository.findAllUsers(pageable, userClass);
+        return userRepository.findAllUsers(pageable, userClass);
     }
 
     @Transactional
@@ -65,15 +68,46 @@ public class UserService {
         user.updateUserClass(userClass);
     }
 
+    public void validateRefreshToken(long userId, JwtService jwtUtil) {
+        // refresh token이 없거나 만료된 경우 재발급
+        User user = findById(userId);
+        user.validateRefreshToken(jwtUtil);
+    }
+
+    @Transactional
+    public void saveRefreshToken(long id, String token) {
+
+        User user = findById(id);
+        RefreshToken refreshToken = RefreshToken.builder()
+                .refreshToken(token)
+                .build();
+        RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
+        user.saveRefreshToken(savedRefreshToken);
+    }
+
+    @Transactional
+    public void invalidateRefreshToken(long id) {
+
+        User user = findById(id);
+        user.invalidateRefreshToken();
+    }
+
+    public String generateAccessToken(Long userId, JwtService jwtService, Date expiredAt) {
+        User user = findById(userId);
+        LoggedInUser loggedInUser = LoggedInUser.fromUser(user);
+
+        return jwtService.createToken(loggedInUser, expiredAt);
+    }
+
     private User findById(Long id) {
 
-        return repository.findById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 
     private User findByKakaoId(Long kakaoId) {
 
-        return repository.findByKakaoId(kakaoId)
+        return userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 }
