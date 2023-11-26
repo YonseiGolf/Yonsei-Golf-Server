@@ -79,7 +79,6 @@ public class User {
         // refresh token이 없을 경우 발급한다.
         if (this.refreshToken == null) {
             return;
-//            throw new RefreshTokenExpiredException("Refresh Token이 존재하지 않습니다.");
         }
         // refresh token이 만료된 경우 재발급한다.
         this.refreshToken.isBeforeExpired(jwtUtil);
