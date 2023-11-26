@@ -29,7 +29,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
         }
         String token = request.getHeader("Authorization").split(" ")[1];
-        LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
+        LoggedInUser loggedInUser = jwtUtil.extractedUserFromToken(token, LoggedInUser.class);
         request.setAttribute("userId", loggedInUser.getId());
 
         return true;

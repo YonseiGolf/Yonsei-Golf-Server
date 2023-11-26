@@ -116,7 +116,7 @@ public class UserController {
         // refresh token 검증 (null, 만료, 조작)
         validateRefreshToken(refreshToken);
 
-        JwtTokenUser jwtTokenUser = jwtUtil.extractedUserFromToken(refreshToken);
+        JwtTokenUser jwtTokenUser = jwtUtil.extractedUserFromToken(refreshToken, JwtTokenUser.class);
         userService.validateRefreshToken(jwtTokenUser.getId(), jwtUtil);
 
         // access token 재발급
@@ -136,7 +136,7 @@ public class UserController {
 
         validateRefreshTokenNull(refreshToken);
 
-        if (!jwtUtil.validateTokenIsManipulated(refreshToken) || jwtUtil.validateRefreshTokenIsExpired(refreshToken)) {
+        if (!jwtUtil.validateTokenIsManipulated(refreshToken) || !jwtUtil.validateTokenIsExpired(refreshToken)) {
             throw new RefreshTokenExpiredException("[ERROR] Refresh Token이 만료되었습니다.");
         }
     }

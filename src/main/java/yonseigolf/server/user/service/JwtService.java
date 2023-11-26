@@ -6,8 +6,6 @@ import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import yonseigolf.server.user.dto.response.JwtTokenUser;
-import yonseigolf.server.user.dto.response.LoggedInUser;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
@@ -19,6 +17,7 @@ import java.util.LinkedHashMap;
 @Component
 public class JwtService {
 
+    private static final String USER_PROFILE = "userProfile";
     @Value("${JWT_SECRET_KEY}")
     private String secret; // 시크릿 키를 설정
 
@@ -27,7 +26,7 @@ public class JwtService {
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setSubject("login_member")
-                .claim("userProfile", loggedInUser)
+                .claim(USER_PROFILE, loggedInUser)
                 .setExpiration(expiredDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -39,7 +38,7 @@ public class JwtService {
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setSubject("refresh_token")
-                .claim("userProfile", userId)
+                .claim(USER_PROFILE, userId)
                 .setExpiration(expireDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -59,24 +58,10 @@ public class JwtService {
         }
     }
 
-    public boolean validateRefreshTokenIsExpired(String token) {
-
-        try {
-            Jws<Claims> claimsJws = Jwts.parser()
-                    .setSigningKey(secret)
-                    .parseClaimsJws(token);
-
-            // 토큰 만료 시간이 현재 시간보다 이전인 경우 true 반환 (토큰이 만료되었음을 의미)
-            return claimsJws.getBody().getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
     public boolean validateTokenIsManipulated(String token) {
 
         try {
-
             byte[] decodedSecretKey = Base64.getDecoder().decode(secret);
             Key key = new SecretKeySpec(decodedSecretKey, 0, decodedSecretKey.length, "HmacSHA256");
 
@@ -90,9 +75,7 @@ public class JwtService {
             return false;
         }
     }
-
-    public JwtTokenUser extractedUserFromToken(String token) {
-
+    public <T> T extractedUserFromToken(String token, Class<T> clazz) {
         String[] jwtParts = token.split("\\.");
         String encodedPayload = jwtParts[1]; // 페이로드는 두 번째 부분
 
@@ -101,58 +84,18 @@ public class JwtService {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return parseUserFromJwt(decodedPayload, objectMapper);
+        return parseUserInfoFromJwt(decodedPayload, objectMapper, clazz);
     }
 
-    private JwtTokenUser parseUserFromJwt(String decodedPayload, ObjectMapper objectMapper) {
-
-        JwtTokenUser loggedInUser;
-
+    private <T> T parseUserInfoFromJwt(String decodedPayload, ObjectMapper objectMapper, Class<T> clazz) {
         try {
+            LinkedHashMap payloadMap = objectMapper.readValue(decodedPayload, LinkedHashMap.class);
+            Object userProfile = payloadMap.get(USER_PROFILE);
+            String userProfileJson = objectMapper.writeValueAsString(userProfile); // JSON 문자열로 변환
 
-            LinkedHashMap<String, Object> payloadMap = objectMapper.readValue(decodedPayload, LinkedHashMap.class);
-
-            Object userProfile = payloadMap.get("userProfile");
-            String userProfileJson = objectMapper.writeValueAsString(userProfile);// JSON 문자열로 변환 (로그인 유저 정보)
-
-            loggedInUser = objectMapper.readValue(userProfileJson, JwtTokenUser.class);
+            return objectMapper.readValue(userProfileJson, clazz);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("로그인 유저 정보를 가져올 수 없습니다.");
-
         }
-
-        return loggedInUser;
-    }
-
-    public LoggedInUser extractedUserInfoFromToken(String token) {
-
-        String[] jwtParts = token.split("\\.");
-        String encodedPayload = jwtParts[1]; // 페이로드는 두 번째 부분
-
-        byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedPayload);
-        String decodedPayload = new String(decodedBytes);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return parseUserInfoFromJwt(decodedPayload, objectMapper);
-    }
-
-    private LoggedInUser parseUserInfoFromJwt(String decodedPayload, ObjectMapper objectMapper) {
-
-        LoggedInUser loggedInUser;
-
-        try {
-
-            LinkedHashMap<String, Object> payloadMap = objectMapper.readValue(decodedPayload, LinkedHashMap.class);
-
-            Object userProfile = payloadMap.get("userProfile");
-            String userProfileJson = objectMapper.writeValueAsString(userProfile);// JSON 문자열로 변환 (로그인 유저 정보)
-            loggedInUser = objectMapper.readValue(userProfileJson, LoggedInUser.class);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("로그인 유저 정보를 가져올 수 없습니다.");
-
-        }
-
-        return loggedInUser;
     }
 }

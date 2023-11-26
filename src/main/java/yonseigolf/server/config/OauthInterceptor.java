@@ -26,7 +26,7 @@ public class OauthInterceptor implements HandlerInterceptor {
         }
 
         String token = request.getHeader("Authorization").split(" ")[1];
-        LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
+        LoggedInUser loggedInUser = jwtUtil.extractedUserFromToken(token, LoggedInUser.class);
         request.setAttribute("kakaoId", loggedInUser.getId());
 
         return true;

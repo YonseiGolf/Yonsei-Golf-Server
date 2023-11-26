@@ -26,7 +26,7 @@ public class RefreshToken {
 
     public void isBeforeExpired(JwtService jwtUtil) {
 
-        if (jwtUtil.validateRefreshTokenIsExpired(this.refreshToken)) {
+        if (!jwtUtil.validateTokenIsExpired(this.refreshToken)) {
 
             throw new RefreshTokenExpiredException("Refresh Token이 만료되었습니다..");
         }
