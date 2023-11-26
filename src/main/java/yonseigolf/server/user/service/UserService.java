@@ -96,7 +96,7 @@ public class UserService {
         User user = findById(userId);
         LoggedInUser loggedInUser = LoggedInUser.fromUser(user);
 
-        return jwtService.createLoggedInUserToken(loggedInUser, expiredAt);
+        return jwtService.createToken(loggedInUser, expiredAt);
     }
 
     private User findById(Long id) {

@@ -103,7 +103,7 @@ class UserControllerTest extends RestDocsSupport {
                 .build();
 
         given(userService.signIn(any())).willReturn(user);
-        given(jwtUtil.createLoggedInUserToken(any(), any())).willReturn("token");
+        given(jwtUtil.createToken(any(), any())).willReturn("token");
 
         // when & then
         mockMvc.perform(

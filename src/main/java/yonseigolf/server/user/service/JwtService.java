@@ -22,18 +22,7 @@ public class JwtService {
     @Value("${JWT_SECRET_KEY}")
     private String secret; // 시크릿 키를 설정
 
-    public String createToken(JwtTokenUser loggedInUser, Date expiredDate) {
-
-        return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setSubject("login_member")
-                .claim("userProfile", loggedInUser)
-                .setExpiration(expiredDate)
-                .signWith(SignatureAlgorithm.HS256, secret)
-                .compact();
-    }
-
-    public String createLoggedInUserToken(LoggedInUser loggedInUser, Date expiredDate) {
+    public<T> String createToken(T loggedInUser, Date expiredDate) {
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")

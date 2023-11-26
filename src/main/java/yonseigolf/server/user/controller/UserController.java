@@ -75,7 +75,7 @@ public class UserController {
 
         // 30분 시간 제한
         Date date = new Date(new Date().getTime() + 1800000);
-        String tokenReponse = jwtUtil.createLoggedInUserToken(loggedInUser, date);
+        String tokenReponse = jwtUtil.createToken(loggedInUser, date);
 
         // refresh token 검증후 발급 - 2주기한
         validateRefreshTokenAndRefresh(loggedInUser.getId(), response, loggedInUser);
@@ -120,7 +120,7 @@ public class UserController {
         userService.validateRefreshToken(jwtTokenUser.getId(), jwtUtil);
 
         // access token 재발급
-        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 360000));
+        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 1800000));
 
         return ResponseEntity
                 .ok()
