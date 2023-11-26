@@ -56,6 +56,7 @@ public class JwtService {
                 .compact();
     }
 
+    // token이 만료되면 false 반환
     public boolean validateTokenIsExpired(String token) {
 
         try {

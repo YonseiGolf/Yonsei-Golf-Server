@@ -59,7 +59,6 @@ public class UserController {
         );
 
 
-        System.out.println("kakao oauth token" + token);
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
@@ -71,7 +70,6 @@ public class UserController {
     // TODO: 세션이 아닌 JWT Token으로부터 userId 가져와야 함, user의 refresh token이 없거나 만료된 경우 재발급
     @PostMapping("/users/signIn")
     public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
-
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
         // 30분 시간 제한

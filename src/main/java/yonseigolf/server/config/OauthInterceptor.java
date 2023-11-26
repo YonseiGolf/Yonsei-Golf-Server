@@ -19,33 +19,13 @@ public class OauthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+        System.out.println(request.getRequestURI());
+
         if(request.getMethod().equals("OPTIONS")) {
             return true;
         }
 
-        if (request.getHeader("Authorization") == null) {
-            log.info("Authorization header is null");
-            throw new IllegalArgumentException("Authorization header is null");
-        }
-
-        if (request.getHeader("Authorization").split(" ").length != 2) {
-            log.info("Authorization header is not Bearer type");
-            throw new IllegalArgumentException("Authorization header is not Bearer type");
-        }
-
         String token = request.getHeader("Authorization").split(" ")[1];
-        if (!request.getHeader("Authorization").split(" ")[0].equals("Bearer")) {
-            throw new IllegalArgumentException("Authorization header is not Bearer type");
-        }
-
-        if (!jwtUtil.validateTokenIsExpired(token)) {
-            throw new IllegalArgumentException("Token is expired");
-        }
-
-        if (!jwtUtil.validateTokenIsManipulated(token)) {
-            throw new IllegalArgumentException("Token is manipulated");
-        }
-
         LoggedInUser loggedInUser = jwtUtil.extractedUserInfoFromToken(token);
         request.setAttribute("kakaoId", loggedInUser.getId());
 
