@@ -14,10 +14,7 @@ import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
-import yonseigolf.server.user.entity.RefreshToken;
-import yonseigolf.server.user.entity.User;
-import yonseigolf.server.user.entity.UserClass;
-import yonseigolf.server.user.entity.UserRole;
+import yonseigolf.server.user.entity.*;
 import yonseigolf.server.user.repository.RefreshTokenRepository;
 import yonseigolf.server.user.repository.UserRepository;
 
