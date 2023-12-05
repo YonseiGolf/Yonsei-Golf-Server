@@ -217,8 +217,8 @@ class UserServiceTest {
                 .build();
         User savedUser = userRepository.save(user);
 
-        userService.saveRefreshToken(savedUser.getId(),"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2dpbl9tZW1iZXIiLCJ1c2VyUHJvZmlsZSI6eyJpZCI6MzUsIm5hbWUiOiLsnoTrj5ntmIQiLCJhZG1pblN0YXR1cyI6dHJ1ZSwibWVtYmVyU3RhdHVzIjp0cnVlfSwiZXhwIjoxNzAwOTc5MjU5fQ.MegKm0Oj7wYcKMtanyLqt0x5L4X7VC_tfBwJvfGSG1c");
-
+        String refreshToken = jwtService.createRefreshToken(savedUser.getId(), new Date(new Date().getTime() + 1800000));
+        userService.saveRefreshToken(savedUser.getId(),refreshToken);
 
         // when & then
         userService.validateRefreshToken(savedUser.getId(), jwtService);
