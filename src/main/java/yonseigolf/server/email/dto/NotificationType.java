@@ -29,7 +29,7 @@ public enum NotificationType {
         public String generateMessage(String name) {
             return "연세대학교 골프동아리입니다. \n" +
             "연세대학교 골프동아리 모집이 시작되었습니다.\n " +
-                    "https://yonseigolf.com/apply 에서 확인해주세요";
+                    "https://yonseigolf.site/apply 에서 확인해주세요";
         }
     };
 
