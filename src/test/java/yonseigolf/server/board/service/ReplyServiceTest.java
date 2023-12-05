@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
@@ -100,6 +101,59 @@ class ReplyServiceTest {
         replyService.deleteReply(savedReply.getId(), savedUser.getId());
 
         // then
-        assertThat(replyRepository.findAll().size()).isEqualTo(0);
+        assertThat(replyRepository.findAll().size()).isZero();
+    }
+
+    @Test
+    @DisplayName("댓글 작성자와 삭제하는 사람이 다를 경우 예외가 발생한다.")
+    void deleteReplyErrorTest() {
+        // given
+        User user = User.createUserForForeignKey(1L);
+        User savedUser = userRepository.save(user);
+        Board board = Board.builder()
+                .writer(savedUser)
+                .category(Category.FREE)
+                .title("test")
+                .content("test")
+                .createdAt(LocalDateTime.now())
+                .deleted(false)
+                .build();
+        Reply reply = Reply.builder()
+                .content("test")
+                .createdAt(LocalDateTime.now())
+                .board(board)
+                .user(savedUser)
+                .build();
+        boardRepository.save(board);
+
+        Reply savedReply = replyRepository.save(reply);
+
+        // when & then
+        assertThatThrownBy(() -> replyService.deleteReply(savedReply.getId(), 2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("작성자가 아닙니다.");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 댓글 삭제시 에러가 발생한다.")
+    void notExistReplyDeleteTest() {
+        // given
+        User user = User.createUserForForeignKey(1L);
+        User savedUser = userRepository.save(user);
+        Board board = Board.builder()
+                .writer(savedUser)
+                .category(Category.FREE)
+                .title("test")
+                .content("test")
+                .createdAt(LocalDateTime.now())
+                .deleted(false)
+                .build();
+
+        boardRepository.save(board);
+
+        // when & then
+        assertThatThrownBy(() -> replyService.deleteReply(1L, savedUser.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 댓글입니다.");
     }
 }

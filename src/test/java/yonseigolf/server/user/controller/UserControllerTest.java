@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.docs.utils.RestDocsSupport;
@@ -25,16 +24,21 @@ import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 
+import javax.servlet.http.Cookie;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
@@ -333,6 +337,41 @@ class UserControllerTest extends RestDocsSupport {
                                         .description("유저 구분 (YB, OB, NONE 중 하나)")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("유효한 리프레시 토큰으로 액세스 토큰 재발급")
+    void whenValidRefreshTokenThenIssueNewAccessToken() throws Exception {
+        // given
+        String validRefreshToken = "valid.refresh.token";
+        String newAccessToken = "new.access.token";
+        Long userId = 1L;
+        JwtTokenUser jwtTokenUser = JwtTokenUser.builder()
+                .id(1L)
+                .build();
+
+        when(jwtUtil.extractedUserFromToken(validRefreshToken, JwtTokenUser.class)).thenReturn(jwtTokenUser);
+        when(jwtUtil.validateTokenIsExpired(validRefreshToken)).thenReturn(true);
+        when(jwtUtil.validateTokenIsManipulated(validRefreshToken)).thenReturn(true);
+        when(userService.generateAccessToken(eq(userId), any(JwtService.class), any(Date.class))).thenReturn(newAccessToken);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", validRefreshToken);
+
+        // when & then
+        mockMvc.perform(post("/users/signIn/refresh").cookie(refreshTokenCookie))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("로그아웃 요청 시 쿠키를 무효화하고 정상적인 응답을 반환한다.")
+    void whenLoggingOut_ShouldInvalidateCookie_AndReturnSuccess() throws Exception {
+        Long userId = 1L;
+
+        mockMvc.perform(post("/users/logout")
+                        .requestAttr("userId", userId))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("refreshToken")) // 쿠키가 존재하는지 확인
+                .andExpect(cookie().maxAge("refreshToken", 0)); // 쿠키의 maxAge가 0인지 확인
     }
 
     @Test

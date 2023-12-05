@@ -36,17 +36,28 @@ public class EmailService {
     public void sendApplyStartAlert() {
         List<EmailAlarm> allAlert = findAllAlert();
 
-        allAlert.forEach(alert -> sendEmail(alert.getEmail(),
+        String[] bccAddresses = allAlert.stream()
+                .map(EmailAlarm::getEmail)
+                .toArray(String[]::new);
+
+        sendEmail(bccAddresses,
                 "연세대학교 골프동아리입니다.",
-                NotificationType.CLUB_RECRUITMENT.generateMessage(null)));
+                NotificationType.CLUB_RECRUITMENT.generateMessage(null));
 
         emailRepository.deleteAll();
     }
 
-
     private List<EmailAlarm> findAllAlert() {
 
         return emailRepository.findAll();
+    }
+
+    private void sendEmail(String[] bcc, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setBcc(bcc);
+        message.setSubject(subject);
+        message.setText(text);
+        sendEmailMessage(message);
     }
 
     public void sendEmail(String to, String subject, String text) {
@@ -55,10 +66,14 @@ public class EmailService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
+        sendEmailMessage(message);
+    }
+
+    private void sendEmailMessage(SimpleMailMessage message) {
         try {
             mailSender.send(message);
         } catch (Exception e) {
-            throw new IllegalArgumentException("이메일 전송에 실패했습니다.");
+            throw new IllegalArgumentException("이메일 전송에 실패했습니다.", e);
         }
     }
 }

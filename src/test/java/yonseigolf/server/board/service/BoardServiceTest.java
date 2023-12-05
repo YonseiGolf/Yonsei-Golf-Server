@@ -162,6 +162,20 @@ class BoardServiceTest {
     }
 
     @Test
+    @DisplayName("게시글 작성자와 삭제하는 사람이 다르면 예외가 발생한다.")
+    void deleteErrorTest() {
+        // given
+        User savedUser = userRepository.save(createUser());
+        Board board = createBoard(savedUser);
+        Board savedBoard = boardRepository.save(board);
+
+        // when & then
+        assertThatThrownBy(() -> boardService.deleteBoard(savedBoard.getId(), 2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("작성자만 게시글을 삭제할 수 있습니다.");
+    }
+
+    @Test
     @DisplayName("게시글이 삭제되었는데 삭제하려고 하면 DeltedBoardException이 발생한다.")
     void deleteExceptionTest() {
         // given
@@ -192,6 +206,20 @@ class BoardServiceTest {
         assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build(), user.getId()))
                 .isInstanceOf(DeletedBoardException.class)
                 .hasMessage("이미 삭제된 게시글 입니다.");
+    }
+
+    @Test
+    @DisplayName("게시글 작성자와 수정하려는 사람이 다를 경우 예외가 발생한다.")
+    void updateBoardTest() {
+        // given
+        User user = userRepository.save(createUser());
+        Board board = createBoard(user);
+        Board saved = boardRepository.save(board);
+
+        // then
+        assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build(), 2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("작성자와 수정하려는 사람이 다릅니다.");
     }
 
     @Test
