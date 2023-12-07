@@ -46,7 +46,6 @@ jobs:
       - name:  docker build and push
         run: |
           sudo aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin 615341207377.dkr.ecr.ap-northeast-2.amazonaws.com
-#          sudo aws ecr get-login-password ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
           sudo docker build --platform linux/amd64 -t hifit-ecr .
           sudo docker tag hifit-ecr:latest ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:lates
           sudo docker push ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
