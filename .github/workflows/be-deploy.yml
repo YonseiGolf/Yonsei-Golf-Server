@@ -29,13 +29,6 @@ jobs:
           touch src/main/resources/application.properties
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
 
-      - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew clean build
-        env:
-          WORKING_DIRECTORY: ${{ env.WORKING_DIRECTORY }}
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -43,20 +36,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Make zip file
-        run: zip -r ./$GITHUB_SHA.zip .
-        shell: bash
-
-
-      - name: Upload to S3
-        run:
-          aws s3 cp $GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/server-dev-deploy/$GITHUB_SHA.zip --region ${{ secrets.AWS_REGION }}
-
-
-      - name: Code Deploy
+      - name: Build with Gradle
         run: |
-          aws deploy create-deployment \
-          --deployment-config-name CodeDeployDefault.AllAtOnce \
-          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-          --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=server-dev-deploy/$GITHUB_SHA.zip
+          chmod +x gradlew
+          ./gradlew clean build
+        env:
+          WORKING_DIRECTORY: ${{ env.WORKING_DIRECTORY }}
+
+      - name:  docker build and push
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
+          docker build --platform linux/amd64 -t hifit-ecr .
+          docker tag hifit-ecr:latest ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo docker rm -f hifit-ecr
+            sudo aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+            sudo docker run -d --name hifit-ecr -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+            sudo docker image prune -a -f
