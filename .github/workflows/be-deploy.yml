@@ -60,22 +60,5 @@ jobs:
             sudo docker rm -f hifit-ecr
             sudo aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
-            sudo docker-compose up -d
+            sudo docker run -d --name hifit-ecr -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
             sudo docker image prune -a -f
-
-#      - name: Make zip file
-#        run: zip -r ./$GITHUB_SHA.zip .
-#        shell: bash
-#
-#      - name: Upload to S3
-#        run:
-#          aws s3 cp $GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/server-dev-deploy/$GITHUB_SHA.zip --region ${{ secrets.AWS_REGION }}
-#
-#
-#      - name: Code Deploy
-#        run: |
-#          aws deploy create-deployment \
-#          --deployment-config-name CodeDeployDefault.AllAtOnce \
-#          --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-#          --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-#          --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=server-dev-deploy/$GITHUB_SHA.zip
