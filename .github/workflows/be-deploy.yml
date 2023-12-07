@@ -47,7 +47,7 @@ jobs:
         run: |
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 615341207377.dkr.ecr.ap-northeast-2.amazonaws.com
           docker build --platform linux/amd64 -t hifit-ecr .
-          docker tag hifit-ecr:latest ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:lates
+          docker tag hifit-ecr:latest ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
 
       - name: executing remote ssh commands using password
