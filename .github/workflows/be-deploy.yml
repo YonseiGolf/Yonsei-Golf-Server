@@ -29,6 +29,15 @@ jobs:
           touch src/main/resources/application.properties
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > src/main/resources/application.properties
 
+      - name: aws configure
+        run: |
+          aws configure
+          ${{ secrets.AWS_ACCESS_KEY }}
+          ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ${{ secrets.AWS_REGION }}
+          json
+      
+
       - name: Build with Gradle
         run: |
           chmod +x gradlew
@@ -43,14 +52,7 @@ jobs:
 #          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 #          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: aws configure
-        run: |
-          aws configure |
-          ${{ secrets.AWS_ACCESS_KEY }} |
-          ${{ secrets.AWS_SECRET_ACCESS_KEY }} |
-          ${{ secrets.AWS_REGION }} |
-          json
-          
+
 
       - name:  docker build and push
         run: |
