@@ -2,7 +2,7 @@ name: Yonsei-Golf DEV CI
 
 on:
   push:
-    branches: [ "feat/#72-docker-release" ]
+    branches: [ "main" ]
 
 env:
   WORKING_DIRECTORY: ./
