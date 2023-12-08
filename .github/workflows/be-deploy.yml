@@ -2,7 +2,7 @@ name: Yonsei-Golf DEV CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feat/#74-logging" ]
 
 env:
   WORKING_DIRECTORY: ./
@@ -60,5 +60,6 @@ jobs:
             sudo docker rm -f hifit-ecr
             sudo aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
-            sudo docker run -d --name hifit-ecr -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+#            sudo docker run -d --name hifit-ecr -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+            sudo docker run -d --name hifit-ecr -p 8080:8080 -v ~/be-log:/var/log ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
             sudo docker image prune -a -f
