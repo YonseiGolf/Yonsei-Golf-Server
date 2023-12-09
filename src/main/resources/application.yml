@@ -26,5 +26,4 @@ logging:
           descriptor:
             sql: trace
   file:
-    path: /var/log
-    name: server.log
+    path: /var/log/server.log
