@@ -2,7 +2,7 @@ name: Yonsei-Golf DEV CI
 
 on:
   push:
-    branches: [ "feat/#74-logging" ]
+    branches: [ "main" ]
 
 env:
   WORKING_DIRECTORY: ./
