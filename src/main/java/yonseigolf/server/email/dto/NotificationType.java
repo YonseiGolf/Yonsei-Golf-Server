@@ -34,4 +34,14 @@ public enum NotificationType {
     };
 
     public abstract String generateMessage(String name);
+
+    public static NotificationType decideNotificationType(boolean isDocumentPass, Boolean isFinalPass) {
+        if (isDocumentPass && isFinalPass == null) {
+            return DOCUMENT_PASS;
+        }
+        if (isDocumentPass && isFinalPass) {
+            return FINAL_PASS;
+        }
+        return FAIL;
+    }
 }
