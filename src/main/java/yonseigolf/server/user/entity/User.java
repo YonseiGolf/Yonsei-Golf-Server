@@ -93,4 +93,8 @@ public class User {
 
         this.refreshToken = null;
     }
+
+    public boolean checkOwner(Long userId) {
+        return this.id == userId;
+    }
 }
