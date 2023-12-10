@@ -6,9 +6,6 @@ on:
 
 env:
   WORKING_DIRECTORY: ./
-  CODE_DEPLOY_APPLICATION_NAME: cicd
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: cicd
-  S3_BUCKET_NAME: yg-img-storage
 
 jobs:
   build:
@@ -60,5 +57,5 @@ jobs:
             sudo docker rm -f hifit-ecr
             sudo aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.DOCKER_USERNAME }}
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
-            sudo docker run -d --name hifit-ecr -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
+            sudo docker run -d --name hifit-ecr -p 8080:8080 -v /home/ubuntu/be-log:/var/log ${{ secrets.DOCKER_USERNAME }}/hifit-ecr:latest
             sudo docker image prune -a -f
