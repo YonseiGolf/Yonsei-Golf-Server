@@ -68,18 +68,6 @@ public class ApplyService {
         findById(id).updatePass(request);
     }
 
-//    @Transactional
-//    public void updateDocumentPass(Long id, Boolean updatePass) {
-//
-//        findById(id).updateDocumentPass(updatePass);
-//    }
-//
-//    @Transactional
-//    public void updateFinalPass(Long id, Boolean finalPass) {
-//
-//        findById(id).updateFinalPass(finalPass);
-//    }
-
     @Transactional
     public void updateInterviewTime(Long id, LocalDateTime time) {
 
@@ -88,7 +76,7 @@ public class ApplyService {
 
     public void sendEmailNotification(boolean isDocumentPass, Boolean isFinalPass) {
 
-        final NotificationType type = getNotificationType(isDocumentPass, isFinalPass);
+        final NotificationType type = NotificationType.decideNotificationType(isDocumentPass, isFinalPass);
         final String subject = "안녕하세요. 연세대학교 골프동아리 결과 메일입니다.";
 
         findApplicationsByPassFail(isDocumentPass, isFinalPass)
@@ -96,17 +84,6 @@ public class ApplyService {
                     final String message = type.generateMessage(application.getName());
                     emailService.sendEmail(application.getEmail(), subject, message);
                 });
-    }
-
-    private NotificationType getNotificationType(boolean isDocumentPass, Boolean isFinalPass) {
-
-        if (isDocumentPass && isFinalPass == null) {
-            return NotificationType.DOCUMENT_PASS;
-        }
-        if (isDocumentPass && isFinalPass) {
-            return NotificationType.FINAL_PASS;
-        }
-        return NotificationType.FAIL;
     }
 
     private List<Application> findApplicationsByPassFail(Boolean docuemntPass, Boolean finalPass) {

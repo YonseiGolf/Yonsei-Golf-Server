@@ -1,10 +1,10 @@
 package yonseigolf.server.board.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
@@ -21,6 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+@Transactional
 @SpringBootTest
 class ReplyServiceTest {
 
@@ -33,12 +34,6 @@ class ReplyServiceTest {
     @Autowired
     private UserRepository userRepository;
 
-    @BeforeEach
-    void setUp() {
-        replyRepository.deleteAll();
-        boardRepository.deleteAll();
-        userRepository.deleteAll();
-    }
     @Test
     @DisplayName("댓글 생성 테스트")
     void postReplyTest() {

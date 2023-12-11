@@ -22,12 +22,10 @@ public class ReplyService {
         replyRepository.save(reply);
     }
 
-    // TODO: 작성자와 삭제하려는 사람이 같은지 확인
     public void deleteReply(long replyId, long userId) {
+
         Reply reply = findReply(replyId);
-        if (reply.getUser().getId() != userId){
-            throw new IllegalArgumentException("작성자가 아닙니다.");
-        }
+        reply.checkOwner(userId);
         replyRepository.deleteById(replyId);
     }
 

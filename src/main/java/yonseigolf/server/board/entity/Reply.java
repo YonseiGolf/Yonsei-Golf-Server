@@ -37,4 +37,11 @@ public class Reply {
                 .user(User.createUserForForeignKey(writerId))
                 .build();
     }
+
+    public void checkOwner(Long userId) {
+
+        if (!user.checkOwner(userId)) {
+            throw new IllegalArgumentException("작성자가 아닙니다.");
+        }
+    }
 }

@@ -172,7 +172,7 @@ class BoardServiceTest {
         // when & then
         assertThatThrownBy(() -> boardService.deleteBoard(savedBoard.getId(), 2L))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("작성자만 게시글을 삭제할 수 있습니다.");
+                .hasMessage("작성자만 게시글을 수정/삭제 할 수 있습니다.");
     }
 
     @Test
@@ -219,7 +219,7 @@ class BoardServiceTest {
         // then
         assertThatThrownBy(() -> boardService.updateBoard(saved.getId(), UpdateBoardRequest.builder().build(), 2L))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("작성자와 수정하려는 사람이 다릅니다.");
+                .hasMessage("작성자만 게시글을 수정/삭제 할 수 있습니다.");
     }
 
     @Test

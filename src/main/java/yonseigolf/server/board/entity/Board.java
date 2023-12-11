@@ -53,7 +53,7 @@ public class Board {
 
     public void updateBoard(UpdateBoardRequest request) {
 
-        if (this.deleted == true) {
+        if (this.deleted) {
             throw new DeletedBoardException("이미 삭제된 게시글 입니다.");
         }
 
@@ -64,10 +64,17 @@ public class Board {
 
     public void deleteBoard() {
 
-        if (this.deleted == true) {
+        if (this.deleted) {
             throw new DeletedBoardException("이미 삭제된 게시글 입니다.");
         }
 
         this.deleted = true;
+    }
+
+    public void checkOwner(Long userId) {
+
+        if(!this.writer.checkOwner(userId)){
+            throw new IllegalArgumentException("작성자만 게시글을 수정/삭제 할 수 있습니다.");
+        }
     }
 }
