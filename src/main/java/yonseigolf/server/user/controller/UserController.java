@@ -67,18 +67,17 @@ public class UserController {
                 );
     }
 
-    // TODO: 세션이 아닌 JWT Token으로부터 userId 가져와야 함, user의 refresh token이 없거나 만료된 경우 재발급
     @PostMapping("/users/signIn")
     public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
-        System.out.println(kakaoId);
+
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
         // 30분 시간 제한
         Date date = new Date(new Date().getTime() + 1800000);
         String tokenReponse = jwtUtil.createToken(loggedInUser, date);
 
-        // refresh token 검증후 발급 - 2주기한
-        validateRefreshTokenAndRefresh(loggedInUser.getId(), response, loggedInUser);
+        // signIn 할 경우 로그인 진행
+        makeRefreshToken(response, loggedInUser);
 
         return ResponseEntity
                 .ok()
@@ -89,9 +88,7 @@ public class UserController {
                 );
     }
 
-    private void validateRefreshTokenAndRefresh(Long userId, HttpServletResponse response, LoggedInUser loggedInUser) {
-        // refresh token이 없거나 만료된 경우 재발급
-        userService.validateRefreshToken(userId, jwtUtil);
+    private void makeRefreshToken(HttpServletResponse response, LoggedInUser loggedInUser) {
 
         Date expireDate = new Date(new Date().getTime() + 1209600000);
         String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
@@ -102,7 +99,7 @@ public class UserController {
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true); // HTTP Only 설정
-        cookie.setSecure(true); // Secure 설정, TODO: 배포할 땐 true로 변경
+        cookie.setSecure(true); // Secure 설정,
         cookie.setPath("/"); // 경로 설정
         cookie.setMaxAge(60 * 60 * 24 * 14); // 2주일
         response.addCookie(cookie); // 응답에 쿠키 추가
