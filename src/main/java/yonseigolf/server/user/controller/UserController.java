@@ -187,21 +187,13 @@ public class UserController {
     }
 
     @PostMapping("/users/signUp")
-    public ResponseEntity<CustomResponse<Void>> signUp(@RequestBody @Validated SignUpUserRequest request, HttpSession session) {
+    public ResponseEntity<CustomResponse<Void>> signUp(@RequestBody @Validated SignUpUserRequest request, @RequestAttribute Long kakaoId) {
 
-        Long kakaoId = (Long) session.getAttribute(SESSION_KAKAO_USER);
-
-        if (session.getAttribute("user") != null) {
-            throw new IllegalArgumentException("[ERROR] 이미 로그인된 상태입니다.");
-        }
         if (kakaoId == null) {
             throw new IllegalArgumentException("[ERROR] 카카오 로그인을 먼저 해주세요.");
         }
 
-        LoggedInUser sessionUser = userService.signUp(request, kakaoId);
-
-        session.removeAttribute(SESSION_KAKAO_USER);
-        session.setAttribute("user", sessionUser);
+        userService.signUp(request, kakaoId);
 
         return ResponseEntity
                 .ok()
