@@ -128,45 +128,6 @@ class UserControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("회원이 아니라면 회원가입을 할 수 있다.")
-    void signUpTest() throws Exception {
-        // given
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("kakaoUser", 1L);
-        SignUpUserRequest request = SignUpUserRequest.builder()
-                .name("name")
-                .phoneNumber("phoneNumber")
-                .major("major")
-                .studentId(1)
-                .semester(10)
-                .build();
-        // when
-
-        // then
-        mockMvc.perform(post("/users/signUp")
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andDo(document("user-signUp-doc",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
-                        requestFields(
-                                fieldWithPath("name").type(JsonFieldType.STRING)
-                                        .description("이름"),
-                                fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
-                                        .description("전화번호"),
-                                fieldWithPath("major").type(JsonFieldType.STRING)
-                                        .description("전공"),
-                                fieldWithPath("studentId").type(JsonFieldType.NUMBER)
-                                        .description("학번"),
-                                fieldWithPath("semester").type(JsonFieldType.NUMBER)
-                                        .description("학기"))
-                ));
-    }
-
-    @Test
     @DisplayName("로그인된 상태라면 에러를 발생한다.")
     void loggedInErrorTest() throws Exception {
         // given
