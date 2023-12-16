@@ -27,6 +27,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .where(user.userClass.eq(userClass))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .orderBy(user.semester.asc(), user.name.asc())
                 .fetchResults();
 
         List<SingleUserResponse> userResponses = results.getResults().stream()

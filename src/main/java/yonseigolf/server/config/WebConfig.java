@@ -36,8 +36,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(defaultInterceptor)
                 .addPathPatterns("/users/signIn")
                 .addPathPatterns("/boards/**")
-                .addPathPatterns("/replies/**")
-                .addPathPatterns("/users/logout");
+                .addPathPatterns("/replies/**");
 
         registry.addInterceptor(oauthInterceptor)
                 .addPathPatterns("/users/signUp")
