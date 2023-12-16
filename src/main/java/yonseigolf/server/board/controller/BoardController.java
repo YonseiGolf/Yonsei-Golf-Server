@@ -10,11 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
 import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
+import yonseigolf.server.board.dto.response.AllBoardTemplatesResponse;
 import yonseigolf.server.board.dto.response.BoardDetailResponse;
 import yonseigolf.server.board.dto.response.SingleBoardResponse;
+import yonseigolf.server.board.dto.response.SingleBoardTemplateResponse;
 import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
+import yonseigolf.server.board.service.BoardTemplateService;
 import yonseigolf.server.board.service.ReplyService;
 import yonseigolf.server.util.CustomResponse;
 
@@ -26,13 +29,15 @@ public class BoardController {
     private final BoardService boardService;
     private final BoardImageService boardImageService;
     private final ReplyService replyService;
+    private final BoardTemplateService boardTemplateService;
 
     @Autowired
-    public BoardController(BoardService boardService, BoardImageService boardImageService, ReplyService replyService) {
+    public BoardController(BoardService boardService, BoardImageService boardImageService, ReplyService replyService, BoardTemplateService boardTemplateService) {
 
         this.boardService = boardService;
         this.boardImageService = boardImageService;
         this.replyService = replyService;
+        this.boardTemplateService = boardTemplateService;
     }
 
     @GetMapping("/boards")
@@ -103,5 +108,48 @@ public class BoardController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("댓글 삭제 성공"));
+    }
+
+    @GetMapping("/admin/boards/templates")
+    public ResponseEntity<CustomResponse<AllBoardTemplatesResponse>> getAllBoardTemplate() {
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 템플릿 조회 성공",
+                        boardTemplateService.findBoardTemplates()));
+    }
+
+    @GetMapping("/admin/boards/templates/{templateId}")
+    public ResponseEntity<CustomResponse<SingleBoardTemplateResponse>> getBoardTemplate(@PathVariable Long templateId) {
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 템플릿 상세 조회 성공",
+                        boardTemplateService.findBoardTemplate(templateId)));
+    }
+
+    @PostMapping("/admin/boards/templates")
+    public ResponseEntity<CustomResponse<Void>> createBoardTemplate() {
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 템플릿 생성 성공"));
+    }
+
+    @PatchMapping("/admin/boards/templates/{templateId}")
+    public ResponseEntity<CustomResponse<Void>> updateBoardTemplate(@PathVariable Long templateId) {
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 템플릿 수정 성공"));
+    }
+
+    @DeleteMapping("/admin/boards/templates/{templateId}")
+    public ResponseEntity<CustomResponse<Void>> deleteBoardTemplate(@PathVariable Long templateId) {
+
+        boardTemplateService.deleteBoardTemplate(templateId);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("게시글 템플릿 삭제 성공"));
     }
 }
