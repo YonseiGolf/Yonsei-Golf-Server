@@ -24,14 +24,12 @@ import yonseigolf.server.util.CustomResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.util.Date;
 
 @Slf4j
 @Controller
 public class UserController {
 
-    private static final String SESSION_KAKAO_USER = "kakaoUser";
     private final UserService userService;
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
@@ -72,8 +70,7 @@ public class UserController {
 
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
-        // 30분 시간 제한
-        Date date = new Date(new Date().getTime() + 1800000);
+        Date date = new Date(new Date().getTime() + 3600000);
         String tokenReponse = jwtUtil.createToken(loggedInUser, date);
 
         // signIn 할 경우 로그인 진행
@@ -117,7 +114,7 @@ public class UserController {
         userService.validateRefreshToken(jwtTokenUser.getId(), jwtUtil);
 
         // access token 재발급
-        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 1800000));
+        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 3600000));
 
         return ResponseEntity
                 .ok()
@@ -162,7 +159,6 @@ public class UserController {
     }
 
 
-    // TODO: refreshToken 무효화 시키고, 클라이언트에서 access token 폐기
     @PostMapping("/users/logout")
     public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId, HttpServletResponse response) {
 
