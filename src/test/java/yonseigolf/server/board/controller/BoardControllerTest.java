@@ -1,5 +1,6 @@
 package yonseigolf.server.board.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,18 +18,17 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import yonseigolf.server.TestInterceptor;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.CreateBoardTemplateRequest;
 import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
-import yonseigolf.server.board.dto.response.AllReplyResponse;
-import yonseigolf.server.board.dto.response.BoardDetailResponse;
-import yonseigolf.server.board.dto.response.SingleBoardResponse;
-import yonseigolf.server.board.dto.response.SingleReplyResponse;
+import yonseigolf.server.board.dto.response.*;
 import yonseigolf.server.board.entity.Board;
 import yonseigolf.server.board.entity.Category;
 import yonseigolf.server.board.entity.Image;
 import yonseigolf.server.board.entity.Reply;
 import yonseigolf.server.board.service.BoardImageService;
 import yonseigolf.server.board.service.BoardService;
+import yonseigolf.server.board.service.BoardTemplateService;
 import yonseigolf.server.board.service.ReplyService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.dto.response.LoggedInUser;
@@ -40,7 +40,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
@@ -64,6 +66,8 @@ class BoardControllerTest extends RestDocsSupport {
     private BoardImageService boardImageService;
     @Mock
     private ReplyService replyService;
+    @Mock
+    private BoardTemplateService boardTemplateService;
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
@@ -91,9 +95,9 @@ class BoardControllerTest extends RestDocsSupport {
 
         // when & then
         mockMvc.perform(
-                get("/boards")
-                        .param("page", "0")
-                        .param("size", "10")
+                        get("/boards")
+                                .param("page", "0")
+                                .param("size", "10")
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -363,6 +367,159 @@ class BoardControllerTest extends RestDocsSupport {
                         )));
     }
 
+    @Test
+    @DisplayName("사용자는 게시글 템플릿 목록을 조회할 수 있다.")
+    void findAllTemplatesTest() throws Exception {
+        // given
+        AllBoardTemplatesResponse response = AllBoardTemplatesResponse.builder()
+                .templates(
+                        List.of(BoardTemplatesResponse.builder()
+                                .id(1L)
+                                .title("title")
+                                .build()
+                        )
+                ).build();
+
+        given(boardTemplateService.findBoardTemplates()).willReturn(response);
+
+        // then
+        mockMvc.perform(
+                        get("/admin/boards/templates")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-findAllTemplates-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("templates[].id").type(JsonFieldType.NUMBER)
+                                        .description("게시글 템플릿 ID"),
+                                fieldWithPath("templates[].title").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 제목")
+                        )));
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글 상세 목록을 조회할 수 있다.")
+    void findTemplateDetailTest() throws Exception {
+        // given
+        SingleBoardTemplateResponse response = SingleBoardTemplateResponse.builder()
+                .id(1L)
+                .title("title")
+                .contents("content")
+                .build();
+
+        // when
+        given(boardTemplateService.findBoardTemplate(anyLong())).willReturn(response);
+
+        // then
+        mockMvc.perform(
+                        get("/admin/boards/templates/{templateId}", 1L)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-findTemplateDetail-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(
+                                parameterWithName("templateId").description("게시글 템플릿 ID")
+                        ),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("게시글 템플릿 ID"),
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 제목"),
+                                fieldWithPath("contents").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 내용")
+                        )));
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글 템플릿을 등록할 수 있다.")
+    void postBoardTemplateTest() throws Exception {
+        // given
+        doNothing().when(boardTemplateService).createBoardTemplate(any());
+
+        // when & then
+        mockMvc.perform(
+                        post("/admin/boards/templates")
+                                .content(objectMapper.writeValueAsString(CreateBoardTemplateRequest.builder()
+                                        .title("title")
+                                        .contents("contents")
+                                        .build()))
+                                .contentType("application/json")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-postBoardTemplate-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 제목"),
+                                fieldWithPath("contents").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 내용")
+                        )));
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글 템플릿을 수정할 수 있다.")
+    void updateBoardTemplateTest() throws Exception {
+        // given
+        Long templateId = 1L;
+        CreateBoardTemplateRequest request = CreateBoardTemplateRequest.builder()
+                .title("title")
+                .contents("contents")
+                .build();
+
+        // when
+        doNothing().when(boardTemplateService).updateBoardTemplate(anyLong(), any());
+
+        // then
+        mockMvc.perform(
+                        patch("/admin/boards/templates/{templateId}", templateId)
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-updateBoardTemplate-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(
+                                parameterWithName("templateId").description("게시글 템플릿 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("title").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 제목"),
+                                fieldWithPath("contents").type(JsonFieldType.STRING)
+                                        .description("게시글 템플릿 내용")
+                        )));
+    }
+
+    @Test
+    @DisplayName("사용자는 게시글 템플릿을 삭제할 수 있다.")
+    void deleteBoardTemplateTest() throws Exception {
+        // given
+        long boardId = 1L;
+        doNothing().when(boardTemplateService).deleteBoardTemplate(anyLong());
+
+        // when & then
+        mockMvc.perform(
+                        delete("/admin/boards/templates/{templateId}", boardId)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("board-deleteBoardTemplate-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        pathParameters(
+                                parameterWithName("templateId").description("게시글 템플릿 ID")
+                        )));
+    }
+
     private Board createBoard(User user) {
         return Board.builder()
                 .id(1L)
@@ -411,6 +568,6 @@ class BoardControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new BoardController(boardService, boardImageService, replyService);
+        return new BoardController(boardService, boardImageService, replyService, boardTemplateService);
     }
 }
