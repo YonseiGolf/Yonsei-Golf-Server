@@ -2,6 +2,8 @@ package yonseigolf.server.board.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import yonseigolf.server.board.dto.request.CreateBoardTemplateRequest;
 import yonseigolf.server.board.dto.response.AllBoardTemplatesResponse;
 import yonseigolf.server.board.dto.response.BoardTemplatesResponse;
 import yonseigolf.server.board.dto.response.SingleBoardTemplateResponse;
@@ -43,6 +45,24 @@ public class BoardTemplateService {
                 .title(boardTemplate.getTitle())
                 .contents(boardTemplate.getContents())
                 .build();
+    }
+
+    public void createBoardTemplate(CreateBoardTemplateRequest request) {
+
+        BoardTemplate boardTemplate = BoardTemplate.builder()
+                .title(request.getTitle())
+                .contents(request.getContents())
+                .build();
+
+        boardTemplateRepository.save(boardTemplate);
+    }
+
+    @Transactional
+    public void updateBoardTemplate(long id, CreateBoardTemplateRequest request) {
+
+        BoardTemplate boardTemplate = findBoardTemplateById(id);
+
+        boardTemplate.update(request.getTitle(), request.getContents());
     }
 
     // TODO: 적절한 예외 처리 하기

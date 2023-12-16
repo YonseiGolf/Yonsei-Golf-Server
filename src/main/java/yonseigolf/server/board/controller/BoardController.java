@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import yonseigolf.server.board.dto.request.CreateBoardRequest;
+import yonseigolf.server.board.dto.request.CreateBoardTemplateRequest;
 import yonseigolf.server.board.dto.request.PostReplyRequest;
 import yonseigolf.server.board.dto.request.UpdateBoardRequest;
 import yonseigolf.server.board.dto.response.AllBoardTemplatesResponse;
@@ -129,16 +130,18 @@ public class BoardController {
     }
 
     @PostMapping("/admin/boards/templates")
-    public ResponseEntity<CustomResponse<Void>> createBoardTemplate() {
+    public ResponseEntity<CustomResponse<Void>> createBoardTemplate(@RequestBody CreateBoardTemplateRequest request) {
 
+        boardTemplateService.createBoardTemplate(request);
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("게시글 템플릿 생성 성공"));
     }
 
     @PatchMapping("/admin/boards/templates/{templateId}")
-    public ResponseEntity<CustomResponse<Void>> updateBoardTemplate(@PathVariable Long templateId) {
+    public ResponseEntity<CustomResponse<Void>> updateBoardTemplate(@PathVariable Long templateId, @RequestBody CreateBoardTemplateRequest request) {
 
+        boardTemplateService.updateBoardTemplate(templateId, request);
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("게시글 템플릿 수정 성공"));
