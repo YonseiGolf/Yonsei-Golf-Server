@@ -35,6 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(defaultInterceptor)
                 .addPathPatterns("/users/signIn")
+                .addPathPatterns("/users/loggedIn")
                 .addPathPatterns("/boards/**")
                 .addPathPatterns("/replies/**");
 
