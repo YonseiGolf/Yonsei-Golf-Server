@@ -18,7 +18,6 @@ public class PreventDuplicateLoginService {
 
     public void registerLogin(long userId, String token) {
 
-        redisTemplate.opsForValue().getAndDelete(userId);
         redisTemplate.opsForValue().set(userId, token, 30, TimeUnit.MINUTES);
     }
 
