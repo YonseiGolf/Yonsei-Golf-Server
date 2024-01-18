@@ -13,7 +13,6 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 import yonseigolf.server.user.dto.request.KakaoCode;
-import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.request.UserClassRequest;
 import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
@@ -22,13 +21,14 @@ import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
+import yonseigolf.server.user.service.PreventDuplicateLoginService;
 import yonseigolf.server.user.service.UserService;
 
 import javax.servlet.http.Cookie;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -54,6 +54,9 @@ class UserControllerTest extends RestDocsSupport {
     private KakaoOauthInfo kakaoOauthInfo;
     @Mock
     private JwtService jwtUtil;
+    @Mock
+    private PreventDuplicateLoginService preventDuplicateLoginService;
+
 
     @Test
     @DisplayName("카카오톡 로그인을 할 수 있다.")
@@ -349,6 +352,6 @@ class UserControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new UserController(userService, oauthLoginService, kakaoOauthInfo, jwtUtil);
+        return new UserController(userService, oauthLoginService, kakaoOauthInfo, jwtUtil, preventDuplicateLoginService);
     }
 }
