@@ -18,6 +18,7 @@ import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.exception.RefreshTokenExpiredException;
 import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
+import yonseigolf.server.user.service.PreventDuplicateLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
@@ -34,14 +35,16 @@ public class UserController {
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
     private final JwtService jwtUtil;
+    private final PreventDuplicateLoginService preventDuplicateLoginService;
 
     @Autowired
-    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil) {
+    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil, PreventDuplicateLoginService preventDuplicateLoginService) {
 
         this.userService = userService;
         this.oauthLoginService = oauthLoginService;
         this.kakaoOauthInfo = kakaoOauthInfo;
         this.jwtUtil = jwtUtil;
+        this.preventDuplicateLoginService = preventDuplicateLoginService;
     }
 
     @PostMapping("/oauth/kakao")
@@ -76,6 +79,9 @@ public class UserController {
         // signIn 할 경우 로그인 진행
         makeRefreshToken(response, loggedInUser);
 
+        // redis에 중복 로그인 방지를 위한 access token 저장
+        preventDuplicateLoginService.registerLogin(loggedInUser.getId(), tokenReponse);
+
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("로그인 성공",
@@ -102,6 +108,14 @@ public class UserController {
         response.addCookie(cookie); // 응답에 쿠키 추가
     }
 
+    @PostMapping("/users/loggedIn")
+    public ResponseEntity<CustomResponse<Void>> loggedIn() {
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("로그인 상태입니다."));
+    }
+
     @PostMapping("/users/signIn/refresh")
     public ResponseEntity<CustomResponse<JwtTokenResponse>> refreshAccessToken(HttpServletRequest request) {
 
@@ -115,6 +129,7 @@ public class UserController {
 
         // access token 재발급
         String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 3600000));
+        preventDuplicateLoginService.registerLogin(jwtTokenUser.getId(), accessToken);
 
         return ResponseEntity
                 .ok()

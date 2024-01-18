@@ -15,6 +15,7 @@ public class UserExceptionController {
     /*
     40101 access token 이 없거나 만료됨, refresh token을 통한 access 토큰 재발급
     40102 refresh token이 없거나 만료됨, 로그인 페이지로 이동
+    409 중복 로그인
      */
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -80,4 +81,15 @@ public class UserExceptionController {
                 ));
     }
 
+    @ExceptionHandler(DuplicatedLoginException.class)
+    public ResponseEntity<CustomErrorResponse> duplicatedLogin(DuplicatedLoginException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new CustomErrorResponse(
+                        "fail",
+                        409,
+                        ex.getMessage()
+                ));
+    }
 }
