@@ -21,19 +21,14 @@ import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
-import yonseigolf.server.user.service.PreventDuplicateLoginService;
 import yonseigolf.server.user.service.UserService;
 
-import javax.servlet.http.Cookie;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -54,9 +49,6 @@ class UserControllerTest extends RestDocsSupport {
     private KakaoOauthInfo kakaoOauthInfo;
     @Mock
     private JwtService jwtUtil;
-    @Mock
-    private PreventDuplicateLoginService preventDuplicateLoginService;
-
 
     @Test
     @DisplayName("카카오톡 로그인을 할 수 있다.")
@@ -304,29 +296,6 @@ class UserControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("유효한 리프레시 토큰으로 액세스 토큰 재발급")
-    void whenValidRefreshTokenThenIssueNewAccessToken() throws Exception {
-        // given
-        String validRefreshToken = "valid.refresh.token";
-        String newAccessToken = "new.access.token";
-        Long userId = 1L;
-        JwtTokenUser jwtTokenUser = JwtTokenUser.builder()
-                .id(1L)
-                .build();
-
-        when(jwtUtil.extractedUserFromToken(validRefreshToken, JwtTokenUser.class)).thenReturn(jwtTokenUser);
-        when(jwtUtil.validateTokenIsExpired(validRefreshToken)).thenReturn(true);
-        when(jwtUtil.validateTokenIsManipulated(validRefreshToken)).thenReturn(true);
-        when(userService.generateAccessToken(eq(userId), any(JwtService.class), any(Date.class))).thenReturn(newAccessToken);
-
-        Cookie refreshTokenCookie = new Cookie("refreshToken", validRefreshToken);
-
-        // when & then
-        mockMvc.perform(post("/users/signIn/refresh").cookie(refreshTokenCookie))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     @DisplayName("로그아웃 요청 시 쿠키를 무효화하고 정상적인 응답을 반환한다.")
     void whenLoggingOut_ShouldInvalidateCookie_AndReturnSuccess() throws Exception {
         Long userId = 1L;
@@ -352,6 +321,6 @@ class UserControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new UserController(userService, oauthLoginService, kakaoOauthInfo, jwtUtil, preventDuplicateLoginService);
+        return new UserController(userService, oauthLoginService, kakaoOauthInfo, jwtUtil);
     }
 }

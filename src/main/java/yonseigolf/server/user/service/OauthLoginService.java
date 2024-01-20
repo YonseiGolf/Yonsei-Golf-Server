@@ -7,6 +7,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import yonseigolf.server.user.dto.response.KakaoLoginResponse;
+import yonseigolf.server.user.dto.token.AccessTokenResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 
@@ -67,5 +68,33 @@ public class OauthLoginService {
                         requestEntity,
                         KakaoLoginResponse.class)
                 .getBody();
+    }
+
+    public long refreshAccessToken(String refreshToken, KakaoOauthInfo oauthInfo) {
+
+        HttpEntity<?> request = createRefreshRequestEntity(refreshToken, oauthInfo);
+        ResponseEntity<AccessTokenResponse> refreshResponse = restTemplate.postForEntity(oauthInfo.getRedirectUri(), request, AccessTokenResponse.class);
+
+        AccessTokenResponse accessResponse = refreshResponse.getBody();
+        KakaoLoginResponse kakaoLoginResponse = processKakaoLogin(accessResponse.getAccessToken(), oauthInfo.getLoginUri());
+
+        return kakaoLoginResponse.getId();
+    }
+
+    private HttpEntity<?> createRefreshRequestEntity(String refreshToken, KakaoOauthInfo oauthInfo) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        Map<String, String> header = new HashMap<>();
+        header.put("Accept", "application/json");
+        header.put("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers.setAll(header);
+
+        MultiValueMap<String, String> requestPayloads = new LinkedMultiValueMap<>();
+        Map<String, String> requestPayload = new HashMap<>();
+        requestPayload.put("grant_type", "refresh_token");
+        requestPayload.put("client_id", oauthInfo.getClientId());
+        requestPayload.put("refresh_token", refreshToken);
+        requestPayloads.setAll(requestPayload);
+
+        return new HttpEntity<>(requestPayloads, headers);
     }
 }
