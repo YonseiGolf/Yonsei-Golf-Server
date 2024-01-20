@@ -14,11 +14,11 @@ import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.response.AdminResponse;
 import yonseigolf.server.user.dto.response.LoggedInUser;
 import yonseigolf.server.user.dto.response.SingleUserResponse;
-import yonseigolf.server.user.entity.*;
+import yonseigolf.server.user.entity.User;
+import yonseigolf.server.user.entity.UserClass;
+import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.RefreshTokenRepository;
 import yonseigolf.server.user.repository.UserRepository;
-
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -196,85 +196,5 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.updateUserClass(notExistingUserId, UserClass.OB))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("존재하지 않는 유저입니다.");
-    }
-
-    @Test
-    @DisplayName("refresh token에 이상이 없는 경우 예외가 발생하지 않는다.")
-    void noThrowRefreshTokenTest() {
-        // given
-        User user = User.builder()
-                .kakaoId(1L)
-                .name("이름")
-                .phoneNumber("010-1234-5678")
-                .studentId(1)
-                .major("컴퓨터과학과")
-                .semester(1)
-                .role(UserRole.MEMBER)
-                .userClass(UserClass.OB)
-                .build();
-        User savedUser = userRepository.save(user);
-
-        String refreshToken = jwtService.createRefreshToken(savedUser.getId(), new Date(new Date().getTime() + 1800000));
-        userService.saveRefreshToken(savedUser.getId(),refreshToken);
-
-        // when & then
-        userService.validateRefreshToken(savedUser.getId(), jwtService);
-    }
-
-    @Test
-    @DisplayName("refresh token validate test")
-    void validateRefreshTokenTest() {
-        // given
-        RefreshToken refreshToken = RefreshToken
-                .builder()
-                .refreshToken("refreshToken")
-                .build();
-        RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
-
-        User user = User.builder()
-                .kakaoId(1L)
-                .name("이름")
-                .phoneNumber("010-1234-5678")
-                .studentId(1)
-                .major("컴퓨터과학과")
-                .semester(1)
-                .role(UserRole.MEMBER)
-                .userClass(UserClass.OB)
-                .refreshToken(savedRefreshToken)
-                .build();
-        User savedUser = userRepository.save(user);
-
-        // when
-        userService.invalidateRefreshToken(savedUser.getId());
-        User findUser = userRepository.findById(savedUser.getId()).orElseGet(() -> User.builder().build());
-
-        // then
-        assertThat(findUser.getRefreshToken()).isNull();
-    }
-
-    @Test
-    @DisplayName("refresh token을 통해 access token을 재생성 할 수 있다.")
-    void refreshAccessTokenTest() {
-        // given
-        User user = User.builder()
-                .kakaoId(1L)
-                .name("이름")
-                .phoneNumber("010-1234-5678")
-                .studentId(1)
-                .major("컴퓨터과학과")
-                .semester(1)
-                .role(UserRole.MEMBER)
-                .userClass(UserClass.OB)
-                .build();
-        User savedUser = userRepository.save(user);
-        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsb2dpbl9tZW1iZXIiLCJ1c2VyUHJvZmlsZSI6eyJpZCI6MzUsIm5hbWUiOiLsnoTrj5ntmIQiLCJhZG1pblN0YXR1cyI6dHJ1ZSwibWVtYmVyU3RhdHVzIjp0cnVlfSwiZXhwIjoxNzAwOTc5MjU5fQ.MegKm0Oj7wYcKMtanyLqt0x5L4X7VC_tfBwJvfGSG1c";
-
-        userService.saveRefreshToken(savedUser.getId(), token);
-
-        // when
-        String accessToken = userService.generateAccessToken(savedUser.getId(), jwtService, new Date(new Date().getTime() + 1800000));
-
-        // then
-        assertThat(accessToken).isNotNull();
     }
 }

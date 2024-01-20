@@ -81,14 +81,14 @@ public class UserExceptionController {
                 ));
     }
 
-    @ExceptionHandler(DuplicatedLoginException.class)
-    public ResponseEntity<CustomErrorResponse> duplicatedLogin(DuplicatedLoginException ex) {
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<CustomErrorResponse> refreshTokenException(RefreshTokenException ex) {
 
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(new CustomErrorResponse(
                         "fail",
-                        409,
+                        401,
                         ex.getMessage()
                 ));
     }

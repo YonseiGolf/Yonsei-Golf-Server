@@ -15,10 +15,9 @@ import yonseigolf.server.user.dto.response.*;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
-import yonseigolf.server.user.exception.RefreshTokenExpiredException;
+import yonseigolf.server.user.exception.RefreshTokenException;
 import yonseigolf.server.user.service.JwtService;
 import yonseigolf.server.user.service.OauthLoginService;
-import yonseigolf.server.user.service.PreventDuplicateLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
@@ -35,20 +34,18 @@ public class UserController {
     private final OauthLoginService oauthLoginService;
     private final KakaoOauthInfo kakaoOauthInfo;
     private final JwtService jwtUtil;
-    private final PreventDuplicateLoginService preventDuplicateLoginService;
 
     @Autowired
-    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil, PreventDuplicateLoginService preventDuplicateLoginService) {
+    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil) {
 
         this.userService = userService;
         this.oauthLoginService = oauthLoginService;
         this.kakaoOauthInfo = kakaoOauthInfo;
         this.jwtUtil = jwtUtil;
-        this.preventDuplicateLoginService = preventDuplicateLoginService;
     }
 
     @PostMapping("/oauth/kakao")
-    public ResponseEntity<CustomResponse<JwtTokenResponse>> kakaoLogin(@RequestBody KakaoCode kakaoCode) {
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpServletResponse response) {
         OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo);
         KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
@@ -59,6 +56,7 @@ public class UserController {
                 new Date(new Date().getTime() + 360000)
         );
 
+        createRefreshToken(response, oauthToken.getRefreshToken());
 
         return ResponseEntity
                 .ok()
@@ -76,12 +74,6 @@ public class UserController {
         Date date = new Date(new Date().getTime() + 3600000);
         String tokenReponse = jwtUtil.createToken(loggedInUser, date);
 
-        // signIn 할 경우 로그인 진행
-        makeRefreshToken(response, loggedInUser);
-
-        // redis에 중복 로그인 방지를 위한 access token 저장
-        preventDuplicateLoginService.registerLogin(loggedInUser.getId(), tokenReponse);
-
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("로그인 성공",
@@ -89,14 +81,6 @@ public class UserController {
                                 .accessToken(tokenReponse)
                                 .build())
                 );
-    }
-
-    private void makeRefreshToken(HttpServletResponse response, LoggedInUser loggedInUser) {
-
-        Date expireDate = new Date(new Date().getTime() + 1209600000);
-        String refreshToken = jwtUtil.createRefreshToken(loggedInUser.getId(), expireDate);
-        userService.saveRefreshToken(loggedInUser.getId(), refreshToken);
-        createRefreshToken(response, refreshToken);
     }
 
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
@@ -120,41 +104,23 @@ public class UserController {
     public ResponseEntity<CustomResponse<JwtTokenResponse>> refreshAccessToken(HttpServletRequest request) {
 
         String refreshToken = findRefreshToken(request);
+        if (refreshToken == null) {
+            throw new RefreshTokenException("Refresh Token이 존재하지 않습니다.");
+        }
 
-        // refresh token 검증 (null, 만료, 조작)
-        validateRefreshToken(refreshToken);
+        long kakaoId = oauthLoginService.refreshAccessToken(refreshToken, kakaoOauthInfo);
+        LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
-        JwtTokenUser jwtTokenUser = jwtUtil.extractedUserFromToken(refreshToken, JwtTokenUser.class);
-        userService.validateRefreshToken(jwtTokenUser.getId(), jwtUtil);
-
-        // access token 재발급
-        String accessToken = userService.generateAccessToken(jwtTokenUser.getId(), jwtUtil, new Date(new Date().getTime() + 3600000));
-        preventDuplicateLoginService.registerLogin(jwtTokenUser.getId(), accessToken);
+        String jwt = jwtUtil.createToken(loggedInUser, new Date(new Date().getTime() + 360000));
 
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
                         "토큰 재발급 성공",
                         JwtTokenResponse.builder()
-                                .accessToken(accessToken)
+                                .accessToken(jwt)
                                 .build()
                 ));
-    }
-
-    private void validateRefreshToken(String refreshToken) {
-
-        validateRefreshTokenNull(refreshToken);
-
-        if (!jwtUtil.validateTokenIsManipulated(refreshToken) || !jwtUtil.validateTokenIsExpired(refreshToken)) {
-            throw new RefreshTokenExpiredException("[ERROR] Refresh Token이 만료되었습니다.");
-        }
-    }
-
-    private void validateRefreshTokenNull(String refreshToken) {
-
-        if (refreshToken == null) {
-            throw new RefreshTokenExpiredException("[ERROR] Refresh Token이 존재하지 않습니다.");
-        }
     }
 
     private String findRefreshToken(HttpServletRequest request) {
@@ -173,12 +139,8 @@ public class UserController {
         return refreshToken;
     }
 
-
     @PostMapping("/users/logout")
     public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId, HttpServletResponse response) {
-
-        // refresh toekn 무효화
-        userService.invalidateRefreshToken(userId);
 
         // Cookie 삭제
         invalidateCookie(response);

@@ -6,12 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
-import yonseigolf.server.user.dto.response.*;
-import yonseigolf.server.user.entity.RefreshToken;
+import yonseigolf.server.user.dto.response.AdminResponse;
+import yonseigolf.server.user.dto.response.LoggedInUser;
+import yonseigolf.server.user.dto.response.SingleUserResponse;
+import yonseigolf.server.user.dto.response.UserResponse;
 import yonseigolf.server.user.entity.User;
 import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
-import yonseigolf.server.user.repository.RefreshTokenRepository;
 import yonseigolf.server.user.repository.UserRepository;
 
 import java.util.Date;
@@ -22,13 +23,11 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
+    public UserService(UserRepository userRepository) {
 
         this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public LoggedInUser signUp(SignUpUserRequest request, Long kakaoId) {
@@ -68,30 +67,6 @@ public class UserService {
         user.updateUserClass(userClass);
     }
 
-    public void validateRefreshToken(long userId, JwtService jwtUtil) {
-        // refresh token이 없거나 만료된 경우 재발급
-        User user = findById(userId);
-        user.validateRefreshToken(jwtUtil);
-    }
-
-    @Transactional
-    public void saveRefreshToken(long id, String token) {
-
-        User user = findById(id);
-        RefreshToken refreshToken = RefreshToken.builder()
-                .refreshToken(token)
-                .build();
-        RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
-        user.saveRefreshToken(savedRefreshToken);
-    }
-
-    @Transactional
-    public void invalidateRefreshToken(long id) {
-
-        User user = findById(id);
-        user.invalidateRefreshToken();
-    }
-
     public String generateAccessToken(Long userId, JwtService jwtService, Date expiredAt) {
         User user = findById(userId);
         LoggedInUser loggedInUser = LoggedInUser.fromUser(user);
@@ -105,7 +80,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 
-    private User findByKakaoId(Long kakaoId) {
+    public User findByKakaoId(Long kakaoId) {
 
         return userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
