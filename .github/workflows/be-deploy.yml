@@ -2,7 +2,7 @@ name: Yonsei-Golf DEV CI
 
 on:
   push:
-    branches: [ "release/error-fix" ]
+    branches: [ "dev" ]
 
 env:
   WORKING_DIRECTORY: ./
