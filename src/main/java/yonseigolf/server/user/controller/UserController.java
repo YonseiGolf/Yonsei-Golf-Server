@@ -142,7 +142,6 @@ public class UserController {
     @PostMapping("/users/logout")
     public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId, HttpServletResponse response) {
 
-        // Cookie 삭제
         invalidateCookie(response);
 
         return ResponseEntity
