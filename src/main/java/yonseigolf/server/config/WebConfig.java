@@ -19,14 +19,16 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
 
         registry.addMapping("/**") // 모든 경로에 대해
-                .allowedOrigins(
-                        "http://localhost:3000",
-                        "https://www.yonseigolf.site",
-                        "https://yonseigolf.site"
-                )
-                .allowedMethods("GET", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS")
-                .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization")
-                .allowCredentials(true);
+            .allowedOrigins(
+                "http://localhost:3000",
+                "https://www.yonseigolf.site",
+                "https://yonseigolf.site",
+                "https://www.birdiehyun.store",
+                "https://birdiehyun.store"
+            )
+            .allowedMethods("GET", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS")
+            .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization")
+            .allowCredentials(true);
     }
 
 
@@ -34,20 +36,20 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(defaultInterceptor)
-                .addPathPatterns("/users/signIn")
-                .addPathPatterns("/users/loggedIn")
-                .addPathPatterns("/boards/**")
-                .addPathPatterns("/replies/**");
+            .addPathPatterns("/users/signIn")
+            .addPathPatterns("/users/loggedIn")
+            .addPathPatterns("/boards/**")
+            .addPathPatterns("/replies/**");
 
         registry.addInterceptor(oauthInterceptor)
-                .addPathPatterns("/users/signUp")
-                .addPathPatterns("/users/signIn");
+            .addPathPatterns("/users/signUp")
+            .addPathPatterns("/users/signIn");
 
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/boards/**")
-                .addPathPatterns("/users/logout")
-                .addPathPatterns("/users/loggedIn")
-                .addPathPatterns("/replies/**")
-                .excludePathPatterns("/oauth/kakao");
+            .addPathPatterns("/boards/**")
+            .addPathPatterns("/users/logout")
+            .addPathPatterns("/users/loggedIn")
+            .addPathPatterns("/replies/**")
+            .excludePathPatterns("/oauth/kakao");
     }
 }
