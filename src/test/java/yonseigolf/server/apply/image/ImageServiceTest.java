@@ -39,15 +39,13 @@ class ImageServiceTest {
                         "image/jpeg",
                         "test image".getBytes());
 
-        String expectedUrl = "https://yg-img-storage.s3.ap-northeast-2.amazonaws.com/store-image/test.jpgid";
-
         given(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).willReturn(null);
 
         // when
         String returnUrl = imageService.uploadImage(file, "id");
 
         // then
-        assertThat(expectedUrl).isEqualTo(returnUrl);
+        assertThat(returnUrl).isEqualTo("https://minio.birdiehyun.store/yg-img-storage/store-image/test.jpgid");
     }
 
     @Test
