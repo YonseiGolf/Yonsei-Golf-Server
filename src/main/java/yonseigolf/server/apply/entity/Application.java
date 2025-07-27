@@ -1,5 +1,6 @@
 package yonseigolf.server.apply.entity;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,15 +26,11 @@ public class Application {
     private Long id;
     private String name;
     private String photo;
-    private long age;
+    private LocalDate birthDate;
     private long studentId;
     private String email;
     private String major;
     private String phoneNumber;
-    private long golfDuration;
-    private long roundCount;
-    private boolean lessonStatus;
-    private boolean clubStatus;
     private String selfIntroduction;
     private String applyReason;
     private String skillEvaluation;
@@ -51,15 +48,11 @@ public class Application {
         return Application.builder()
                 .name(request.getName())
                 .photo(request.getPhoto())
-                .age(request.getAge())
+                .birthDate(request.getBirthDate())
                 .studentId(request.getStudentId())
                 .email(request.getEmail())
                 .major(request.getMajor())
                 .phoneNumber(request.getPhoneNumber())
-                .golfDuration(request.getGolfDuration())
-                .roundCount(request.getRoundCount())
-                .lessonStatus(request.isLessonStatus())
-                .clubStatus(request.isClubStatus())
                 .selfIntroduction(request.getSelfIntroduction())
                 .applyReason(request.getApplyReason())
                 .skillEvaluation(request.getSkillEvaluation())
