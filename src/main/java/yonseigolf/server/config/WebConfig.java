@@ -14,7 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
     private final OauthInterceptor oauthInterceptor;
     private final LoginInterceptor loginInterceptor;
 
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
 
@@ -24,7 +23,9 @@ public class WebConfig implements WebMvcConfigurer {
                 "https://www.yonseigolf.site",
                 "https://yonseigolf.site",
                 "https://www.birdiehyun.store",
-                "https://birdiehyun.store"
+                "https://birdiehyun.store",
+                "https://www.yonsei-golf.kr",
+                "https://yonsei-golf.kr"
             )
             .allowedMethods("GET", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS")
             .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization")

@@ -1,6 +1,7 @@
 package yonseigolf.server.apply.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,15 +19,11 @@ public class ApplicationResponse {
     private Long id;
     private String name;
     private String photo;
-    private long age;
+    private LocalDate birthDate;
     private long studentId;
     private String email;
     private String major;
     private String phoneNumber;
-    private long golfDuration;
-    private long roundCount;
-    private boolean lessonStatus;
-    private boolean clubStatus;
     private String selfIntroduction;
     private String applyReason;
     private String skillEvaluation;
@@ -46,15 +43,11 @@ public class ApplicationResponse {
                 .id(application.getId())
                 .name(application.getName())
                 .photo(application.getPhoto())
-                .age(application.getAge())
+                .birthDate(application.getBirthDate())
                 .studentId(application.getStudentId())
                 .email(application.getEmail())
                 .major(application.getMajor())
                 .phoneNumber(application.getPhoneNumber())
-                .golfDuration(application.getGolfDuration())
-                .roundCount(application.getRoundCount())
-                .lessonStatus(application.isLessonStatus())
-                .clubStatus(application.isClubStatus())
                 .selfIntroduction(application.getSelfIntroduction())
                 .applyReason(application.getApplyReason())
                 .skillEvaluation(application.getSkillEvaluation())

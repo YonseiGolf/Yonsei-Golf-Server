@@ -1,5 +1,6 @@
 package yonseigolf.server.apply.dto.request;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,15 +16,11 @@ public class ApplicationRequest {
 
     private String name;
     private String photo;
-    private long age;
+    private LocalDate birthDate;
     private long studentId;
     private String major;
     private String email;
     private String phoneNumber;
-    private long golfDuration;
-    private long roundCount;
-    private boolean lessonStatus;
-    private boolean clubStatus;
     private String selfIntroduction;
     private String applyReason;
     private String skillEvaluation;
