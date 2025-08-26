@@ -90,23 +90,23 @@ test {
     finalizedBy 'jacocoTestReport'
 }
 
-asciidoctor {
-    inputs.dir snippetsDir
-    configurations 'asciidoctorExt'
-
-    sources {
-        include("**/index.adoc")
-    }
-    baseDirFollowsSourceFile()
-
-    dependsOn test
-}
+//asciidoctor {
+//    inputs.dir snippetsDir
+//    configurations 'asciidoctorExt'
+//
+//    sources {
+//        include("**/index.adoc")
+//    }
+//    baseDirFollowsSourceFile()
+//
+//    dependsOn test
+//}
 
 bootJar {
     dependsOn asciidoctor
-    from("${asciidoctor.outputDir}") {
-        into 'static/docs'
-    }
+//    from("${asciidoctor.outputDir}") {
+//        into 'static/docs'
+//    }
 }
 
 tasks.named('test') {
@@ -114,10 +114,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.named('asciidoctor') {
-    inputs.dir snippetsDir
-    dependsOn test
-}
+//tasks.named('asciidoctor') {
+//    inputs.dir snippetsDir
+//    dependsOn test
+//}
 
 jacoco {
     toolVersion = "0.8.5"
