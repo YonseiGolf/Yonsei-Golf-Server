@@ -74,7 +74,7 @@ public class UserService {
         return jwtService.createToken(loggedInUser, expiredAt);
     }
 
-    private User findById(Long id) {
+    public User findById(Long id) {
 
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
