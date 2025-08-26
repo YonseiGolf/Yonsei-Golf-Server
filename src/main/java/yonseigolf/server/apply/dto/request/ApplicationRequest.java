@@ -29,4 +29,5 @@ public class ApplicationRequest {
     private String otherClub;
     private String swingVideo;
     private LocalDateTime submitTime;
+    private Integer semester;
 }

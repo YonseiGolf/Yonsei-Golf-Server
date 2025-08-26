@@ -52,9 +52,9 @@ public class ApplyService {
         emailRepository.save(EmailAlarm.of(request));
     }
 
-    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable) {
+    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, int semester, Pageable pageable) {
 
-        return applicationRepository.getApplicationResults(documentPass, finalPass, pageable);
+        return applicationRepository.getApplicationResults(documentPass, finalPass, semester, pageable);
     }
 
     public ApplicationResponse getApplication(Long id) {

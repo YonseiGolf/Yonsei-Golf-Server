@@ -36,6 +36,7 @@ public class ApplicationResponse {
     private Boolean finalPass;
     @JsonFormat(pattern = "MM월dd일 HH:mm")
     private LocalDateTime interviewTime;
+    private Integer semester;
 
     public static ApplicationResponse fromApplication(Application application) {
 
@@ -58,6 +59,7 @@ public class ApplicationResponse {
                 .documentPass(application.getDocumentPass())
                 .finalPass(application.getFinalPass())
                 .interviewTime(application.getInterviewTime())
+                .semester(application.getSemester())
                 .build();
     }
 }
