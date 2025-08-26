@@ -1,5 +1,8 @@
 package yonseigolf.server.user.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,10 +18,6 @@ import yonseigolf.server.user.entity.UserClass;
 import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.UserRepository;
 
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class UserService {
 
@@ -30,10 +29,25 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public LoggedInUser signUp(SignUpUserRequest request, Long kakaoId) {
+    @Transactional
+    public LoggedInUser signUp(SignUpUserRequest request, long kakaoId) {
+        return userRepository.findByNameAndStudentId(request.getName(), request.getStudentId())
+            .map(user -> updateExistingUser(user, request, kakaoId))
+            .orElseGet(() -> createNewUser(request, kakaoId));
+    }
 
+    private LoggedInUser updateExistingUser(User user, SignUpUserRequest request, long kakaoId) {
+        user.updateRegisteredUser(
+            request.getPhoneNumber(),
+            request.getMajor(),
+            request.getSemester(),
+            kakaoId
+        );
+        return LoggedInUser.fromUser(user);
+    }
+
+    private LoggedInUser createNewUser(SignUpUserRequest request, long kakaoId) {
         User savedUser = userRepository.save(User.of(request, kakaoId));
-
         return LoggedInUser.fromUser(savedUser);
     }
 

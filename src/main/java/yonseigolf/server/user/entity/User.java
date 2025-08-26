@@ -1,12 +1,16 @@
 package yonseigolf.server.user.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
-
-import javax.persistence.*;
 
 @Getter
 @Entity
@@ -71,5 +75,17 @@ public class User {
 
     public boolean checkOwner(Long userId) {
         return this.id == userId;
+    }
+
+    public void updateRegisteredUser(
+        String phoneNumber,
+        String major,
+        int semester,
+        long kakaoId
+    ) {
+        this.phoneNumber = phoneNumber;
+        this.major = major;
+        this.semester = semester;
+        this.kakaoId = kakaoId;
     }
 }
