@@ -21,7 +21,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, Pageable pageable) {
+    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, int semester, Pageable pageable) {
 
         QueryResults<SingleApplicationResult> result = queryFactory.select(
                         new QSingleApplicationResult(
@@ -35,7 +35,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
                 .from(application)
                 .where(
                         documentPassEq(documentPass),
-                        finalPassEq(finalPass)
+                        finalPassEq(finalPass),
+                    application.semester.eq(semester)
                 )
                 .orderBy(application.interviewTime.asc())
                 .offset(pageable.getOffset())

@@ -42,26 +42,27 @@ public class Application {
     private Boolean documentPass;
     private Boolean finalPass;
     private LocalDateTime interviewTime;
+    // 지원 기수
+    private Integer semester;
 
     public static Application of(ApplicationRequest request) {
-
         return Application.builder()
-                .name(request.getName())
-                .photo(request.getPhoto())
-                .birthDate(request.getBirthDate())
-                .studentId(request.getStudentId())
-                .email(request.getEmail())
-                .major(request.getMajor())
-                .phoneNumber(request.getPhoneNumber())
-                .selfIntroduction(request.getSelfIntroduction())
-                .applyReason(request.getApplyReason())
-                .skillEvaluation(request.getSkillEvaluation())
-                .golfMemory(request.getGolfMemory())
-                .otherClub(request.getOtherClub())
-                .swingVideo(request.getSwingVideo())
-                .submitTime(LocalDateTime.now())
-                .build();
-
+            .name(request.getName())
+            .photo(request.getPhoto())
+            .birthDate(request.getBirthDate())
+            .studentId(request.getStudentId())
+            .email(request.getEmail())
+            .major(request.getMajor())
+            .phoneNumber(request.getPhoneNumber())
+            .selfIntroduction(request.getSelfIntroduction())
+            .applyReason(request.getApplyReason())
+            .skillEvaluation(request.getSkillEvaluation())
+            .golfMemory(request.getGolfMemory())
+            .otherClub(request.getOtherClub())
+            .swingVideo(request.getSwingVideo())
+            .submitTime(LocalDateTime.now())
+            .semester(request.getSemester())
+            .build();
     }
 
     public void updatePass(UpdatePassRequest request) {

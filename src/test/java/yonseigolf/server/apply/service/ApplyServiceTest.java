@@ -105,7 +105,7 @@ class ApplyServiceTest {
         applicationRepository.save(application);
 
         // when
-        Page<SingleApplicationResult> resultPage = applyService.getApplicationResults(documentPass, finalPass, PageRequest.of(0, 10));
+        Page<SingleApplicationResult> resultPage = applyService.getApplicationResults(documentPass, finalPass, 0, PageRequest.of(0, 10));
 
         // then
         assertThat(resultPage.getTotalElements()).isEqualTo(1);
@@ -116,7 +116,7 @@ class ApplyServiceTest {
     void getApplicationTest() {
         // given
         Application application = Application.builder()
-                .age(20)
+//                .age(20)
                 .photo("photo")
                 .name("name")
                 .phoneNumber("phoneNumber")
@@ -129,7 +129,7 @@ class ApplyServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(response.getAge()).isEqualTo(application.getAge()),
+//                () -> assertThat(response.getAge()).isEqualTo(application.getAge()),
                 () -> assertThat(response.getPhoto()).isEqualTo(application.getPhoto()),
                 () -> assertThat(response.getName()).isEqualTo(application.getName()),
                 () -> assertThat(response.getPhoneNumber()).isEqualTo(application.getPhoneNumber()),

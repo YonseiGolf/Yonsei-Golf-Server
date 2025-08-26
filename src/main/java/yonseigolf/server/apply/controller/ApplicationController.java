@@ -82,13 +82,14 @@ public class ApplicationController {
     public ResponseEntity<CustomResponse<Page<SingleApplicationResult>>> getApplicationResults(
             @RequestParam(required = false) Boolean documentPass,
             @RequestParam(required = false) Boolean finalPass,
+            @RequestParam(required = true) int semester,
             Pageable pageable) {
 
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
                         "연세골프 지원서 조회 성공",
-                        applicationService.getApplicationResults(documentPass, finalPass, pageable)));
+                        applicationService.getApplicationResults(documentPass, finalPass, semester, pageable)));
     }
 
     @GetMapping("/admin/forms/{id}")

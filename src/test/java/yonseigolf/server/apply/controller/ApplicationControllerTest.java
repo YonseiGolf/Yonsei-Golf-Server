@@ -246,7 +246,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 )
         );
         Page<SingleApplicationResult> mockPage = new PageImpl<>(mockResults);
-        given(applyService.getApplicationResults(any(), any(), any())).willReturn(mockPage);
+        given(applyService.getApplicationResults(any(), any(), any(), any())).willReturn(mockPage);
 
         // when & then
         mockMvc.perform(get("/admin/forms")
@@ -308,15 +308,15 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 .id(1L)
                 .name("홍길동")
                 .photo("사진")
-                .age(20L)
+//                .age(20L)
                 .studentId(1L)
                 .email("email")
                 .major("체육교육")
                 .phoneNumber("010-1234-5678")
-                .golfDuration(1L)
-                .roundCount(1L)
-                .lessonStatus(true)
-                .clubStatus(true)
+//                .golfDuration(1L)
+//                .roundCount(1L)
+//                .lessonStatus(true)
+//                .clubStatus(true)
                 .selfIntroduction("자기소개")
                 .applyReason("지원동기")
                 .skillEvaluation("실력평가")
