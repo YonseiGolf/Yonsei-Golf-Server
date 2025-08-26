@@ -13,6 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final DefaultInterceptor defaultInterceptor;
     private final OauthInterceptor oauthInterceptor;
     private final LoginInterceptor loginInterceptor;
+    private final BlackListInterceptor blackListInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -52,5 +53,8 @@ public class WebConfig implements WebMvcConfigurer {
             .addPathPatterns("/users/loggedIn")
             .addPathPatterns("/replies/**")
             .excludePathPatterns("/oauth/kakao");
+
+        // todo : 로그인 전용 api가 나오면 할 것
+//        registry.addInterceptor(blackListInterceptor);
     }
 }
