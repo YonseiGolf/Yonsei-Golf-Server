@@ -1,6 +1,7 @@
 package yonseigolf.server.apply.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.EmailAlarm;
+import yonseigolf.server.apply.event.AppliedEvent;
 import yonseigolf.server.apply.repository.ApplicationRepository;
 import yonseigolf.server.apply.repository.EmailRepository;
 import yonseigolf.server.email.dto.NotificationType;
@@ -19,6 +21,7 @@ import yonseigolf.server.email.service.EmailService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import yonseigolf.server.event.Events;
 
 
 @Service
@@ -38,13 +41,12 @@ public class ApplyService {
 
     public void apply(ApplicationRequest request) {
 
-        applicationRepository.save(Application.of(request));
-        emailService.sendEmail(request.getEmail(),
-                "안녕하세요. 연세골프입니다.\n\n",
-                request.getName() + "님의 지원서가 정상적으로 제출되었습니다. \n\n" +
-                        "서류 합격 여부는 추후 이메일로 공지될 예정입니다. \n\n" +
-                        "감사합니다."
-        );
+        Application application = applicationRepository.save(Application.of(request));
+
+        // TODO : async로 변경 필요
+        Events.raise(new AppliedEvent(
+            request.getEmail(), request.getName(), application.getId()
+        ));
     }
 
     public void emailAlarm(EmailAlertRequest request) {
@@ -75,7 +77,8 @@ public class ApplyService {
     }
 
     public void sendEmailNotification(boolean isDocumentPass, Boolean isFinalPass) {
-
+        // document pass, final pass 결과 저장
+        // id, 기수, userName, 학과, (document_pass, final_pass, fail)로 전송된 적 있는지 감지
         final NotificationType type = NotificationType.decideNotificationType(isDocumentPass, isFinalPass);
         final String subject = "안녕하세요. 연세대학교 골프동아리 결과 메일입니다.";
 
