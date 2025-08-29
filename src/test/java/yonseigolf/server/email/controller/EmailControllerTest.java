@@ -63,7 +63,7 @@ public class EmailControllerTest extends RestDocsSupport {
                 )
                 .build();
 
-        given(emailService.findAllWaitingEmail()).willReturn(response);
+        given(emailService.findAllWaitingEmail(0)).willReturn(response);
         // when
 
         // then

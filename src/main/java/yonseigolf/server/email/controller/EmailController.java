@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import yonseigolf.server.email.dto.response.AllWaitingEmail;
 import yonseigolf.server.email.service.EmailService;
 import yonseigolf.server.util.CustomResponse;
@@ -21,9 +22,11 @@ public class EmailController {
     }
 
     @GetMapping("/admin/email/apply-start-email")
-    public ResponseEntity<CustomResponse<AllWaitingEmail>> findAllWaitingEmail() {
+    public ResponseEntity<CustomResponse<AllWaitingEmail>> findAllWaitingEmail(
+        @RequestParam int semester
+    ) {
 
-        AllWaitingEmail allWaitingEmail = emailService.findAllWaitingEmail();
+        AllWaitingEmail allWaitingEmail = emailService.findAllWaitingEmail(semester);
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("지원 시작 이메일 전송 대기 목록 조회 성공", allWaitingEmail));
