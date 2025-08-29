@@ -1,7 +1,7 @@
 package yonseigolf.server.email.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -14,29 +14,28 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
     private final EmailRepository emailRepository;
 
-    @Autowired
-    public EmailService(JavaMailSender mailSender, EmailRepository emailRepository) {
-
-        this.mailSender = mailSender;
-        this.emailRepository = emailRepository;
-    }
-
-    public AllWaitingEmail findAllWaitingEmail() {
+    public AllWaitingEmail findAllWaitingEmail(int semester) {
 
         return AllWaitingEmail.builder()
-                .emailAlarms(findAllAlert())
+                .emailAlarms(findAllAlert(semester))
                 .build();
     }
 
     public void sendApplyStartAlert() {
-        List<EmailAlarm> allAlert = findAllAlert();
+        List<EmailAlarm> unsentAlarm = emailRepository.findAllBySentAtIsNull();
 
-        String[] bccAddresses = allAlert.stream()
+        if (unsentAlarm.isEmpty()) {
+            log.info("발송할 이메일이 없습니다.");
+            return;
+        }
+
+        String[] bccAddresses = unsentAlarm.stream()
                 .map(EmailAlarm::getEmail)
                 .toArray(String[]::new);
 
@@ -44,12 +43,13 @@ public class EmailService {
                 "연세대학교 골프동아리입니다.",
                 NotificationType.CLUB_RECRUITMENT.generateMessage(null));
 
-        emailRepository.deleteAll();
+        unsentAlarm.forEach(EmailAlarm::markAsSent);
+        emailRepository.saveAll(unsentAlarm);
     }
 
-    private List<EmailAlarm> findAllAlert() {
+    private List<EmailAlarm> findAllAlert(int semester) {
 
-        return emailRepository.findAll();
+        return emailRepository.findAllBySemester(semester);
     }
 
     private void sendEmail(String[] bcc, String subject, String text) {

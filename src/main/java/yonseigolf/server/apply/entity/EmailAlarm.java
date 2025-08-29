@@ -1,5 +1,6 @@
 package yonseigolf.server.apply.entity;
 
+import java.time.LocalDateTime;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -20,7 +21,8 @@ public class EmailAlarm {
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     private Long id;
     private String email;
-    private int semester;
+    private Integer semester;
+    private LocalDateTime sentAt;
 
     public static EmailAlarm of(EmailAlertRequest request) {
 
@@ -28,5 +30,9 @@ public class EmailAlarm {
             .email(request.getEmail())
             .semester(request.getSemester())
             .build();
+    }
+
+    public void markAsSent() {
+        this.sentAt = LocalDateTime.now();
     }
 }
