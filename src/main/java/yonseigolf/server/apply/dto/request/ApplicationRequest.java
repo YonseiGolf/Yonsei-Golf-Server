@@ -1,6 +1,7 @@
 package yonseigolf.server.apply.dto.request;
 
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,8 +27,9 @@ public class ApplicationRequest {
     private String skillEvaluation;
     private String golfMemory;
     // 다른 동아리 활동 질문
-    private String otherClub;
+    private List<ActivityClubRequest> activityClubs;
     private String swingVideo;
     private LocalDateTime submitTime;
     private Integer semester;
 }
+
