@@ -2,6 +2,7 @@ package yonseigolf.server.apply.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +29,8 @@ public class ApplicationResponse {
     private String applyReason;
     private String skillEvaluation;
     private String golfMemory;
-    private String otherClub;
+    //    private String otherClub;
+    private List<ActivityClubResponse> activities;
     private String swingVideo;
     @JsonFormat(pattern = "MM월dd일 HH:mm")
     private LocalDateTime submitTime;
@@ -39,27 +41,45 @@ public class ApplicationResponse {
     private Integer semester;
 
     public static ApplicationResponse fromApplication(Application application) {
+        List<ActivityClubResponse> activityClubResponses = application.getActivities().stream()
+            .map(activity -> new ActivityClubResponse(
+                activity.getClubName(),
+                activity.getStartDate(),
+                activity.getEndDate(),
+                activity.getRole()
+            ))
+            .toList();
 
         return ApplicationResponse.builder()
-                .id(application.getId())
-                .name(application.getName())
-                .photo(application.getPhoto())
-                .birthDate(application.getBirthDate())
-                .studentId(application.getStudentId())
-                .email(application.getEmail())
-                .major(application.getMajor())
-                .phoneNumber(application.getPhoneNumber())
-                .selfIntroduction(application.getSelfIntroduction())
-                .applyReason(application.getApplyReason())
-                .skillEvaluation(application.getSkillEvaluation())
-                .golfMemory(application.getGolfMemory())
-                .otherClub(application.getOtherClub())
-                .swingVideo(application.getSwingVideo())
-                .submitTime(application.getSubmitTime())
-                .documentPass(application.getDocumentPass())
-                .finalPass(application.getFinalPass())
-                .interviewTime(application.getInterviewTime())
-                .semester(application.getSemester())
-                .build();
+            .id(application.getId())
+            .name(application.getName())
+            .photo(application.getPhoto())
+            .birthDate(application.getBirthDate())
+            .studentId(application.getStudentId())
+            .email(application.getEmail())
+            .major(application.getMajor())
+            .phoneNumber(application.getPhoneNumber())
+            .selfIntroduction(application.getSelfIntroduction())
+            .applyReason(application.getApplyReason())
+            .skillEvaluation(application.getSkillEvaluation())
+            .golfMemory(application.getGolfMemory())
+            .activities(activityClubResponses)
+            .swingVideo(application.getSwingVideo())
+            .submitTime(application.getSubmitTime())
+            .documentPass(application.getDocumentPass())
+            .finalPass(application.getFinalPass())
+            .interviewTime(application.getInterviewTime())
+            .semester(application.getSemester())
+            .build();
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ActivityClubResponse {
+        private String clubName;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private String role;
     }
 }

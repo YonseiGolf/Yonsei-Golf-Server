@@ -15,10 +15,12 @@ import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.ApplicationResultLog;
+import yonseigolf.server.apply.entity.ClubActivity;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.event.AppliedEvent;
 import yonseigolf.server.apply.repository.ApplicationRepository;
 import yonseigolf.server.apply.repository.ApplicationResultLogRepository;
+import yonseigolf.server.apply.repository.ClubActivityRepository;
 import yonseigolf.server.apply.repository.EmailRepository;
 import yonseigolf.server.email.dto.NotificationType;
 import yonseigolf.server.email.service.EmailService;
@@ -34,10 +36,22 @@ public class ApplyService {
     private final EmailRepository emailRepository;
     private final EmailService emailService;
     private final ApplicationResultLogRepository applicationResultLogRepository;
+    private final ClubActivityRepository clubActivityRepository;
 
     public void apply(ApplicationRequest request) {
 
         Application application = applicationRepository.save(Application.of(request));
+        request.getActivityClubs().forEach(
+            activity -> {
+                clubActivityRepository.save(ClubActivity.builder()
+                    .applicationId(application.getId())
+                    .clubName(activity.getClubName())
+                    .startDate(activity.getStartDate())
+                    .endDate(activity.getEndDate())
+                    .role(activity.getRole())
+                    .build());
+            }
+        );
 
         // TODO : async로 변경 필요
         Events.raise(new AppliedEvent(

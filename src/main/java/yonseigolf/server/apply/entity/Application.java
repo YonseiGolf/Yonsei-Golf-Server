@@ -1,6 +1,11 @@
 package yonseigolf.server.apply.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,8 +40,9 @@ public class Application {
     private String applyReason;
     private String skillEvaluation;
     private String golfMemory;
-    // 다른 동아리 활동 질문
-    private String otherClub;
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "applicationId")
+    private List<ClubActivity> activities = new ArrayList<>();
     private String swingVideo;
     private LocalDateTime submitTime;
     private Boolean documentPass;
@@ -58,7 +64,6 @@ public class Application {
             .applyReason(request.getApplyReason())
             .skillEvaluation(request.getSkillEvaluation())
             .golfMemory(request.getGolfMemory())
-            .otherClub(request.getOtherClub())
             .swingVideo(request.getSwingVideo())
             .submitTime(LocalDateTime.now())
             .semester(request.getSemester())
