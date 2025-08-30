@@ -1,11 +1,8 @@
 name: Yonsei-Golf DEV CI
 
-#on:
-#  push:
-#    branches: [ "dev" ]
 on:
   push:
-    branches: [ "feature/CI-CD" ]
+    branches: [ "dev" ]
 
 jobs:
   build:
