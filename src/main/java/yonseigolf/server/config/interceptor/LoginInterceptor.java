@@ -1,4 +1,4 @@
-package yonseigolf.server.config;
+package yonseigolf.server.config.interceptor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,19 +13,23 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OauthInterceptor implements HandlerInterceptor {
+public class LoginInterceptor implements HandlerInterceptor {
+
     private final JwtService jwtUtil;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         if(request.getMethod().equals("OPTIONS")) {
             return true;
         }
-
+        if (request.getRequestURI().startsWith("/boards") && request.getMethod().equals("GET")) {
+            return true;
+        }
         String token = request.getHeader("Authorization").split(" ")[1];
         LoggedInUser loggedInUser = jwtUtil.extractedUserFromToken(token, LoggedInUser.class);
-        request.setAttribute("kakaoId", loggedInUser.getId());
+
+        request.setAttribute("userId", loggedInUser.getId());
 
         return true;
     }

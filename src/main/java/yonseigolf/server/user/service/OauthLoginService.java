@@ -1,7 +1,13 @@
 package yonseigolf.server.user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -11,24 +17,16 @@ import yonseigolf.server.user.dto.token.AccessTokenResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
+@RequiredArgsConstructor
 public class OauthLoginService {
 
     private final RestTemplate restTemplate;
 
-    @Autowired
-
-    public OauthLoginService(RestTemplate restTemplate) {
-
-        this.restTemplate = restTemplate;
-    }
-
     public OauthToken getOauthToken(String code, KakaoOauthInfo oauthInfo) {
         HttpEntity<?> request = createRequestEntity(code, oauthInfo);
-        ResponseEntity<OauthToken> response = restTemplate.postForEntity(oauthInfo.getRedirectUri(), request, OauthToken.class);
+        ResponseEntity<OauthToken> response = restTemplate.postForEntity(oauthInfo.getRedirectUri(),
+            request, OauthToken.class);
 
         return response.getBody();
     }
@@ -63,25 +61,28 @@ public class OauthLoginService {
         HttpEntity<?> requestEntity = new HttpEntity<>(headers);
 
         return restTemplate.exchange(
-                        loginUri,
-                        HttpMethod.GET,
-                        requestEntity,
-                        KakaoLoginResponse.class)
-                .getBody();
+                loginUri,
+                HttpMethod.GET,
+                requestEntity,
+                KakaoLoginResponse.class)
+            .getBody();
     }
 
     public long refreshAccessToken(String refreshToken, KakaoOauthInfo oauthInfo) {
 
         HttpEntity<?> request = createRefreshRequestEntity(refreshToken, oauthInfo);
-        ResponseEntity<AccessTokenResponse> refreshResponse = restTemplate.postForEntity(oauthInfo.getRedirectUri(), request, AccessTokenResponse.class);
+        ResponseEntity<AccessTokenResponse> refreshResponse = restTemplate.postForEntity(
+            oauthInfo.getRedirectUri(), request, AccessTokenResponse.class);
 
         AccessTokenResponse accessResponse = refreshResponse.getBody();
-        KakaoLoginResponse kakaoLoginResponse = processKakaoLogin(accessResponse.getAccessToken(), oauthInfo.getLoginUri());
+        KakaoLoginResponse kakaoLoginResponse = processKakaoLogin(accessResponse.getAccessToken(),
+            oauthInfo.getLoginUri());
 
         return kakaoLoginResponse.getId();
     }
 
-    private HttpEntity<?> createRefreshRequestEntity(String refreshToken, KakaoOauthInfo oauthInfo) {
+    private HttpEntity<?> createRefreshRequestEntity(String refreshToken,
+        KakaoOauthInfo oauthInfo) {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         Map<String, String> header = new HashMap<>();
         header.put("Accept", "application/json");

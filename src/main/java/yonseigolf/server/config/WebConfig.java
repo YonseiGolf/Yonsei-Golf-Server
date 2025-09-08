@@ -5,6 +5,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import yonseigolf.server.config.interceptor.AdminInterceptor;
+import yonseigolf.server.config.interceptor.BlackListInterceptor;
+import yonseigolf.server.config.interceptor.DefaultInterceptor;
+import yonseigolf.server.config.interceptor.LoginInterceptor;
+import yonseigolf.server.config.interceptor.OauthInterceptor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -14,6 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final OauthInterceptor oauthInterceptor;
     private final LoginInterceptor loginInterceptor;
     private final BlackListInterceptor blackListInterceptor;
+    private final AdminInterceptor adminInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -56,5 +62,8 @@ public class WebConfig implements WebMvcConfigurer {
 
         // todo : 로그인 전용 api가 나오면 할 것
 //        registry.addInterceptor(blackListInterceptor);
+
+        registry.addInterceptor(adminInterceptor)
+            .addPathPatterns("/admin/**");
     }
 }
