@@ -3,6 +3,7 @@ package yonseigolf.server.user.service;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,15 +20,10 @@ import yonseigolf.server.user.entity.UserRole;
 import yonseigolf.server.user.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserService(UserRepository userRepository) {
-
-        this.userRepository = userRepository;
-    }
 
     @Transactional
     public LoggedInUser signUp(SignUpUserRequest request, long kakaoId) {
@@ -47,7 +43,10 @@ public class UserService {
     }
 
     private LoggedInUser createNewUser(SignUpUserRequest request, long kakaoId) {
-        User savedUser = userRepository.save(User.of(request, kakaoId));
+        User user = User.create(kakaoId, request.getName(), request.getPhoneNumber(),
+            request.getStudentId(), request.getMajor(), request.getSemester());
+        User savedUser = userRepository.save(user);
+
         return LoggedInUser.fromUser(savedUser);
     }
 
@@ -57,14 +56,21 @@ public class UserService {
         return LoggedInUser.fromUser(user);
     }
 
+    private User findByKakaoId(Long kakaoId) {
+
+        return userRepository.findByKakaoId(kakaoId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    }
+
     public AdminResponse getLeaders() {
 
         User leader = userRepository.findLeaderByRole(UserRole.LEADER)
-                .orElseThrow(() -> new IllegalArgumentException("회장이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("회장이 존재하지 않습니다."));
 
-        List<UserResponse> assistantLeaders = userRepository.findAssistantLeadersByRole(UserRole.ASSISTANT_LEADER).stream()
-                .map(UserResponse::fromUser)
-                .collect(Collectors.toList());
+        List<UserResponse> assistantLeaders = userRepository.findAssistantLeadersByRole(
+                UserRole.ASSISTANT_LEADER).stream()
+            .map(UserResponse::fromUser)
+            .collect(Collectors.toList());
 
         return AdminResponse.of(UserResponse.fromUser(leader), assistantLeaders);
     }
@@ -91,12 +97,6 @@ public class UserService {
     public User findById(Long id) {
 
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-    }
-
-    public User findByKakaoId(Long kakaoId) {
-
-        return userRepository.findByKakaoId(kakaoId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     }
 }

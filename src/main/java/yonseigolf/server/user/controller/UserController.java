@@ -1,17 +1,31 @@
 package yonseigolf.server.user.controller;
 
+import java.util.Date;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import yonseigolf.server.user.dto.request.KakaoCode;
 import yonseigolf.server.user.dto.request.SignUpUserRequest;
 import yonseigolf.server.user.dto.request.UserClassRequest;
-import yonseigolf.server.user.dto.response.*;
+import yonseigolf.server.user.dto.response.AdminResponse;
+import yonseigolf.server.user.dto.response.JwtTokenResponse;
+import yonseigolf.server.user.dto.response.JwtTokenUser;
+import yonseigolf.server.user.dto.response.KakaoLoginResponse;
+import yonseigolf.server.user.dto.response.LoggedInUser;
+import yonseigolf.server.user.dto.response.SingleUserResponse;
 import yonseigolf.server.user.dto.token.KakaoOauthInfo;
 import yonseigolf.server.user.dto.token.OauthToken;
 import yonseigolf.server.user.entity.UserClass;
@@ -21,13 +35,9 @@ import yonseigolf.server.user.service.OauthLoginService;
 import yonseigolf.server.user.service.UserService;
 import yonseigolf.server.util.CustomResponse;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-
 @Slf4j
-@Controller
+@RestController
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
@@ -35,39 +45,34 @@ public class UserController {
     private final KakaoOauthInfo kakaoOauthInfo;
     private final JwtService jwtUtil;
 
-    @Autowired
-    public UserController(UserService userService, OauthLoginService oauthLoginService, KakaoOauthInfo kakaoOauthInfo, JwtService jwtUtil) {
-
-        this.userService = userService;
-        this.oauthLoginService = oauthLoginService;
-        this.kakaoOauthInfo = kakaoOauthInfo;
-        this.jwtUtil = jwtUtil;
-    }
-
     @PostMapping("/oauth/kakao")
-    public ResponseEntity<CustomResponse<JwtTokenResponse>> kakaoLogin(@RequestBody KakaoCode kakaoCode, HttpServletResponse response) {
-        OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(), kakaoOauthInfo);
-        KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> kakaoLogin(
+        @RequestBody KakaoCode kakaoCode, HttpServletResponse response) {
+        OauthToken oauthToken = oauthLoginService.getOauthToken(kakaoCode.getKakaoCode(),
+            kakaoOauthInfo);
+        KakaoLoginResponse kakaoLoginResponse = oauthLoginService.processKakaoLogin(
+            oauthToken.getAccessToken(), kakaoOauthInfo.getLoginUri());
 
         String token = jwtUtil.createToken(
-                JwtTokenUser.builder()
-                        .id(kakaoLoginResponse.getId())
-                        .build(),
-                new Date(new Date().getTime() + 360000)
+            JwtTokenUser.builder()
+                .id(kakaoLoginResponse.getId())
+                .build(),
+            new Date(new Date().getTime() + 360000)
         );
 
         createRefreshToken(response, oauthToken.getRefreshToken());
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse(
-                        "카카오 로그인 성공",
-                        JwtTokenResponse.builder().accessToken(token).build())
-                );
+            .ok()
+            .body(CustomResponse.successResponse(
+                "카카오 로그인 성공",
+                JwtTokenResponse.builder().accessToken(token).build())
+            );
     }
 
     @PostMapping("/users/signIn")
-    public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(@RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> signIn(
+        @RequestAttribute(required = false) Long kakaoId, HttpServletResponse response) {
 
         LoggedInUser loggedInUser = userService.signIn(kakaoId);
 
@@ -75,12 +80,12 @@ public class UserController {
         String tokenReponse = jwtUtil.createToken(loggedInUser, date);
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("로그인 성공",
-                        JwtTokenResponse.builder()
-                                .accessToken(tokenReponse)
-                                .build())
-                );
+            .ok()
+            .body(CustomResponse.successResponse("로그인 성공",
+                JwtTokenResponse.builder()
+                    .accessToken(tokenReponse)
+                    .build())
+            );
     }
 
     private void createRefreshToken(HttpServletResponse response, String refreshToken) {
@@ -96,12 +101,13 @@ public class UserController {
     public ResponseEntity<CustomResponse<Void>> loggedIn() {
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("로그인 상태입니다."));
+            .ok()
+            .body(CustomResponse.successResponse("로그인 상태입니다."));
     }
 
     @PostMapping("/users/signIn/refresh")
-    public ResponseEntity<CustomResponse<JwtTokenResponse>> refreshAccessToken(HttpServletRequest request) {
+    public ResponseEntity<CustomResponse<JwtTokenResponse>> refreshAccessToken(
+        HttpServletRequest request) {
 
         String refreshToken = findRefreshToken(request);
         if (refreshToken == null) {
@@ -114,13 +120,13 @@ public class UserController {
         String jwt = jwtUtil.createToken(loggedInUser, new Date(new Date().getTime() + 360000));
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse(
-                        "토큰 재발급 성공",
-                        JwtTokenResponse.builder()
-                                .accessToken(jwt)
-                                .build()
-                ));
+            .ok()
+            .body(CustomResponse.successResponse(
+                "토큰 재발급 성공",
+                JwtTokenResponse.builder()
+                    .accessToken(jwt)
+                    .build()
+            ));
     }
 
     private String findRefreshToken(HttpServletRequest request) {
@@ -140,13 +146,14 @@ public class UserController {
     }
 
     @PostMapping("/users/logout")
-    public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId, HttpServletResponse response) {
+    public ResponseEntity<CustomResponse<Void>> logOut(@RequestAttribute Long userId,
+        HttpServletResponse response) {
 
         invalidateCookie(response);
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("로그아웃 성공"));
+            .ok()
+            .body(CustomResponse.successResponse("로그아웃 성공"));
     }
 
     private void invalidateCookie(HttpServletResponse response) {
@@ -159,7 +166,8 @@ public class UserController {
     }
 
     @PostMapping("/users/signUp")
-    public ResponseEntity<CustomResponse<Void>> signUp(@RequestBody @Validated SignUpUserRequest request, @RequestAttribute Long kakaoId) {
+    public ResponseEntity<CustomResponse<Void>> signUp(
+        @RequestBody @Validated SignUpUserRequest request, @RequestAttribute Long kakaoId) {
 
         if (kakaoId == null) {
             throw new IllegalArgumentException("[ERROR] 카카오 로그인을 먼저 해주세요.");
@@ -168,28 +176,30 @@ public class UserController {
         userService.signUp(request, kakaoId);
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("회원가입 성공"));
+            .ok()
+            .body(CustomResponse.successResponse("회원가입 성공"));
     }
 
     @GetMapping("/admin/users")
-    public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable, UserClass userClass) {
+    public ResponseEntity<CustomResponse<Page<SingleUserResponse>>> findAllUsers(Pageable pageable,
+        UserClass userClass) {
 
         Page<SingleUserResponse> users = userService.findUsersByClass(pageable, userClass);
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("유저 조회 성공", users));
+            .ok()
+            .body(CustomResponse.successResponse("유저 조회 성공", users));
     }
 
     @PatchMapping("/admin/users/{userId}")
-    public ResponseEntity<CustomResponse<Void>> updateUserClass(@PathVariable Long userId, @RequestBody UserClassRequest userClass) {
+    public ResponseEntity<CustomResponse<Void>> updateUserClass(@PathVariable Long userId,
+        @RequestBody UserClassRequest userClass) {
 
         userService.updateUserClass(userId, userClass.getUserClass());
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("유저 정보 변경 성공"));
+            .ok()
+            .body(CustomResponse.successResponse("유저 정보 변경 성공"));
     }
 
     @GetMapping("/users/leaders")
@@ -197,17 +207,16 @@ public class UserController {
 
         AdminResponse leaders = userService.getLeaders();
 
-
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("리더 조회 성공", leaders));
+            .ok()
+            .body(CustomResponse.successResponse("리더 조회 성공", leaders));
     }
 
     @GetMapping("/healthcheck")
     public ResponseEntity<CustomResponse<Void>> healthCheck() {
 
         return ResponseEntity
-                .ok()
-                .body(CustomResponse.successResponse("서버 정상 작동 중"));
+            .ok()
+            .body(CustomResponse.successResponse("서버 정상 작동 중"));
     }
 }

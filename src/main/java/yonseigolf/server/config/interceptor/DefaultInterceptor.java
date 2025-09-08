@@ -1,4 +1,4 @@
-package yonseigolf.server.config;
+package yonseigolf.server.config.interceptor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

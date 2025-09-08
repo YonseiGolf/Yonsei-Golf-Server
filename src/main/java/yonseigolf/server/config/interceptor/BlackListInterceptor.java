@@ -1,4 +1,4 @@
-package yonseigolf.server.config;
+package yonseigolf.server.config.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -2,16 +2,19 @@ package yonseigolf.server.user.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.spec.SecretKeySpec;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -21,27 +24,27 @@ public class JwtService {
     @Value("${JWT_SECRET_KEY}")
     private String secret; // 시크릿 키를 설정
 
-    public<T> String createToken(T loggedInUser, Date expiredDate) {
+    public <T> String createToken(T loggedInUser, Date expiredDate) {
 
         return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setSubject("login_member")
-                .claim(USER_PROFILE, loggedInUser)
-                .setExpiration(expiredDate)
-                .signWith(SignatureAlgorithm.HS256, secret)
-                .compact();
+            .setHeaderParam("typ", "JWT")
+            .setSubject("login_member")
+            .claim(USER_PROFILE, loggedInUser)
+            .setExpiration(expiredDate)
+            .signWith(SignatureAlgorithm.HS256, secret)
+            .compact();
     }
 
     public String createRefreshToken(Long userId, Date expireDate) {
 
         // refresh token 만료 기한은 2주일
         return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setSubject("refresh_token")
-                .claim(USER_PROFILE, userId)
-                .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS256, secret)
-                .compact();
+            .setHeaderParam("typ", "JWT")
+            .setSubject("refresh_token")
+            .claim(USER_PROFILE, userId)
+            .setExpiration(expireDate)
+            .signWith(SignatureAlgorithm.HS256, secret)
+            .compact();
     }
 
     // token이 만료되면 false 반환
@@ -49,8 +52,8 @@ public class JwtService {
 
         try {
             Jws<Claims> claimsJws = Jwts.parser()
-                    .setSigningKey(secret)
-                    .parseClaimsJws(token);
+                .setSigningKey(secret)
+                .parseClaimsJws(token);
 
             return !claimsJws.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
@@ -66,8 +69,8 @@ public class JwtService {
             Key key = new SecretKeySpec(decodedSecretKey, 0, decodedSecretKey.length, "HmacSHA256");
 
             Jwts.parser()
-                    .setSigningKey(key) // 비밀 키를 사용하여 서명을 검증
-                    .parseClaimsJws(token);
+                .setSigningKey(key) // 비밀 키를 사용하여 서명을 검증
+                .parseClaimsJws(token);
 
             return true;
         } catch (JwtException e) {
@@ -75,6 +78,7 @@ public class JwtService {
             return false;
         }
     }
+
     public <T> T extractedUserFromToken(String token, Class<T> clazz) {
         String[] jwtParts = token.split("\\.");
         String encodedPayload = jwtParts[1]; // 페이로드는 두 번째 부분
@@ -87,7 +91,8 @@ public class JwtService {
         return parseUserInfoFromJwt(decodedPayload, objectMapper, clazz);
     }
 
-    private <T> T parseUserInfoFromJwt(String decodedPayload, ObjectMapper objectMapper, Class<T> clazz) {
+    private <T> T parseUserInfoFromJwt(String decodedPayload, ObjectMapper objectMapper,
+        Class<T> clazz) {
         try {
             LinkedHashMap payloadMap = objectMapper.readValue(decodedPayload, LinkedHashMap.class);
             Object userProfile = payloadMap.get(USER_PROFILE);

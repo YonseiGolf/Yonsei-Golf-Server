@@ -1,11 +1,13 @@
 package yonseigolf.server.user.entity;
 
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +17,7 @@ import yonseigolf.server.user.dto.request.SignUpUserRequest;
 @Getter
 @Entity
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class User {
 
@@ -33,18 +35,40 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserClass userClass;
 
-    public static User of(SignUpUserRequest request, Long kakaoId) {
+    private User(
+        long kakaoId,
+        String name,
+        String phoneNumber,
+        int studentId,
+        String major,
+        int semester
+    ) {
+        this.kakaoId = kakaoId;
+        this.name = Objects.requireNonNull(name);
+        this.phoneNumber = Objects.requireNonNull(phoneNumber);
+        this.studentId = studentId;
+        this.major = Objects.requireNonNull(major);
+        this.semester = semester;
+        this.role = UserRole.MEMBER;
+        this.userClass = UserClass.NONE;
+    }
 
-        return User.builder()
-                .kakaoId(kakaoId)
-                .name(request.getName())
-                .phoneNumber(request.getPhoneNumber())
-                .studentId(request.getStudentId())
-                .major(request.getMajor())
-                .semester(request.getSemester())
-                .role(UserRole.MEMBER)
-                .userClass(UserClass.NONE)
-                .build();
+    public static User create(
+        long kakaoId,
+        String name,
+        String phoneNumber,
+        int studentId,
+        String major,
+        int semester
+    ) {
+        return new User(
+            kakaoId,
+            name,
+            phoneNumber,
+            studentId,
+            major,
+            semester
+        );
     }
 
     public static User createUserForForeignKey(Long id) {
@@ -61,16 +85,12 @@ public class User {
 
     public boolean isAdmin() {
 
-        return this.role == UserRole.LEADER ||
-                this.role == UserRole.ASSISTANT_LEADER ||
-                this.role == UserRole.OB_LEADER ||
-                this.role == UserRole.OB_ASSISTANT_LEADER;
+        return this.role.isAdmin();
     }
 
     public boolean isMember() {
 
-            return this.userClass == UserClass.YB ||
-                    this.userClass == UserClass.OB;
+            return this.userClass.isMember();
     }
 
     public boolean checkOwner(Long userId) {
