@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class EmailAlertRequest {
 
     private String email;
-    private int semester;
+    private long semester;
 }

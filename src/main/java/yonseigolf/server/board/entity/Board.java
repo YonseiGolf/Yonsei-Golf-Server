@@ -28,6 +28,7 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private Category category;
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String content;
     private LocalDateTime createdAt;
     private boolean deleted;

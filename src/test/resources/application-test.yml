@@ -5,9 +5,14 @@ spring:
     password:
     driver-class-name: org.h2.Driver
   jpa:
+    hibernate:
+      ddl-auto: create-drop
     properties:
       hibernate:
-        ddl-auto: create-drop
+        format_sql: true
+
+  flyway:
+    enabled: false
 
 server:
   port: 8888

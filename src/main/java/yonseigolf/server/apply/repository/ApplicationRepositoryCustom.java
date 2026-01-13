@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ApplicationRepositoryCustom {
 
-    Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, int semester, Pageable pageable);
+    Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, long semester, Pageable pageable);
 
     List<Application> findApplicationsForEmail(Boolean documentPass, Boolean finalPass);
 }

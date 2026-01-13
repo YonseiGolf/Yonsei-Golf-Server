@@ -21,7 +21,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, int semester, Pageable pageable) {
+    public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass, Boolean finalPass, long semester, Pageable pageable) {
 
         QueryResults<SingleApplicationResult> result = queryFactory.select(
                         new QSingleApplicationResult(

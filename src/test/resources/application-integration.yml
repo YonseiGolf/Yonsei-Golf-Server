@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+
+  mail:
+    host: localhost
+    port: 25
+
+server:
+  port: 8888
+
+# Test dummy values
+AWS_S3_BUCKET: test-bucket
+AWS_ACCESS_KEY: test-access-key
+AWS_SECRET_ACCESS_KEY: test-secret-key
+AWS_REGION: ap-northeast-2
+
+ALGORITHM: AES/CBC/PKCS5Padding
+SECRET_KEY: aB9aa2Dg71afRa4z
+
+KAKAO_CLIENT_ID: test-client-id
+KAKAO_CLIENT_SECRET: test-client-secret
+KAKAO_REDIRECT_URI: https://test.redirect.uri
+KAKAO_LOGIN_URI: https://test.login.uri
+
+JWT_SECRET_KEY: test-jwt-secret-key-for-integration-test

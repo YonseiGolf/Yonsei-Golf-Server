@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.UpdatePassRequest;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -36,9 +37,13 @@ public class Application {
     private String email;
     private String major;
     private String phoneNumber;
+    @Column(columnDefinition = "TEXT")
     private String selfIntroduction;
+    @Column(columnDefinition = "TEXT")
     private String applyReason;
+    @Column(columnDefinition = "TEXT")
     private String skillEvaluation;
+    @Column(columnDefinition = "TEXT")
     private String golfMemory;
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "applicationId")
@@ -49,7 +54,7 @@ public class Application {
     private Boolean finalPass;
     private LocalDateTime interviewTime;
     // 지원 기수
-    private Integer semester;
+    private Long semester;
 
     public static Application of(ApplicationRequest request) {
         return Application.builder()

@@ -30,6 +30,6 @@ public class ApplicationRequest {
     private List<ActivityClubRequest> activityClubs;
     private String swingVideo;
     private LocalDateTime submitTime;
-    private Integer semester;
+    private Long semester;
 }
 

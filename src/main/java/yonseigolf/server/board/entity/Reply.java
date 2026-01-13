@@ -19,6 +19,7 @@ public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(columnDefinition = "TEXT")
     private String content;
     private LocalDateTime createdAt;
     @ManyToOne(fetch = FetchType.LAZY)

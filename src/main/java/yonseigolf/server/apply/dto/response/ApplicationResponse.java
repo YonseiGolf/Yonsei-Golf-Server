@@ -38,7 +38,7 @@ public class ApplicationResponse {
     private Boolean finalPass;
     @JsonFormat(pattern = "MM월dd일 HH:mm")
     private LocalDateTime interviewTime;
-    private Integer semester;
+    private Long semester;
 
     public static ApplicationResponse fromApplication(Application application) {
         List<ActivityClubResponse> activityClubResponses = application.getActivities().stream()

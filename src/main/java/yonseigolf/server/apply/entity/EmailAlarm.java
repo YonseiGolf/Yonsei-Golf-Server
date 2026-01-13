@@ -21,7 +21,7 @@ public class EmailAlarm {
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     private Long id;
     private String email;
-    private Integer semester;
+    private Long semester;
     private LocalDateTime sentAt;
 
     public static EmailAlarm of(EmailAlertRequest request) {
