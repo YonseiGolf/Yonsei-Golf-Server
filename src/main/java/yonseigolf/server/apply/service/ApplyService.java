@@ -17,11 +17,13 @@ import yonseigolf.server.apply.entity.Application;
 import yonseigolf.server.apply.entity.ApplicationResultLog;
 import yonseigolf.server.apply.entity.ClubActivity;
 import yonseigolf.server.apply.entity.EmailAlarm;
+import yonseigolf.server.apply.entity.InterviewTime;
 import yonseigolf.server.apply.event.AppliedEvent;
 import yonseigolf.server.apply.repository.ApplicationRepository;
 import yonseigolf.server.apply.repository.ApplicationResultLogRepository;
 import yonseigolf.server.apply.repository.ClubActivityRepository;
 import yonseigolf.server.apply.repository.EmailRepository;
+import yonseigolf.server.apply.repository.InterviewTimeRepository;
 import yonseigolf.server.email.dto.NotificationType;
 import yonseigolf.server.email.service.EmailService;
 import yonseigolf.server.event.Events;
@@ -37,7 +39,9 @@ public class ApplyService {
     private final EmailService emailService;
     private final ApplicationResultLogRepository applicationResultLogRepository;
     private final ClubActivityRepository clubActivityRepository;
+    private final InterviewTimeRepository interviewTimeRepository;
 
+    @Transactional
     public void apply(ApplicationRequest request) {
 
         Application application = applicationRepository.save(Application.of(request));
@@ -52,6 +56,11 @@ public class ApplyService {
                     .build());
             }
         );
+
+        if (request.getAvailableInterviewTimeIds() != null && !request.getAvailableInterviewTimeIds().isEmpty()) {
+            List<InterviewTime> interviewTimes = interviewTimeRepository.findAllById(request.getAvailableInterviewTimeIds());
+            application.setAvailableInterviewTimes(interviewTimes);
+        }
 
         // TODO : async로 변경 필요
         Events.raise(new AppliedEvent(
@@ -70,6 +79,7 @@ public class ApplyService {
             pageable);
     }
 
+    @Transactional(readOnly = true)
     public ApplicationResponse getApplication(Long id) {
 
         return ApplicationResponse.fromApplication(findById(id));

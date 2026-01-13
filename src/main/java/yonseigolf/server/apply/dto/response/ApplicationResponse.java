@@ -39,6 +39,7 @@ public class ApplicationResponse {
     @JsonFormat(pattern = "MM월dd일 HH:mm")
     private LocalDateTime interviewTime;
     private Long semester;
+    private List<InterviewTimeResponse> availableInterviewTimes;
 
     public static ApplicationResponse fromApplication(Application application) {
         List<ActivityClubResponse> activityClubResponses = application.getActivities().stream()
@@ -48,6 +49,13 @@ public class ApplicationResponse {
                 activity.getEndDate(),
                 activity.getRole()
             ))
+            .toList();
+
+        List<InterviewTimeResponse> interviewTimeResponses = application.getAvailableInterviewTimes().stream()
+            .map(interviewTime -> InterviewTimeResponse.builder()
+                .id(interviewTime.getId())
+                .interviewDateTime(interviewTime.getInterviewDateTime())
+                .build())
             .toList();
 
         return ApplicationResponse.builder()
@@ -70,6 +78,7 @@ public class ApplicationResponse {
             .finalPass(application.getFinalPass())
             .interviewTime(application.getInterviewTime())
             .semester(application.getSemester())
+            .availableInterviewTimes(interviewTimeResponses)
             .build();
     }
 

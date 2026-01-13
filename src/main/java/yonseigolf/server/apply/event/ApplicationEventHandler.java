@@ -35,11 +35,15 @@ public class ApplicationEventHandler {
             .build();
         applicationResultLogRepository.save(applicationResultLog);
 
-        emailService.sendEmail(event.getEmail(),
-            "안녕하세요. 연세골프입니다.\n\n",
-            event.getAppliedUserName() + "님의 지원서가 정상적으로 제출되었습니다. \n\n" +
-                "서류 합격 여부는 추후 이메일로 공지될 예정입니다. \n\n" +
-                "감사합니다."
-        );
+        try {
+            emailService.sendEmail(event.getEmail(),
+                "안녕하세요. 연세골프입니다.\n\n",
+                event.getAppliedUserName() + "님의 지원서가 정상적으로 제출되었습니다. \n\n" +
+                    "서류 합격 여부는 추후 이메일로 공지될 예정입니다. \n\n" +
+                    "감사합니다."
+            );
+        } catch (Exception e) {
+            log.error("지원서 제출 이메일 전송 실패 - applicationId: {}, email: {}", event.getApplicationid(), event.getEmail(), e);
+        }
     }
 }

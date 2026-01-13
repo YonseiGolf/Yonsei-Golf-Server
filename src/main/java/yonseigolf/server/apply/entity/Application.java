@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,6 +58,15 @@ public class Application {
     // 지원 기수
     private Long semester;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "application_available_interview_time",
+            joinColumns = @JoinColumn(name = "application_id"),
+            inverseJoinColumns = @JoinColumn(name = "interview_time_id")
+    )
+    @Builder.Default
+    private List<InterviewTime> availableInterviewTimes = new ArrayList<>();
+
     public static Application of(ApplicationRequest request) {
         return Application.builder()
             .name(request.getName())
@@ -84,5 +95,9 @@ public class Application {
     public void updateInterviewTime(LocalDateTime time) {
 
         this.interviewTime = time;
+    }
+
+    public void setAvailableInterviewTimes(List<InterviewTime> interviewTimes) {
+        this.availableInterviewTimes = interviewTimes;
     }
 }

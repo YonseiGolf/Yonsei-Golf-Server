@@ -5,12 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.ImageResponse;
+import yonseigolf.server.apply.dto.response.InterviewTimeResponse;
 
 import java.util.List;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
@@ -18,23 +19,27 @@ import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
+import yonseigolf.server.apply.service.InterviewTimeService;
 import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
 
-@Controller
+@RestController
 public class ApplicationController {
 
     private final ApplyService applicationService;
     private final ApplyPeriodService applyPeriodService;
     private final ImageService imageService;
+    private final InterviewTimeService interviewTimeService;
 
     @Autowired
-    public ApplicationController(ApplyService applicationService, ApplyPeriodService applyPeriodService, ImageService imageService) {
+    public ApplicationController(ApplyService applicationService, ApplyPeriodService applyPeriodService,
+                                  ImageService imageService, InterviewTimeService interviewTimeService) {
 
         this.applicationService = applicationService;
         this.applyPeriodService = applyPeriodService;
         this.imageService = imageService;
+        this.interviewTimeService = interviewTimeService;
     }
 
     @PostMapping("/application")
@@ -64,6 +69,15 @@ public class ApplicationController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("연세골프 지원 기간 조회 성공", applicationPeriod));
+    }
+
+    @GetMapping("/application/recruit/{recruitId}/interview-times")
+    public ResponseEntity<CustomResponse<List<InterviewTimeResponse>>> getInterviewTimesForApplicant(@PathVariable Long recruitId) {
+
+        List<InterviewTimeResponse> interviewTimes = interviewTimeService.getInterviewTimes(recruitId);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("면접 시간 목록 조회 성공", interviewTimes));
     }
 
     @GetMapping("/admin/recruit")
@@ -110,6 +124,44 @@ public class ApplicationController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("모집 기간 삭제 성공"));
+    }
+
+    @GetMapping("/admin/recruit/{recruitId}/interview-times")
+    public ResponseEntity<CustomResponse<List<InterviewTimeResponse>>> getInterviewTimes(@PathVariable Long recruitId) {
+
+        List<InterviewTimeResponse> interviewTimes = interviewTimeService.getInterviewTimes(recruitId);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("면접 시간 목록 조회 성공", interviewTimes));
+    }
+
+    @PostMapping("/admin/recruit/{recruitId}/interview-times")
+    public ResponseEntity<CustomResponse<Void>> createInterviewTime(@PathVariable Long recruitId,
+                                                                     @RequestBody InterviewTimeRequest request) {
+
+        interviewTimeService.createInterviewTime(recruitId, request);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("면접 시간 등록 성공"));
+    }
+
+    @PatchMapping("/admin/interview-times/{interviewTimeId}")
+    public ResponseEntity<CustomResponse<Void>> updateInterviewTime(@PathVariable Long interviewTimeId,
+                                                                     @RequestBody InterviewTimeRequest request) {
+
+        interviewTimeService.updateInterviewTime(interviewTimeId, request);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("면접 시간 수정 성공"));
+    }
+
+    @DeleteMapping("/admin/interview-times/{interviewTimeId}")
+    public ResponseEntity<CustomResponse<Void>> deleteInterviewTime(@PathVariable Long interviewTimeId) {
+
+        interviewTimeService.deleteInterviewTime(interviewTimeId);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("면접 시간 삭제 성공"));
     }
 
     @GetMapping("/application/availability")

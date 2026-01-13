@@ -31,5 +31,6 @@ public class ApplicationRequest {
     private String swingVideo;
     private LocalDateTime submitTime;
     private Long semester;
+    private List<Long> availableInterviewTimeIds;
 }
 
