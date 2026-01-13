@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.ImageResponse;
+
+import java.util.List;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.image.ImageService;
@@ -58,12 +60,56 @@ public class ApplicationController {
     @GetMapping("/application/recruit")
     public ResponseEntity<CustomResponse<RecruitPeriodResponse>> getApplicationPeriod() {
 
-        final long defaultId = 1L;
-
-        RecruitPeriodResponse applicationPeriod = applyPeriodService.getApplicationPeriod(defaultId);
+        RecruitPeriodResponse applicationPeriod = applyPeriodService.getLatestApplicationPeriod();
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("연세골프 지원 기간 조회 성공", applicationPeriod));
+    }
+
+    @GetMapping("/admin/recruit")
+    public ResponseEntity<CustomResponse<RecruitPeriodResponse>> getLatestRecruitmentPeriod() {
+
+        RecruitPeriodResponse recruitPeriod = applyPeriodService.getLatestApplicationPeriod();
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("모집 기간 조회 성공", recruitPeriod));
+    }
+
+    @GetMapping("/admin/recruits")
+    public ResponseEntity<CustomResponse<List<RecruitPeriodResponse>>> getAllRecruitmentPeriods() {
+
+        List<RecruitPeriodResponse> recruitPeriods = applyPeriodService.getAllRecruitmentPeriods();
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("모집 기간 목록 조회 성공", recruitPeriods));
+    }
+
+    @PostMapping("/admin/recruit")
+    public ResponseEntity<CustomResponse<Void>> createRecruitmentPeriod(@RequestBody RecruitmentPeriodRequest request) {
+
+        applyPeriodService.createRecruitmentPeriod(request);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("모집 기간 등록 성공"));
+    }
+
+    @PatchMapping("/admin/recruit/{id}")
+    public ResponseEntity<CustomResponse<Void>> updateRecruitmentPeriod(@PathVariable Long id,
+                                                                        @RequestBody RecruitmentPeriodRequest request) {
+
+        applyPeriodService.updateRecruitmentPeriod(id, request);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("모집 기간 수정 성공"));
+    }
+
+    @DeleteMapping("/admin/recruit/{id}")
+    public ResponseEntity<CustomResponse<Void>> deleteRecruitmentPeriod(@PathVariable Long id) {
+
+        applyPeriodService.deleteRecruitmentPeriod(id);
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("모집 기간 삭제 성공"));
     }
 
     @GetMapping("/application/availability")

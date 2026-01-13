@@ -11,6 +11,8 @@ import java.time.LocalDate;
 @Builder
 public class RecruitPeriodResponse {
 
+    private Long id;
+    private Integer semester;
     @JsonFormat(pattern = "MM월dd일")
     private LocalDate startDate;
     @JsonFormat(pattern = "MM월dd일")

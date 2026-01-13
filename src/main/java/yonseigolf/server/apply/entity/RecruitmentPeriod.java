@@ -21,6 +21,7 @@ public class RecruitmentPeriod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Integer semester;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate firstResultDate;
@@ -28,4 +29,18 @@ public class RecruitmentPeriod {
     private LocalDate interviewStartDate;
     private LocalDate interviewEndDate;
     private LocalDate orientationDate;
+
+    public void update(Integer semester, LocalDate startDate, LocalDate endDate,
+                       LocalDate firstResultDate, LocalDate finalResultDate,
+                       LocalDate interviewStartDate, LocalDate interviewEndDate,
+                       LocalDate orientationDate) {
+        this.semester = semester;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.firstResultDate = firstResultDate;
+        this.finalResultDate = finalResultDate;
+        this.interviewStartDate = interviewStartDate;
+        this.interviewEndDate = interviewEndDate;
+        this.orientationDate = orientationDate;
+    }
 }
