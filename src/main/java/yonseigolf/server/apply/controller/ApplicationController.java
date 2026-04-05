@@ -27,6 +27,7 @@ import java.time.LocalDate;
 @RestController
 public class ApplicationController {
 
+    // 배포용주석
     private final ApplyService applicationService;
     private final ApplyPeriodService applyPeriodService;
     private final ImageService imageService;
