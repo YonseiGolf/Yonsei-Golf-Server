@@ -38,7 +38,7 @@ public class ImageService {
                 .contentType(contentType)
                 .build();
 
-        String url = String.format("https://minio.birdiehyun.store/%s/store-image/%s", bucketName, fileName);
+        String url = String.format("https://minio.up-api.kr/%s/store-image/%s", bucketName, fileName);
 
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
