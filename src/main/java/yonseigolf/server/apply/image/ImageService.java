@@ -16,6 +16,8 @@ public class ImageService {
     private final S3Client s3Client;
     @Value("${AWS_S3_BUCKET}")
     private String bucketName;
+    @Value("${AWS_S3_PUBLIC_URL:https://minio.up-api.kr}")
+    private String publicUrl;
 
     @Autowired
     public ImageService(S3Client s3Client) {
@@ -25,7 +27,6 @@ public class ImageService {
 
     public String uploadImage(MultipartFile file, String randomId) {
 
-        StringBuilder sb = new StringBuilder();
         String fileName = file.getOriginalFilename() + randomId;
         String contentType = file.getContentType();
 
@@ -38,11 +39,12 @@ public class ImageService {
                 .contentType(contentType)
                 .build();
 
-        String url = String.format("https://minio.up-api.kr/%s/store-image/%s", bucketName, fileName);
+        String imageUrl = String.format("%s/%s/store-image/%s",
+                publicUrl.replaceAll("/$", ""), bucketName, fileName);
 
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-            return url;
+            return imageUrl;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to upload file", e);
         }

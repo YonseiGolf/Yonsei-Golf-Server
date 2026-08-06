@@ -45,7 +45,7 @@ class ImageServiceTest {
         String returnUrl = imageService.uploadImage(file, "id");
 
         // then
-        assertThat(returnUrl).isEqualTo("https://minio.birdiehyun.store/yg-img-storage/store-image/test.jpgid");
+        assertThat(returnUrl).isEqualTo("https://minio.up-api.kr/yg-img-storage/store-image/test.jpgid");
     }
 
     @Test

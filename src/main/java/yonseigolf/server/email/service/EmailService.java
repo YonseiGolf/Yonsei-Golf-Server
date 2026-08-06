@@ -17,6 +17,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmailService {
 
+    private static final String APPLICATION_EMAIL_CONFIRMATION_SUBJECT =
+            "[연세골프] 지원서 이메일 확인";
+    private static final String APPLICATION_EMAIL_CONFIRMATION_MESSAGE = String.join("\n",
+            "안녕하세요 연세대학교 골프동아리입니다.",
+            "",
+            "지원서에 작성해주신 이메일 주소 확인을 위해 발송한 메일입니다.",
+            "이 메일을 정상적으로 받으셨다면 입력하신 이메일 주소로 지원 결과가 안내됩니다.",
+            "",
+            "감사합니다.",
+            "연세대학교 골프동아리 드림");
+
     private final JavaMailSender mailSender;
     private final EmailRepository emailRepository;
 
@@ -67,6 +78,11 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(text);
         sendEmailMessage(message);
+    }
+
+    public void sendApplicationEmailConfirmation(String email) {
+        sendEmail(email, APPLICATION_EMAIL_CONFIRMATION_SUBJECT,
+                APPLICATION_EMAIL_CONFIRMATION_MESSAGE);
     }
 
     private void sendEmailMessage(SimpleMailMessage message) {

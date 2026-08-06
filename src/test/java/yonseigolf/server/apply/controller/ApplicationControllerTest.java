@@ -29,6 +29,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -155,6 +156,29 @@ public class ApplicationControllerTest extends RestDocsSupport {
                                 fieldWithPath("email").type(JsonFieldType.STRING).description("이메일")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("지원서에 입력한 이메일로 확인 메일을 발송할 수 있다.")
+    void sendEmailConfirmationTest() throws Exception {
+        // given
+        EmailConfirmationRequest request = new EmailConfirmationRequest("applicant@example.com");
+
+        // when & then
+        mockMvc.perform(post("/application/email-confirmation")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType("application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("지원서 이메일 확인 메일 발송 성공"))
+                .andDo(document("application-email-confirmation-doc",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("확인 메일을 받을 이메일")
+                        )));
+
+        verify(applyService).sendEmailConfirmation(any(EmailConfirmationRequest.class));
     }
 
     @Test

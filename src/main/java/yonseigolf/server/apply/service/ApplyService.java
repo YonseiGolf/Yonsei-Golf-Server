@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yonseigolf.server.apply.dto.request.ApplicationRequest;
 import yonseigolf.server.apply.dto.request.EmailAlertRequest;
+import yonseigolf.server.apply.dto.request.EmailConfirmationRequest;
 import yonseigolf.server.apply.dto.request.UpdatePassRequest;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
@@ -70,6 +71,10 @@ public class ApplyService {
 
     public void emailAlarm(EmailAlertRequest request) {
         emailRepository.save(EmailAlarm.of(request));
+    }
+
+    public void sendEmailConfirmation(EmailConfirmationRequest request) {
+        emailService.sendApplicationEmailConfirmation(request.getEmail());
     }
 
     public Page<SingleApplicationResult> getApplicationResults(Boolean documentPass,

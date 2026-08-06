@@ -24,6 +24,7 @@ import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import javax.validation.Valid;
 
 @RestController
 public class ApplicationController {
@@ -61,6 +62,17 @@ public class ApplicationController {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse("연세골프 지원서 이메일 알림 설정 성공"));
+    }
+
+    @PostMapping("/application/email-confirmation")
+    public ResponseEntity<CustomResponse<Void>> sendEmailConfirmation(
+            @Valid @RequestBody EmailConfirmationRequest request) {
+
+        applicationService.sendEmailConfirmation(request);
+
+        return ResponseEntity
+                .ok()
+                .body(CustomResponse.successResponse("지원서 이메일 확인 메일 발송 성공"));
     }
 
     @GetMapping("/application/recruit")
