@@ -23,6 +23,7 @@ import yonseigolf.server.apply.service.InterviewTimeService;
 import yonseigolf.server.util.CustomResponse;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @RestController
 public class ApplicationController {
@@ -165,15 +166,13 @@ public class ApplicationController {
     }
 
     @GetMapping("/application/availability")
-    public ResponseEntity<CustomResponse<Boolean>> getApplicationAvaliability() {
-
-        final long defaultId = 1L;
-
+    public ResponseEntity<CustomResponse<Boolean>> getApplicationAvailability() {
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
                         "연세골프 지원 가능 여부 조회 성공",
-                        applyPeriodService.getApplicationAvailability(LocalDate.now(), defaultId)));
+                        applyPeriodService.getLatestApplicationAvailability(
+                                LocalDate.now(ZoneId.of("Asia/Seoul")))));
     }
 
     @GetMapping("/admin/forms")

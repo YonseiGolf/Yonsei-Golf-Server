@@ -18,6 +18,7 @@ import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.service.ApplyPeriodService;
 import yonseigolf.server.apply.service.ApplyService;
+import yonseigolf.server.apply.service.InterviewTimeService;
 import yonseigolf.server.docs.utils.RestDocsSupport;
 
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.partWith
 import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentRequest;
 import static yonseigolf.server.docs.utils.ApiDocumentUtils.getDocumentResponse;
 
@@ -48,11 +50,13 @@ public class ApplicationControllerTest extends RestDocsSupport {
     private ApplyPeriodService applyPeriodService;
     @Mock
     private ImageService imageService;
+    @Mock
+    private InterviewTimeService interviewTimeService;
 
     @Override
     protected Object initController() {
 
-        return new ApplicationController(applyService, applyPeriodService, imageService);
+        return new ApplicationController(applyService, applyPeriodService, imageService, interviewTimeService);
     }
 
     @Test
@@ -62,20 +66,14 @@ public class ApplicationControllerTest extends RestDocsSupport {
         ApplicationRequest request = ApplicationRequest.builder()
                 .name("홍길동")
                 .photo("사진")
-                .age(20L)
                 .studentId(1L)
                 .email("email")
                 .major("체육교육")
                 .phoneNumber("010-1234-5678")
-                .golfDuration(1L)
-                .roundCount(1L)
-                .lessonStatus(true)
-                .clubStatus(true)
                 .selfIntroduction("자기소개")
                 .applyReason("지원동기")
                 .skillEvaluation("실력평가")
                 .golfMemory("골프추억")
-                .otherClub("다른동아리활동")
                 .swingVideo("스윙영상")
                 .submitTime(LocalDateTime.now())
                 .build();
@@ -207,7 +205,8 @@ public class ApplicationControllerTest extends RestDocsSupport {
     @DisplayName("지원 가능 여부를 조회할 수 있다.")
     void applicationAvailableTest() throws Exception {
         // given
-
+        given(applyPeriodService.getLatestApplicationAvailability(any(LocalDate.class)))
+                .willReturn(true);
 
         // when
 
@@ -215,6 +214,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
         // then
         mockMvc.perform(get("/application/availability"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value(true))
                 .andDo(print())
                 .andDo(document("application-applicationAvailable-doc",
                         getDocumentRequest(),
@@ -321,7 +321,6 @@ public class ApplicationControllerTest extends RestDocsSupport {
                 .applyReason("지원동기")
                 .skillEvaluation("실력평가")
                 .golfMemory("골프추억")
-                .otherClub("다른동아리활동")
                 .swingVideo("스윙영상")
                 .submitTime(LocalDateTime.now())
                 .documentPass(true)

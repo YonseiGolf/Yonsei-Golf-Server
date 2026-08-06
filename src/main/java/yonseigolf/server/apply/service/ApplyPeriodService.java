@@ -32,7 +32,13 @@ public class ApplyPeriodService {
     public boolean getApplicationAvailability(LocalDate today, long periodId) {
         RecruitmentPeriod period = findById(periodId);
 
-        return !today.isBefore(period.getStartDate()) && !today.isAfter(period.getEndDate());
+        return isApplicationAvailable(today, period);
+    }
+
+    public boolean getLatestApplicationAvailability(LocalDate today) {
+        RecruitmentPeriod period = findLatestRecruitmentPeriod();
+
+        return isApplicationAvailable(today, period);
     }
 
     private RecruitmentPeriod findById(long periodId) {
@@ -42,10 +48,18 @@ public class ApplyPeriodService {
     }
 
     public RecruitPeriodResponse getLatestApplicationPeriod() {
-        RecruitmentPeriod recruitmentPeriod = repository.findTopByOrderBySemesterDesc()
-                .orElseThrow(() -> new IllegalArgumentException("등록된 모집기간이 존재하지 않습니다."));
+        RecruitmentPeriod recruitmentPeriod = findLatestRecruitmentPeriod();
 
         return toResponse(recruitmentPeriod);
+    }
+
+    private RecruitmentPeriod findLatestRecruitmentPeriod() {
+        return repository.findTopByOrderBySemesterDesc()
+                .orElseThrow(() -> new IllegalArgumentException("등록된 모집기간이 존재하지 않습니다."));
+    }
+
+    private boolean isApplicationAvailable(LocalDate today, RecruitmentPeriod period) {
+        return !today.isBefore(period.getStartDate()) && !today.isAfter(period.getEndDate());
     }
 
     public List<RecruitPeriodResponse> getAllRecruitmentPeriods() {
