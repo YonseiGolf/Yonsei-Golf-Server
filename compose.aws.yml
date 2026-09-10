@@ -1,0 +1,36 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: yg-server-redis
+    restart: unless-stopped
+    env_file:
+      - .env.aws
+    command:
+      - /bin/sh
+      - -c
+      - exec redis-server --appendonly yes --requirepass "$${REDIS_PASSWORD}"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  spring-server:
+    image: ${APP_IMAGE:-birdiehyun/yg-server:latest}
+    platform: linux/arm64
+    container_name: yg-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.aws
+    environment:
+      TZ: Asia/Seoul
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis-data:

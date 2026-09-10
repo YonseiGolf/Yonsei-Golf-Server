@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: aws
+
+# Terraform's EC2 deployment environment exposes these generic names. Map
+# them to the legacy property names used by the application.
+AWS_S3_BUCKET: ${S3_BUCKET}
+AWS_S3_PUBLIC_URL: ${IMAGE_BASE_URL}

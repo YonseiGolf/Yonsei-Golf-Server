@@ -33,7 +33,10 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    // 기존 전체 URL 데이터 조회를 위한 레거시 컬럼
     private String photo;
+    @Column(name = "photo_key", length = 1024)
+    private String photoKey;
     private LocalDate birthDate;
     private long studentId;
     private String email;
@@ -70,7 +73,7 @@ public class Application {
     public static Application of(ApplicationRequest request) {
         return Application.builder()
             .name(request.getName())
-            .photo(request.getPhoto())
+            .photoKey(request.getPhotoKey())
             .birthDate(request.getBirthDate())
             .studentId(request.getStudentId())
             .email(request.getEmail())

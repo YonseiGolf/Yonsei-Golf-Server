@@ -1,6 +1,8 @@
 spring:
+  profiles:
+    default: home
   config:
-    import: "classpath:application.properties"
+    import: "optional:classpath:application.properties"
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}

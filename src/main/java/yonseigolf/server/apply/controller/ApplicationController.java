@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
 import yonseigolf.server.apply.dto.response.ImageResponse;
@@ -241,15 +240,16 @@ public class ApplicationController {
                 .body(CustomResponse.successResponse("연세골프 지원서 결과 이메일 발송 성공"));
     }
 
-    @PostMapping("/apply/forms/image")
-    public ResponseEntity<CustomResponse<ImageResponse>> uploadImage(@RequestPart("image") MultipartFile image) {
+    @PostMapping("/apply/forms/image/presigned-url")
+    public ResponseEntity<CustomResponse<ImageResponse>> createImageUploadUrl(
+            @Valid @RequestBody ImageUploadRequest request) {
 
-        String imageUrl = imageService.uploadImage(image, RandomString.make(10));
+        ImageResponse imageResponse = imageService.createPresignedUpload(request, RandomString.make(20));
 
         return ResponseEntity
                 .ok()
                 .body(CustomResponse.successResponse(
-                        "연세골프 지원서 사진 업로드 성공",
-                        new ImageResponse(imageUrl)));
+                        "연세골프 지원서 사진 업로드 URL 발급 성공",
+                        imageResponse));
     }
 }

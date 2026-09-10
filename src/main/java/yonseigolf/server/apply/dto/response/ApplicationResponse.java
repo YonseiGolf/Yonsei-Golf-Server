@@ -41,7 +41,7 @@ public class ApplicationResponse {
     private Long semester;
     private List<InterviewTimeResponse> availableInterviewTimes;
 
-    public static ApplicationResponse fromApplication(Application application) {
+    public static ApplicationResponse fromApplication(Application application, String photoUrl) {
         List<ActivityClubResponse> activityClubResponses = application.getActivities().stream()
             .map(activity -> new ActivityClubResponse(
                 activity.getClubName(),
@@ -61,7 +61,7 @@ public class ApplicationResponse {
         return ApplicationResponse.builder()
             .id(application.getId())
             .name(application.getName())
-            .photo(application.getPhoto())
+            .photo(photoUrl)
             .birthDate(application.getBirthDate())
             .studentId(application.getStudentId())
             .email(application.getEmail())

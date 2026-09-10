@@ -98,3 +98,6 @@ out
 daemon
 bin
 .jqwik-database
+
+# Generated AWS runtime secrets
+.env.aws

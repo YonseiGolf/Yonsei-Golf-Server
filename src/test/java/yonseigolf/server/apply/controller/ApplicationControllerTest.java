@@ -1,6 +1,5 @@
 package yonseigolf.server.apply.controller;
 
-import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,11 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.web.multipart.MultipartFile;
 import yonseigolf.server.apply.dto.request.*;
 import yonseigolf.server.apply.dto.response.ApplicationResponse;
+import yonseigolf.server.apply.dto.response.ImageResponse;
 import yonseigolf.server.apply.dto.response.RecruitPeriodResponse;
 import yonseigolf.server.apply.dto.response.SingleApplicationResult;
 import yonseigolf.server.apply.image.ImageService;
@@ -25,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -33,8 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -66,7 +63,7 @@ public class ApplicationControllerTest extends RestDocsSupport {
         // given
         ApplicationRequest request = ApplicationRequest.builder()
                 .name("홍길동")
-                .photo("사진")
+                .photoKey("store-image/photo.png")
                 .studentId(1L)
                 .email("email")
                 .major("체육교육")
@@ -95,8 +92,8 @@ public class ApplicationControllerTest extends RestDocsSupport {
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING)
                                         .description("이름"),
-                                fieldWithPath("photo").type(JsonFieldType.STRING)
-                                        .description("사진"),
+                                fieldWithPath("photoKey").type(JsonFieldType.STRING)
+                                        .description("사진 object key"),
                                 fieldWithPath("age").type(JsonFieldType.NUMBER)
                                         .description("나이"),
                                 fieldWithPath("studentId").type(JsonFieldType.NUMBER)
@@ -474,34 +471,41 @@ public class ApplicationControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("연세 골프 지원서 사진을 업로드할 수 있다.")
-    void uploadImageTest() throws Exception {
+    @DisplayName("연세 골프 지원서 사진 업로드용 presigned URL을 발급할 수 있다.")
+    void createImageUploadUrlTest() throws Exception {
         // given
-        MockMultipartFile image = new MockMultipartFile(
-                "image",
-                "image.png",
-                "image/png",
-                "image".getBytes());
+        ImageUploadRequest request = new ImageUploadRequest("image.png", "image/png", 1024L);
+        given(imageService.createPresignedUpload(any(ImageUploadRequest.class), anyString()))
+                .willReturn(new ImageResponse(
+                        "https://minio.up-api.kr/signed-upload",
+                        "store-image/image.png",
+                        Map.of("Content-Type", "image/png", "x-amz-acl", "public-read")));
 
-        given(imageService.uploadImage(any(MultipartFile.class), anyString())).willReturn("url");
-
-        // when
-        imageService.uploadImage(image, RandomString.make(10));
         // then
         mockMvc.perform(
-                        multipart("/apply/forms/image")
-                                .file(image)
-                                .contentType("multipart/form-data"))
+                        post("/apply/forms/image/presigned-url")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("admin-application-uploadImage-doc",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParts(partWithName("image").description("업로드할 사진")),
+                        requestFields(
+                                fieldWithPath("fileName").type(JsonFieldType.STRING)
+                                        .description("업로드할 이미지 파일 이름"),
+                                fieldWithPath("contentType").type(JsonFieldType.STRING)
+                                        .description("업로드할 이미지 MIME 타입"),
+                                fieldWithPath("fileSize").type(JsonFieldType.NUMBER)
+                                        .description("업로드할 이미지 크기(byte)")),
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("image").type(JsonFieldType.STRING)
-                                        .description("업로드된 사진의 URL")
+                                fieldWithPath("uploadUrl").type(JsonFieldType.STRING)
+                                        .description("스토리지 직접 업로드용 presigned URL"),
+                                fieldWithPath("imageKey").type(JsonFieldType.STRING)
+                                        .description("업로드 완료 후 지원서에 저장할 이미지 object key"),
+                                subsectionWithPath("uploadHeaders").type(JsonFieldType.OBJECT)
+                                        .description("스토리지 PUT 요청에 포함할 서명 헤더")
                         )));
     }
 }

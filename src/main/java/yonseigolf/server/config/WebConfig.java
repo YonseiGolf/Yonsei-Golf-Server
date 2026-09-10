@@ -32,7 +32,8 @@ public class WebConfig implements WebMvcConfigurer {
                 "https://www.birdiehyun.store",
                 "https://birdiehyun.store",
                 "https://www.yonsei-golf.kr",
-                "https://yonsei-golf.kr"
+                "https://yonsei-golf.kr",
+                "https://test-yg-clinet.vercel.app"
             )
             .allowedMethods("GET", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS")
             .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization")

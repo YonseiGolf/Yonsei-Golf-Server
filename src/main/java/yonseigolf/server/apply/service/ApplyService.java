@@ -20,6 +20,7 @@ import yonseigolf.server.apply.entity.ClubActivity;
 import yonseigolf.server.apply.entity.EmailAlarm;
 import yonseigolf.server.apply.entity.InterviewTime;
 import yonseigolf.server.apply.event.AppliedEvent;
+import yonseigolf.server.apply.image.ImageService;
 import yonseigolf.server.apply.repository.ApplicationRepository;
 import yonseigolf.server.apply.repository.ApplicationResultLogRepository;
 import yonseigolf.server.apply.repository.ClubActivityRepository;
@@ -41,6 +42,7 @@ public class ApplyService {
     private final ApplicationResultLogRepository applicationResultLogRepository;
     private final ClubActivityRepository clubActivityRepository;
     private final InterviewTimeRepository interviewTimeRepository;
+    private final ImageService imageService;
 
     @Transactional
     public void apply(ApplicationRequest request) {
@@ -81,13 +83,19 @@ public class ApplyService {
         Boolean finalPass, int semester, Pageable pageable) {
 
         return applicationRepository.getApplicationResults(documentPass, finalPass, semester,
-            pageable);
+                pageable)
+            .map(result -> result.withPhotoUrl(
+                imageService.resolveImageUrl(result.getPhotoKey(), result.getPhoto())));
     }
 
     @Transactional(readOnly = true)
     public ApplicationResponse getApplication(Long id) {
 
-        return ApplicationResponse.fromApplication(findById(id));
+        Application application = findById(id);
+        String photoUrl = imageService.resolveImageUrl(
+            application.getPhotoKey(), application.getPhoto());
+
+        return ApplicationResponse.fromApplication(application, photoUrl);
     }
 
     @Transactional

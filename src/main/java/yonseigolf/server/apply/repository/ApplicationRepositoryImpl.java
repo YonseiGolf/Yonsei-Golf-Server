@@ -27,6 +27,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepositoryCustom{
                         new QSingleApplicationResult(
                                 application.id,
                                 application.photo,
+                                application.photoKey,
                                 application.name,
                                 application.interviewTime,
                                 application.documentPass,

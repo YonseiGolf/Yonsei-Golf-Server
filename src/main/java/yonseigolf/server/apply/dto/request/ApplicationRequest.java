@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class ApplicationRequest {
 
     private String name;
-    private String photo;
+    private String photoKey;
     private LocalDate birthDate;
     private long studentId;
     private String major;
@@ -33,4 +33,3 @@ public class ApplicationRequest {
     private Long semester;
     private List<Long> availableInterviewTimeIds;
 }
-
