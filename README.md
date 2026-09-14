@@ -33,6 +33,8 @@ pnpm test:container
 
 개별 명령: `pnpm lint`, `pnpm lint:fix`, `pnpm typecheck`, `pnpm build`, `pnpm test:integration`.
 
+CI는 `TZ=UTC`와 `TZ=Asia/Seoul`에서 통합 테스트를 각각 실행합니다. 로컬에서도 `TZ=UTC pnpm test:integration`으로 시간대에 따른 날짜 회귀를 확인할 수 있습니다.
+
 ## 구조
 
 ```text

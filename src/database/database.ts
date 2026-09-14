@@ -37,6 +37,8 @@ export function databaseOptions(settings: Settings): DataSourceOptions {
     ssl: settings.database.ssl ? { rejectUnauthorized: true } : undefined,
     charset: 'utf8mb4',
     timezone: '+09:00',
+    // Calendar dates must not pass through a host-timezone-dependent JS Date.
+    dateStrings: ['DATE'],
     supportBigNumbers: true,
     bigNumberStrings: true,
     synchronize: false,

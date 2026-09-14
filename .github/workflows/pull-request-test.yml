@@ -22,5 +22,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+        env:
+          TZ: UTC
+      - run: pnpm test:integration
+        env:
+          TZ: Asia/Seoul
       - run: pnpm docker:build
       - run: pnpm test:container

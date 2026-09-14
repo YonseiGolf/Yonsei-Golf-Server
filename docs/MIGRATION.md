@@ -66,6 +66,12 @@
 - 로컬 HTTP 카카오 서버, 실제 SMTP 서버, 실제 MinIO PUT/GET으로 외부 연동을 검증.
 - GitHub Actions는 PR 검증과 dev 이미지 게시를 분리하며 게시 전에도 같은 검증을 실행한다.
 
+### CI에서 발견한 날짜 회귀와 수정
+
+- UTC CI에서 모집일과 생년월일이 하루 앞당겨졌다. MySQL `DATE`가 +09:00 자정의 JavaScript `Date`로 변환된 뒤 TypeORM이 호스트 시간대로 날짜를 다시 추출한 것이 원인이었다.
+- [TypeORM의 `dateStrings` 설정](https://typeorm.io/docs/drivers/mysql/)을 `['DATE']`로 지정해 날짜만 문자열로 유지한다. 면접 시각 등 `DATETIME`은 기존처럼 +09:00 기준 `Date`로 처리한다. 프로세스 시간대와 무관하게 달력 날짜를 보존한다.
+- 모집의 모든 날짜, 생년월일, 동아리 활동 시작·종료일의 실제 저장·조회 결과를 검증하고, CI에서 동일한 통합 테스트를 UTC와 Asia/Seoul 각각 실행한다.
+
 ### 운영 전환
 
 - 이 작업은 운영 배포나 운영 DB 마이그레이션을 실행하지 않았다.

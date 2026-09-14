@@ -560,6 +560,11 @@ describe('NestJS integration with real MySQL and Flyway', {
     const recruitment = await db
       .getRepository(Recruitment)
       .findOneByOrFail({ semester: 40 });
+    for (const key of Object.keys(recruitmentDto) as Array<
+      keyof typeof recruitmentDto
+    >) {
+      assert.equal(recruitment[key], recruitmentDto[key]);
+    }
     await http()
       .post('/admin/recruit')
       .set('Authorization', header)
@@ -694,6 +699,8 @@ describe('NestJS integration with real MySQL and Flyway', {
       .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
       .expect(200);
     assert.equal(detail.body.data.activities[0].clubName, '개발동아리');
+    assert.equal(detail.body.data.activities[0].startDate, '2025-03-01');
+    assert.equal(detail.body.data.activities[0].endDate, '2025-12-31');
     assert.equal(
       detail.body.data.availableInterviewTimes[0].interviewDateTime,
       '2026-10-02 14:30',
