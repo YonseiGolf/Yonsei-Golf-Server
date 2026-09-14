@@ -8,3 +8,12 @@ out
 .env
 .env.*
 src/main/resources/application.properties
+node_modules
+dist
+.test-dist
+coverage
+legacy
+test
+docs
+src/main
+src/test

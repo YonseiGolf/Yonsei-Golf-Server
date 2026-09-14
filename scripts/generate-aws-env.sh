@@ -9,8 +9,9 @@ OUTPUT_FILE=${YG_AWS_ENV_FILE:-"${PROJECT_DIR}/.env.aws"}
 AWS_PROFILE_NAME=${AWS_PROFILE:-yg-server}
 AWS_REGION_NAME=${AWS_REGION:-ap-northeast-2}
 APP_IMAGE_NAME=${YG_APP_IMAGE:-birdiehyun/yg-server:latest}
+FLYWAY_IMAGE_NAME=${YG_FLYWAY_IMAGE:-birdiehyun/yg-server:flyway-latest}
 
-for command_name in aws jq openssl terragrunt; do
+for command_name in aws jq terragrunt; do
     if ! command -v "${command_name}" >/dev/null 2>&1; then
         echo "required command not found: ${command_name}" >&2
         exit 1
@@ -54,6 +55,7 @@ quote_env_value() {
     local value=$1
     value=${value//\\/\\\\}
     value=${value//\"/\\\"}
+    value=${value//\$/\$\$}
     value=${value//$'\n'/\\n}
     printf '"%s"' "${value}"
 }
@@ -81,40 +83,35 @@ database_username=$(jq -er '.username' <<<"${rds_secret_json}")
 database_password=$(jq -er '.password' <<<"${rds_secret_json}")
 s3_bucket=$(terragrunt_output s3_bucket_name)
 image_base_url=$(terragrunt_output image_url)
-redis_password=${YG_REDIS_PASSWORD:-$(openssl rand -hex 24)}
 
 umask 077
 temporary_file=$(mktemp "${OUTPUT_FILE}.tmp.XXXXXX")
 trap 'rm -f "${temporary_file}"' EXIT
 
 {
-    write_env SPRING_PROFILES_ACTIVE aws
+    write_env APP_PROFILE aws
+    write_env NODE_ENV production
     write_env APP_IMAGE "${APP_IMAGE_NAME}"
+    write_env FLYWAY_IMAGE "${FLYWAY_IMAGE_NAME}"
     write_env AWS_REGION "${AWS_REGION_NAME}"
     write_env S3_BUCKET "${s3_bucket}"
     write_env IMAGE_BASE_URL "${image_base_url}"
     write_env AWS_S3_BUCKET "${s3_bucket}"
     write_env AWS_S3_PUBLIC_URL "${image_base_url}"
-    write_env DATABASE_URL "jdbc:mysql://${database_host}:${database_port}/${database_name}"
+    write_env DATABASE_URL "mysql://${database_host}:${database_port}/${database_name}"
+    write_env FLYWAY_URL "jdbc:mysql://${database_host}:${database_port}/${database_name}"
     write_env DATABASE_USERNAME "${database_username}"
     write_env DATABASE_PASSWORD "${database_password}"
-    write_env REDIS_HOST redis
-    write_env REDIS_PORT 6379
-    write_env REDIS_PASSWORD "${redis_password}"
     write_env KAKAO_CLIENT_ID "$(property_value KAKAO_CLIENT_ID)"
     write_env KAKAO_CLIENT_SECRET "$(property_value KAKAO_CLIENT_SECRET)"
-    write_env KAKAO_REDIRECT_URI "$(property_value KAKAO_REDIRECT_URI)"
+    write_env KAKAO_TOKEN_URL "$(property_value KAKAO_REDIRECT_URI)"
     write_env KAKAO_LOGIN_URI "$(property_value KAKAO_LOGIN_URI)"
     write_env JWT_SECRET_KEY "$(property_value JWT_SECRET_KEY)"
-    write_env ALGORITHM "$(property_value ALGORITHM)"
-    write_env SECRET_KEY "$(property_value SECRET_KEY)"
-    write_env SPRING_MAIL_HOST "$(property_value spring.mail.host)"
-    write_env SPRING_MAIL_PORT "$(property_value spring.mail.port)"
-    write_env SPRING_MAIL_USERNAME "$(property_value spring.mail.username)"
-    write_env SPRING_MAIL_PASSWORD "$(property_value spring.mail.password)"
-    write_env SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH \
-        "$(property_value spring.mail.properties.mail.smtp.auth)"
-    write_env SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE \
+    write_env SMTP_HOST "$(property_value spring.mail.host)"
+    write_env SMTP_PORT "$(property_value spring.mail.port)"
+    write_env SMTP_USERNAME "$(property_value spring.mail.username)"
+    write_env SMTP_PASSWORD "$(property_value spring.mail.password)"
+    write_env SMTP_REQUIRE_TLS \
         "$(property_value spring.mail.properties.mail.smtp.starttls.enable)"
 } >"${temporary_file}"
 

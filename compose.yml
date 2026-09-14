@@ -1,0 +1,75 @@
+name: yonsei-golf
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: yg_local
+      MYSQL_USER: ${DATABASE_USERNAME:-yg_local}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-yg_local_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_password}
+      TZ: Asia/Seoul
+    ports:
+      - '127.0.0.1:3307:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '--silent']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  flyway:
+    image: flyway/flyway:13.6.0-alpine
+    profiles: [tools]
+    environment:
+      FLYWAY_URL: jdbc:mysql://mysql:3306/yg_local?allowPublicKeyRetrieval=true&useSSL=false
+      FLYWAY_USER: ${DATABASE_USERNAME:-yg_local}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD:-yg_local_password}
+      FLYWAY_CLEAN_DISABLED: 'true'
+      FLYWAY_BASELINE_ON_MIGRATE: 'false'
+    volumes:
+      - ./db/migration:/flyway/sql:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: migrate
+
+  mailpit:
+    image: axllent/mailpit:v1.31.1
+    ports:
+      - '127.0.0.1:1025:1025'
+      - '127.0.0.1:8025:8025'
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID:-local-minio}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-local-minio-password}
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  minio-init:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID:-local-minio}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-local-minio-password}
+    entrypoint: ['/bin/sh', '-ec']
+    command:
+      - mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; mc mb --ignore-existing local/yg-local; mc anonymous set download local/yg-local
+    depends_on:
+      minio:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+  minio-data:
