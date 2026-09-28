@@ -113,6 +113,53 @@ export YG_MINIO_ENV_FILE=/path/to/minio.env
 
 브라우저가 presigned URL로 MinIO에 직접 업로드하므로 `S3_ENDPOINT`는 브라우저에서 접근할 수 있는 공개 주소여야 합니다. 이미지 URL은 `${AWS_S3_PUBLIC_URL}/${AWS_S3_BUCKET}/<key>` 형식이며, 버킷에는 익명 `s3:GetObject`만 허용하는 정책이 필요합니다. 접근키는 해당 버킷만 쓸 수 있는 전용 계정으로 발급하세요.
 
+## 맥미니(home) 배포
+
+`compose.home.yml`은 API, 전용 MySQL 8.4, Flyway를 한 호스트에서 실행합니다. 이미지는 `STORAGE_PROVIDER=minio`(home 기본값)로 외부 MinIO에 저장합니다. API는 `127.0.0.1:8080`에만 열리므로 Cloudflare Tunnel 같은 리버스 프록시로 외부에 공개합니다.
+
+`.env.home`은 compose 변수와 API 환경변수를 함께 담으며 저장소에 커밋하지 않습니다.
+
+```sh
+APP_IMAGE=birdiehyun/yg-server:<commit-sha>
+FLYWAY_IMAGE=birdiehyun/yg-server:flyway-<commit-sha>
+MYSQL_DATABASE=ygserver
+MYSQL_ROOT_PASSWORD=<random>
+DATABASE_USERNAME=yg_server
+DATABASE_PASSWORD=<random>
+JWT_SECRET_KEY=<Base64, 디코딩 후 32바이트 이상>
+KAKAO_CLIENT_ID=<카카오 앱 키>
+KAKAO_CLIENT_SECRET=<카카오 client secret>
+SMTP_HOST=<SMTP host>
+SMTP_PORT=587
+SMTP_USERNAME=<SMTP 계정>
+SMTP_PASSWORD=<SMTP 비밀번호>
+SMTP_REQUIRE_TLS=true
+STORAGE_PROVIDER=minio
+S3_ENDPOINT=https://minio.example.com
+AWS_S3_BUCKET=yg-img-storage
+AWS_S3_PUBLIC_URL=https://minio.example.com
+AWS_ACCESS_KEY_ID=<MinIO access key>
+AWS_SECRET_ACCESS_KEY=<MinIO secret key>
+```
+
+```sh
+docker compose --env-file .env.home -f compose.home.yml pull
+docker compose --env-file .env.home -f compose.home.yml up -d
+docker compose --env-file .env.home -f compose.home.yml ps
+docker compose --env-file .env.home -f compose.home.yml logs --tail=100 app
+```
+
+기존 DB를 옮길 때는 `mysql`만 먼저 시작해 덤프를 넣은 뒤 전체를 시작합니다. 덤프에 `flyway_schema_history`가 있어야 Flyway가 기존 이력을 검증하고 새 migration만 적용합니다.
+
+```sh
+docker compose --env-file .env.home -f compose.home.yml up -d mysql
+docker compose --env-file .env.home -f compose.home.yml exec -T mysql \
+  sh -c 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' < dump.sql
+docker compose --env-file .env.home -f compose.home.yml up -d
+```
+
+DB 데이터는 `mysql-data` 볼륨에 있으므로 `down -v`를 사용하지 마세요. 백업은 같은 방식으로 `mysqldump --single-transaction`을 실행해 받습니다.
+
 ## 인증·환경 호환성
 
 JWT는 기존 Base64 비밀키를 디코딩해 HS256으로 검증하고 `userProfile` claim을 유지합니다. 키는 디코딩 후 32바이트 이상이어야 합니다. 키를 교체하면 기존 토큰은 다시 로그인해야 합니다. 기존 `SPRING_PROFILES_ACTIVE`, `SPRING_MAIL_*`, JDBC 형식의 `DATABASE_URL`, `AWS_S3_ENDPOINT`, `AWS_ACCESS_KEY`도 입력 별칭으로 지원합니다.

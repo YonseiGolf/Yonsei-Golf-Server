@@ -1,0 +1,60 @@
+# 맥미니(home) 운영 배포: API + 전용 MySQL 8.4 + Flyway. 이미지는 외부 MinIO를 사용한다.
+# docker compose --env-file .env.home -f compose.home.yml up -d
+name: yg-server
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: yg-server-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Set MYSQL_DATABASE}
+      MYSQL_USER: ${DATABASE_USERNAME:?Set DATABASE_USERNAME}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Seoul
+    ports:
+      - '127.0.0.1:${MYSQL_PORT:-3308}:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '--silent']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  flyway:
+    image: ${FLYWAY_IMAGE:-birdiehyun/yg-server:flyway-latest}
+    environment:
+      FLYWAY_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false
+      FLYWAY_USER: ${DATABASE_USERNAME}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
+      FLYWAY_CLEAN_DISABLED: 'true'
+      FLYWAY_BASELINE_ON_MIGRATE: 'false'
+      FLYWAY_CONNECT_RETRIES: '30'
+    command: migrate
+    restart: 'no'
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  app:
+    image: ${APP_IMAGE:-birdiehyun/yg-server:latest}
+    container_name: yg-server
+    restart: unless-stopped
+    init: true
+    ports:
+      - '127.0.0.1:${APP_PORT:-8080}:8080'
+    env_file:
+      - .env.home
+    environment:
+      NODE_ENV: production
+      APP_PROFILE: home
+      DATABASE_URL: mysql://mysql:3306/${MYSQL_DATABASE}
+      TZ: Asia/Seoul
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+
+volumes:
+  mysql-data:

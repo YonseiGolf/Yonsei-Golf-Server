@@ -81,3 +81,4 @@
 - 기존 비공개 application.properties와 .env.aws는 변경하지 않는다. 새 환경 파일은 스크립트를 직접 실행할 때 생성된다.
 - 기존 Spring 컨테이너와 새 Nest 컨테이너의 이름이 같아 최초 전환 시 기존 앱 컨테이너만 중지·제거해야 한다. 기존 DB/Redis/스토리지 데이터는 삭제하지 않는다.
 - 실행 및 배포 절차는 루트 README를 따른다. API와 Flyway 이미지는 같은 commit 태그로 선택한다.
+- 맥미니 운영은 `compose.home.yml`로 API, 전용 MySQL 8.4, Flyway를 실행하고 이미지는 MinIO에 저장한다. 기존 RDS 데이터는 `mysqldump`로 옮기며 `flyway_schema_history`를 함께 옮겨 V1~V9 이력을 보존한다.
