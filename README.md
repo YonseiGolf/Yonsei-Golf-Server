@@ -165,3 +165,27 @@ DB 데이터는 `mysql-data` 볼륨에 있으므로 `down -v`를 사용하지 �
 JWT는 기존 Base64 비밀키를 디코딩해 HS256으로 검증하고 `userProfile` claim을 유지합니다. 키는 디코딩 후 32바이트 이상이어야 합니다. 키를 교체하면 기존 토큰은 다시 로그인해야 합니다. 기존 `SPRING_PROFILES_ACTIVE`, `SPRING_MAIL_*`, JDBC 형식의 `DATABASE_URL`, `AWS_S3_ENDPOINT`, `AWS_ACCESS_KEY`도 입력 별칭으로 지원합니다.
 
 운영 refresh cookie는 `HttpOnly`, `Secure`, `SameSite=None`입니다. 로컬 HTTP 개발에서는 `.env.example`처럼 `COOKIE_SECURE=false`를 사용하면 `SameSite=Lax`로 발급합니다. 메일과 카카오 호출에는 타임아웃을 설정합니다. 개인 지원서 데이터나 비밀키가 오류 응답에 포함되지 않도록 공통 예외 처리를 사용합니다.
+
+## 로그
+
+요청마다 응답이 끝날 때 한 줄을 남깁니다(`context: HTTP`). 정상 응답은 `log`, 4xx와 도중에 끊긴 요청은 `warn`, 5xx는 `error` 레벨입니다. 성공한 `/healthcheck`는 Docker와 외부 확인이 자주 호출하므로 남기지 않습니다.
+
+| 필드 | 내용 |
+|---|---|
+| `requestId` | 요청 ID. 들어온 `X-Request-Id` 또는 Cloudflare `cf-ray`를 쓰고, 없으면 새로 만듭니다. 응답 헤더 `X-Request-Id`로도 돌려줍니다 |
+| `method`, `path`, `route`, `query` | 요청 경로. `route`는 `/admin/forms/:id` 같은 라우트 템플릿이고, `query`에서 이름에 token·code·secret·password·key가 들어간 값은 가립니다 |
+| `status`, `durationMs`, `aborted` | 응답 코드, 처리 시간, 응답 전에 연결이 끊겼는지 |
+| `userId` / `kakaoId` | 인증된 호출자 (회원 토큰 / 가입 전 카카오 토큰) |
+| `ip`, `userAgent` | `cf-connecting-ip`(없으면 소켓 주소), 브라우저 정보 |
+| `error`, `cause` | 실패 이유. `cause`는 응답에 넣지 않는 내부 원인입니다 (예: `TokenExpiredError: jwt expired`, `Kakao token 400: invalid_grant KOE320`, SMTP 오류) |
+| `stack` | 예상하지 못한 5xx의 스택 트레이스 |
+
+요청 본문, 헤더(Authorization 포함), 쿠키는 남기지 않습니다.
+
+`NODE_ENV=production`이면 한 줄에 JSON 객체 하나로 출력하고, 그 밖에는 사람이 읽는 텍스트로 출력합니다. `LOG_FORMAT=json|text`로 바꿀 수 있습니다. Grafana(Loki)에서는 이렇게 찾습니다.
+
+```logql
+{container="yg-server"} | json | status >= 500
+{container="yg-server"} | json | level="warn" | route="/oauth/kakao"
+{container="yg-server"} | json | requestId="<응답 헤더의 X-Request-Id>"
+```

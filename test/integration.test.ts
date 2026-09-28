@@ -40,6 +40,7 @@ import { EmailService } from '../src/email/email.service';
 import { ImageService } from '../src/storage/image.service';
 import { AuthService } from '../src/users/auth';
 import { User, UserClass, UserRole } from '../src/users/user.entity';
+import { CaptureLogger } from './support/capture-logger';
 import { ExternalServices } from './support/external-services';
 
 describe('NestJS integration with real MySQL and Flyway', {
@@ -53,6 +54,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   let minio: StartedTestContainer | undefined;
   let storage: S3Client | undefined;
   const external = new ExternalServices();
+  const logs = new CaptureLogger();
 
   before(async () => {
     await external.start();
@@ -129,6 +131,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       imports: [AppModule.register(settings)],
     }).compile();
     app = module.createNestApplication();
+    app.useLogger(logs);
     configureApp(app, settings);
     await app.init();
     db = app.get(DataSource);
@@ -958,6 +961,75 @@ describe('NestJS integration with real MySQL and Flyway', {
       .post('/application/emailAlarm')
       .send({ email: 'negative@example.test', semester: -1 })
       .expect(400);
+  });
+
+  it('logs one line per request with its ID, caller and failure reason', async () => {
+    const admin = await fixtureUser(UserRole.LEADER);
+    logs.entries.length = 0;
+    const health = await http().get('/healthcheck').expect(200);
+    assert.match(String(health.headers['x-request-id']), /^[0-9a-f-]{36}$/);
+    await http()
+      .post('/application/emailAlarm')
+      .set('X-Request-Id', 'test-request-1')
+      .send({ email: 'not-an-email', semester: 0 })
+      .expect('X-Request-Id', 'test-request-1')
+      .expect(400);
+    await http()
+      .get('/admin/users')
+      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .expect(200);
+    await http()
+      .get('/admin/users?page=0&token=secret-value')
+      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .expect(400);
+    await http()
+      .get('/admin/users')
+      .set('Authorization', 'Bearer not-a-jwt')
+      .expect(401);
+    await http()
+      .post('/oauth/kakao')
+      .send({ kakaoCode: 'invalid' })
+      .expect(401);
+
+    const requests = logs.entries.filter((entry) => entry.context === 'HTTP');
+    const find = (predicate: (fields: Record<string, unknown>) => boolean) => {
+      const entry = requests.find((item) => predicate(item.fields));
+      assert.ok(entry, 'request log entry');
+      return entry;
+    };
+    // Successful health checks run every few seconds and are not logged.
+    assert.equal(
+      requests.some((entry) => entry.fields.path === '/healthcheck'),
+      false,
+    );
+    const invalid = find((fields) => fields.requestId === 'test-request-1');
+    assert.equal(invalid.level, 'warn');
+    assert.equal(
+      invalid.message,
+      `POST /application/emailAlarm 400 ${invalid.fields.durationMs}ms`,
+    );
+    assert.equal(invalid.fields.route, '/application/emailAlarm');
+    assert.match(String(invalid.fields.error), /email must be an email/);
+    const listed = find(
+      (fields) => fields.path === '/admin/users' && fields.status === 200,
+    );
+    assert.equal(listed.level, 'log');
+    assert.equal(listed.fields.userId, String(admin.id));
+    const redacted = find(
+      (fields) => fields.status === 400 && fields.path === '/admin/users',
+    );
+    assert.equal(redacted.fields.query, 'page=0&token=%5Bredacted%5D');
+    const rejected = find(
+      (fields) => fields.path === '/admin/users' && fields.status === 401,
+    );
+    assert.match(String(rejected.fields.cause), /jwt malformed/);
+    const kakao = find((fields) => fields.path === '/oauth/kakao');
+    assert.equal(kakao.fields.cause, 'Kakao token 400: invalid_grant');
+    // Bodies and credentials never reach the log.
+    const logged = JSON.stringify(logs.entries);
+    assert.equal(logged.includes('not-an-email'), false);
+    assert.equal(logged.includes('secret-value'), false);
+    assert.equal(logged.includes(auth.accessToken(admin)), false);
   });
 
   it('uploads real bytes to MinIO using the issued presigned URL', async () => {

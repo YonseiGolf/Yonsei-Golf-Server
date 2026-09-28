@@ -4,13 +4,13 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  Logger,
   PipeTransform,
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsInt, Max, Min } from 'class-validator';
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
+import { describeCause, RequestFailure } from './logging';
 
 export const success = <T>(message: string, data: T | null = null) => ({
   status: 'success',
@@ -63,12 +63,14 @@ export function pageResponse<T>(content: T[], total: number, query: PageQuery) {
   };
 }
 
+// The failure reason goes to the request log (requestLogger) so each request
+// is one log line. Clients only get the public message.
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(ApiExceptionFilter.name);
   catch(error: unknown, host: ArgumentsHost): void {
     let status = 500;
     let message = '서버 오류가 발생했습니다.';
+    let failure: RequestFailure;
     if (error instanceof HttpException) {
       status = error.getStatus();
       const response = error.getResponse();
@@ -77,28 +79,48 @@ export class ApiExceptionFilter implements ExceptionFilter {
           ? response
           : (response as { message?: string | string[] }).message?.toString() ||
             error.message;
+      failure = { error: message, cause: describeCause(error.cause) };
     } else if (error instanceof QueryFailedError) {
-      const code = (error.driverError as { code?: string }).code;
+      const driver = error.driverError as {
+        code?: string;
+        sqlMessage?: string;
+      };
       if (
-        code === 'ER_ROW_IS_REFERENCED_2' ||
-        code === 'ER_NO_REFERENCED_ROW_2' ||
-        code === 'ER_DUP_ENTRY'
+        driver.code === 'ER_ROW_IS_REFERENCED_2' ||
+        driver.code === 'ER_NO_REFERENCED_ROW_2' ||
+        driver.code === 'ER_DUP_ENTRY'
       ) {
         status = 409;
         message = '연결된 데이터가 있거나 이미 존재하는 데이터입니다.';
+        // The key or constraint name only: a duplicate entry message contains the stored value.
+        const key = driver.sqlMessage?.match(
+          /(?:for key|CONSTRAINT) [`']([^`']+)/,
+        )?.[1];
+        failure = {
+          error: message,
+          cause: `${driver.code}${key ? ` ${key}` : ''}`,
+        };
+      } else {
+        failure = {
+          error: 'Database error',
+          cause:
+            `${driver.code ?? 'unknown'}: ${driver.sqlMessage ?? error.message}`.slice(
+              0,
+              500,
+            ),
+          stack: error.stack,
+        };
       }
+    } else {
+      failure = {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        cause: describeCause(error instanceof Error ? error.cause : error),
+        stack: error instanceof Error ? error.stack : undefined,
+      };
     }
-    if (status === 500)
-      this.logger.error(
-        error instanceof QueryFailedError
-          ? `Database error: ${(error.driverError as { code?: string }).code ?? 'unknown'}`
-          : error instanceof Error
-            ? error.message
-            : 'Unknown error',
-      );
-    host
-      .switchToHttp()
-      .getResponse<Response>()
+    const response = host.switchToHttp().getResponse<Response>();
+    response.locals.failure = failure;
+    response
       .status(status)
       .json({ status: 'error', code: status, message, data: null });
   }

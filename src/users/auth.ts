@@ -18,7 +18,10 @@ import { User, UserClass } from './user.entity';
 import { UsersService } from './users.service';
 
 type AccessLevel = 'oauth' | 'user' | 'admin';
-type AuthRequest = Request & { principalId: string };
+type AuthRequest = Request & {
+  principalId: string;
+  principalKind?: 'oauth' | 'user';
+};
 
 @Injectable()
 export class AuthService {
@@ -86,8 +89,11 @@ export class AuthService {
       )
         throw new Error('Wrong token kind');
       return String(id);
-    } catch {
-      throw new UnauthorizedException('유효하지 않거나 만료된 토큰입니다.');
+    } catch (error) {
+      // The cause (e.g. "jwt expired", "Wrong token kind") is logged, not returned.
+      throw new UnauthorizedException('유효하지 않거나 만료된 토큰입니다.', {
+        cause: error,
+      });
     }
   }
 }
@@ -110,6 +116,7 @@ export class AuthGuard implements CanActivate {
       request.headers.authorization,
       level,
     );
+    request.principalKind = level === 'oauth' ? 'oauth' : 'user';
     if (level !== 'oauth') {
       const user = await this.users.findById(request.principalId);
       if (user.userClass === UserClass.BLACK_LIST)

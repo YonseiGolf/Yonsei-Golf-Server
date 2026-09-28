@@ -7,6 +7,7 @@ import {
 import { DataSource, In } from 'typeorm';
 import { formatDate, localDateTime } from '../common/dates';
 import { apiId, pageResponse } from '../common/http';
+import { describeCause } from '../common/logging';
 import { EmailService, notificationType } from '../email/email.service';
 import { ImageService } from '../storage/image.service';
 import {
@@ -109,8 +110,11 @@ export class ApplicationsService {
     // Receipt email failures must not undo a successfully submitted application.
     try {
       await this.email.applicationNotification(saved.id, null);
-    } catch {
-      this.logger.warn(`지원서 ${saved.id} 저장 완료, 접수 메일 발송 실패`);
+    } catch (error) {
+      this.logger.warn(`지원서 ${saved.id} 저장 완료, 접수 메일 발송 실패`, {
+        applicationId: saved.id,
+        cause: describeCause(error),
+      });
     }
   }
   async emailAlarm(dto: EmailAlarmDto): Promise<void> {
