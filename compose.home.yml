@@ -26,7 +26,7 @@ services:
   flyway:
     image: ${FLYWAY_IMAGE:-birdiehyun/yg-server:flyway-latest}
     environment:
-      FLYWAY_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false
+      FLYWAY_URL: jdbc:mysql://yg-server-mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false
       FLYWAY_USER: ${DATABASE_USERNAME}
       FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
       FLYWAY_CLEAN_DISABLED: 'true'
@@ -50,7 +50,8 @@ services:
     environment:
       NODE_ENV: production
       APP_PROFILE: home
-      DATABASE_URL: mysql://mysql:3306/${MYSQL_DATABASE}
+      # 다른 네트워크의 'mysql' 별칭과 섞이지 않도록 컨테이너 이름으로 접속한다.
+      DATABASE_URL: mysql://yg-server-mysql:3306/${MYSQL_DATABASE}
       TZ: Asia/Seoul
     depends_on:
       flyway:
