@@ -96,11 +96,12 @@ export class ApplicationDto {
 export class EmailDto {
   @IsEmail() @MaxLength(255) email!: string;
 }
+// Semester 0 means "not assigned yet": visitors subscribe before a recruitment is announced.
 export class EmailAlarmDto extends EmailDto {
-  @IsInt() @Min(1) @Max(9999) semester!: number;
+  @Type(() => Number) @IsInt() @Min(0) @Max(9999) semester!: number;
 }
 export class SemesterQuery {
-  @Type(() => Number) @IsInt() @Min(1) @Max(9999) semester!: number;
+  @Type(() => Number) @IsInt() @Min(0) @Max(9999) semester!: number;
 }
 export class PassDto {
   @ValidateIf((_object, value) => value !== null) @IsBoolean() documentPass!:

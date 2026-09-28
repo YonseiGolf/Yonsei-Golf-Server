@@ -934,6 +934,32 @@ describe('NestJS integration with real MySQL and Flyway', {
       .expect(400);
   });
 
+  it('accepts recruitment email subscriptions without an assigned semester', async () => {
+    const admin = await fixtureUser(UserRole.LEADER);
+    // Clients subscribe with semester 0 before a recruitment is announced; the Vue client sends it as a string.
+    await http()
+      .post('/application/emailAlarm')
+      .send({ email: 'unassigned@example.test', semester: '0' })
+      .expect(200);
+    const waiting = await http()
+      .get('/admin/email/apply-start-email?semester=0')
+      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .expect(200);
+    assert.deepEqual(
+      waiting.body.data.emailAlarms.map(
+        (alarm: { email: string; semester: number }) => [
+          alarm.email,
+          alarm.semester,
+        ],
+      ),
+      [['unassigned@example.test', 0]],
+    );
+    await http()
+      .post('/application/emailAlarm')
+      .send({ email: 'negative@example.test', semester: -1 })
+      .expect(400);
+  });
+
   it('uploads real bytes to MinIO using the issued presigned URL', async () => {
     const bytes = Buffer.from('test-image-bytes');
     const result = await http()
