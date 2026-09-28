@@ -64,6 +64,7 @@
 - 원본 45개 API 경로 대조 및 9개 Flyway SQL의 원본 바이트 비교.
 - 실제 MySQL의 저장/수정/삭제, FK 제약, 트랜잭션 롤백, BIT(1), BIGINT, 날짜를 검증.
 - 로컬 HTTP 카카오 서버, 실제 SMTP 서버, 실제 MinIO PUT/GET으로 외부 연동을 검증.
+- 공식 MinIO 이미지(quay.io/minio/minio, minio/minio)의 공개 배포가 중단되어 CI 이미지 pull이 실패했다. 로컬 개발과 통합 테스트는 커뮤니티 빌드 `pgsty/minio`로 바꿨다.
 - GitHub Actions는 PR 검증과 dev 이미지 게시를 분리하며 게시 전에도 같은 검증을 실행한다.
 
 ### CI에서 발견한 날짜 회귀와 수정

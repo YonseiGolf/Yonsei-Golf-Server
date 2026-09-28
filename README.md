@@ -15,7 +15,7 @@ pnpm db:migrate
 pnpm start:dev
 ```
 
-서버는 `http://localhost:8080`, MySQL은 `127.0.0.1:3307`, Mailpit 웹 UI는 `http://localhost:8025`, 로컬 MinIO는 `http://localhost:9000`에서 실행됩니다. `minio-init`이 로컬 버킷 `yg-local`과 읽기 정책을 생성합니다. 개발용 MinIO는 로컬 테스트용으로만 제공하며 운영 스토리지는 기존 S3/MinIO endpoint를 사용합니다.
+서버는 `http://localhost:8080`, MySQL은 `127.0.0.1:3307`, Mailpit 웹 UI는 `http://localhost:8025`, 로컬 MinIO는 `http://localhost:9000`에서 실행됩니다. 공식 MinIO 이미지(`quay.io/minio/minio`, `minio/minio`)는 공개 배포가 중단되어 로컬 개발과 통합 테스트에서는 커뮤니티 빌드 `pgsty/minio`를 사용합니다. `minio-init`이 로컬 버킷 `yg-local`과 읽기 정책을 생성합니다. 개발용 MinIO는 로컬 테스트용으로만 제공하며 운영 스토리지는 기존 S3/MinIO endpoint를 사용합니다.
 
 실제 카카오 로그인에는 `.env`의 카카오 앱 설정이 필요합니다. `KAKAO_TOKEN_URL`은 토큰 교환 endpoint이고, `KAKAO_CALLBACK_URL`은 인증 코드를 발급받을 때 사용한 redirect URI입니다. 이전 설정의 `KAKAO_REDIRECT_URI`는 토큰 endpoint로 취급하므로 두 값을 혼동하지 마세요. 통합 테스트는 외부 카카오 계정 없이 실행됩니다.
 

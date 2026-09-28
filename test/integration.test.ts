@@ -84,7 +84,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       .start();
     await flyway.stop();
     minio = await new GenericContainer(
-      'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z',
+      'pgsty/minio:RELEASE.2026-08-04T00-00-00Z',
     )
       .withEnvironment({
         MINIO_ROOT_USER: 'test-user',
