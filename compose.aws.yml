@@ -1,36 +1,33 @@
-services:
-  redis:
-    image: redis:7.4-alpine
-    container_name: yg-server-redis
-    restart: unless-stopped
-    env_file:
-      - .env.aws
-    command:
-      - /bin/sh
-      - -c
-      - exec redis-server --appendonly yes --requirepass "$${REDIS_PASSWORD}"
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
+name: yg-server
 
-  spring-server:
+services:
+  flyway:
+    image: ${FLYWAY_IMAGE:-birdiehyun/yg-server:flyway-latest}
+    platform: linux/arm64
+    environment:
+      FLYWAY_URL: ${FLYWAY_URL:?Set FLYWAY_URL to the JDBC MySQL URL}
+      FLYWAY_USER: ${DATABASE_USERNAME:?Set DATABASE_USERNAME}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD}
+      FLYWAY_CLEAN_DISABLED: 'true'
+      FLYWAY_BASELINE_ON_MIGRATE: 'false'
+      FLYWAY_CONNECT_RETRIES: '30'
+    command: migrate
+    restart: 'no'
+
+  app:
     image: ${APP_IMAGE:-birdiehyun/yg-server:latest}
     platform: linux/arm64
     container_name: yg-server
     restart: unless-stopped
+    init: true
     ports:
-      - "8080:8080"
+      - '8080:8080'
     env_file:
       - .env.aws
     environment:
+      NODE_ENV: production
+      APP_PROFILE: aws
       TZ: Asia/Seoul
     depends_on:
-      redis:
-        condition: service_healthy
-
-volumes:
-  redis-data:
+      flyway:
+        condition: service_completed_successfully

@@ -101,3 +101,13 @@ bin
 
 # Generated AWS runtime secrets
 .env.aws
+
+# Node / local runtime
+node_modules/
+dist/
+.test-dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

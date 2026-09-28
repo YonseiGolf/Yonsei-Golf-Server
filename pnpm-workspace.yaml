@@ -1,0 +1,9 @@
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - protobufjs
+ignoredBuiltDependencies:
+  - cpu-features
+  - ssh2
+overrides:
+  # Nest's transitive upload dependency: patched for GHSA-wc9g-mqfw-jrwm et al.
+  multer: 2.3.0
