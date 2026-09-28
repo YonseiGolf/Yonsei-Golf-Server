@@ -10,6 +10,22 @@ interface KakaoTokens {
   refresh_token?: string;
 }
 
+// Kakao's error fields (e.g. "invalid_grant KOE320 authorization code not found") for the logs.
+async function kakaoError(api: string, response: globalThis.Response) {
+  const text = (await response.text().catch(() => '')).slice(0, 500);
+  let detail = text;
+  try {
+    const body = JSON.parse(text) as Record<string, unknown>;
+    detail = ['error', 'error_code', 'error_description', 'code', 'msg']
+      .map((key) => body[key])
+      .filter((value) => value !== undefined)
+      .join(' ');
+  } catch {
+    // Not JSON: keep the raw text.
+  }
+  return `Kakao ${api} ${response.status}${detail ? `: ${detail}` : ''}`;
+}
+
 @Injectable()
 export class KakaoClient {
   constructor(private readonly settings: Settings) {}
@@ -30,11 +46,15 @@ export class KakaoClient {
         }),
         signal: AbortSignal.timeout(10000),
       });
-    } catch {
-      throw new BadGatewayException('카카오 인증 서버에 연결할 수 없습니다.');
+    } catch (error) {
+      throw new BadGatewayException('카카오 인증 서버에 연결할 수 없습니다.', {
+        cause: error,
+      });
     }
     if (!response.ok)
-      throw new UnauthorizedException('카카오 인증에 실패했습니다.');
+      throw new UnauthorizedException('카카오 인증에 실패했습니다.', {
+        cause: await kakaoError('token', response),
+      });
     const result: unknown = await response.json();
     if (
       !result ||
@@ -52,11 +72,18 @@ export class KakaoClient {
         headers: { Authorization: `Bearer ${accessToken}` },
         signal: AbortSignal.timeout(10000),
       });
-    } catch {
-      throw new BadGatewayException('카카오 사용자 정보를 조회할 수 없습니다.');
+    } catch (error) {
+      throw new BadGatewayException(
+        '카카오 사용자 정보를 조회할 수 없습니다.',
+        {
+          cause: error,
+        },
+      );
     }
     if (!response.ok)
-      throw new UnauthorizedException('카카오 사용자 인증에 실패했습니다.');
+      throw new UnauthorizedException('카카오 사용자 인증에 실패했습니다.', {
+        cause: await kakaoError('user', response),
+      });
     const result = (await response.json()) as { id?: unknown };
     const id = result.id;
     if (

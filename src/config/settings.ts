@@ -1,4 +1,5 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
+import { LogFormat } from '../common/logging';
 
 export class Settings {
   constructor(
@@ -40,6 +41,7 @@ export class Settings {
       secretAccessKey?: string;
     },
     readonly cookieSecure = true,
+    readonly logFormat: LogFormat = 'text',
   ) {}
 }
 
@@ -64,6 +66,10 @@ export function loadSettings(env: NodeJS.ProcessEnv): Settings {
   const secret = Buffer.from(encodedSecret, 'base64');
   if (secret.length < 32)
     throw new Error('JWT_SECRET_KEY must contain at least 32 decoded bytes');
+  const logFormat =
+    env.LOG_FORMAT || (env.NODE_ENV === 'production' ? 'json' : 'text');
+  if (logFormat !== 'json' && logFormat !== 'text')
+    throw new Error('LOG_FORMAT must be json or text');
   const profile = env.APP_PROFILE ?? env.SPRING_PROFILES_ACTIVE ?? 'home';
   if (profile !== 'home' && profile !== 'aws')
     throw new Error('APP_PROFILE must be home or aws');
@@ -136,6 +142,7 @@ export function loadSettings(env: NodeJS.ProcessEnv): Settings {
       secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
     },
     env.COOKIE_SECURE !== 'false',
+    logFormat,
   );
 }
 
