@@ -14,15 +14,14 @@ export class ImageService implements OnModuleDestroy {
   private readonly s3: S3Client;
   constructor(private readonly settings: Settings) {
     const storage = settings.storage;
+    const minio = storage.provider === 'minio';
     this.s3 = new S3Client({
       region: storage.region,
       requestChecksumCalculation: 'WHEN_REQUIRED',
-      endpoint: settings.profile === 'home' ? storage.endpoint : undefined,
-      forcePathStyle: settings.profile === 'home',
+      endpoint: minio ? storage.endpoint : undefined,
+      forcePathStyle: minio,
       credentials:
-        settings.profile === 'home' &&
-        storage.accessKeyId &&
-        storage.secretAccessKey
+        minio && storage.accessKeyId && storage.secretAccessKey
           ? {
               accessKeyId: storage.accessKeyId,
               secretAccessKey: storage.secretAccessKey,
@@ -41,7 +40,7 @@ export class ImageService implements OnModuleDestroy {
     if (!extension)
       throw new BadRequestException('지원하지 않는 이미지 형식입니다.');
     const imageKey = `store-image/${randomUUID()}.${extension}`;
-    const publicRead = this.settings.profile === 'home';
+    const publicRead = this.settings.storage.provider === 'minio';
     const command = new PutObjectCommand({
       Bucket: this.settings.storage.bucket,
       Key: imageKey,
@@ -63,7 +62,7 @@ export class ImageService implements OnModuleDestroy {
   resolve(key: string | null, legacyUrl: string | null): string | null {
     if (!key) return legacyUrl;
     const base = this.settings.storage.publicUrl.replace(/\/+$/, '');
-    return this.settings.profile === 'home'
+    return this.settings.storage.provider === 'minio'
       ? `${base}/${this.settings.storage.bucket}/${key}`
       : `${base}/${key}`;
   }

@@ -31,6 +31,7 @@ import {
   NotificationType,
   Recruitment,
 } from '../src/applications/application.entity';
+import { ImageUploadDto } from '../src/applications/applications.dto';
 import { RecruitmentService } from '../src/applications/recruitment.service';
 import { Board, BoardTemplate, Reply } from '../src/boards/board.entity';
 import { configureApp } from '../src/bootstrap';
@@ -999,7 +1000,11 @@ describe('NestJS integration with real MySQL and Flyway', {
       settings.origins,
       settings.kakao,
       settings.mail,
-      { ...settings.storage, publicUrl: 'https://images.example.test' },
+      {
+        ...settings.storage,
+        provider: 's3',
+        publicUrl: 'https://images.example.test',
+      },
     );
     const images = new ImageService(awsSettings);
     assert.equal(
@@ -1007,6 +1012,69 @@ describe('NestJS integration with real MySQL and Flyway', {
       'https://images.example.test/store-image/new.jpg',
     );
     images.onModuleDestroy();
+  });
+
+  it('selects MinIO storage independently of APP_PROFILE', async () => {
+    const base = {
+      DATABASE_URL: 'mysql://127.0.0.1:3306/yg',
+      JWT_SECRET_KEY: Buffer.alloc(32, 't').toString('base64'),
+      KAKAO_CLIENT_ID: 'test',
+      KAKAO_CLIENT_SECRET: 'test',
+      AWS_S3_BUCKET: 'yg-img-storage',
+      AWS_S3_PUBLIC_URL: 'https://minio.example.test',
+    };
+    const minioEnv = {
+      S3_ENDPOINT: 'https://minio.example.test',
+      AWS_ACCESS_KEY_ID: 'yg-server',
+      AWS_SECRET_ACCESS_KEY: 'secret',
+    };
+    assert.equal(
+      loadSettings({ ...base, ...minioEnv, APP_PROFILE: 'home' }).storage
+        .provider,
+      'minio',
+    );
+    assert.equal(
+      loadSettings({ ...base, APP_PROFILE: 'aws' }).storage.provider,
+      's3',
+    );
+    const settings = loadSettings({
+      ...base,
+      ...minioEnv,
+      APP_PROFILE: 'aws',
+      STORAGE_PROVIDER: 'minio',
+    });
+    assert.equal(settings.profile, 'aws');
+    assert.equal(settings.storage.provider, 'minio');
+    const images = new ImageService(settings);
+    const { uploadUrl, uploadHeaders } = await images.presign(
+      Object.assign(new ImageUploadDto(), {
+        fileName: 'test.png',
+        contentType: 'image/png',
+        fileSize: 10,
+      }),
+    );
+    assert.ok(
+      uploadUrl.startsWith('https://minio.example.test/yg-img-storage/'),
+    );
+    assert.equal(uploadHeaders['x-amz-acl'], 'public-read');
+    assert.equal(
+      images.resolve('store-image/new.jpg', null),
+      'https://minio.example.test/yg-img-storage/store-image/new.jpg',
+    );
+    images.onModuleDestroy();
+    assert.throws(
+      () =>
+        loadSettings({
+          ...base,
+          APP_PROFILE: 'aws',
+          STORAGE_PROVIDER: 'minio',
+        }),
+      /MinIO storage requires S3_ENDPOINT/,
+    );
+    assert.throws(
+      () => loadSettings({ ...base, ...minioEnv, STORAGE_PROVIDER: 'gcs' }),
+      /STORAGE_PROVIDER must be minio or s3/,
+    );
   });
 
   it('persists and reloads a user through a real TypeORM repository', async () => {

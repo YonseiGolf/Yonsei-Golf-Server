@@ -79,7 +79,7 @@ export YG_FLYWAY_IMAGE=birdiehyun/yg-server:flyway-<commit-sha>
 ./scripts/generate-aws-env.sh
 ```
 
-`<commit-sha>`는 실제 commit SHA로 바꿉니다. 생성된 `.env.aws`와 `compose.aws.yml`을 EC2에 전달한 뒤 실행합니다. 비밀 환경 파일은 저장소와 이미지에서 제외되며, AWS 접근키 없이 instance role을 사용합니다. `APP_PROFILE=aws`에서는 객체를 private으로 업로드하고 CloudFront 기반 URL을 반환합니다.
+`<commit-sha>`는 실제 commit SHA로 바꿉니다. 생성된 `.env.aws`와 `compose.aws.yml`을 EC2에 전달한 뒤 실행합니다. 비밀 환경 파일은 저장소와 이미지에서 제외되며, AWS 접근키 없이 instance role을 사용합니다. `STORAGE_PROVIDER=s3`(`APP_PROFILE=aws`의 기본값)에서는 객체를 private으로 업로드하고 CloudFront 기반 URL을 반환합니다.
 
 ```sh
 docker compose --env-file .env.aws -f compose.aws.yml pull
@@ -91,6 +91,27 @@ docker compose --env-file .env.aws -f compose.aws.yml logs --tail=100 app
 앱은 Flyway migration 작업이 성공해야 시작됩니다. 기존 Spring Compose의 `spring-server`와 새 `app`은 동일한 컨테이너 이름을 쓰므로, 최초 전환 시 기존 서버만 중지·제거한 뒤 새 Compose를 시작해야 합니다. DB와 스토리지 볼륨을 삭제하지 마세요. 전환 전 DB 백업과 `flyway info/validate` 확인을 권장합니다.
 
 현재 이관은 새 DDL 없이 기존 스키마를 사용하므로 기존 Spring 이미지로 앱을 되돌릴 수 있습니다. 이후 스키마를 변경했다면 앱 이미지 복귀만으로 DB 변경이 되돌아가지는 않습니다. 기존 Redis는 현재 기능에서 사용하지 않아 새 Compose에서 제외했으며, 운영 중인 Redis와 데이터는 이 PR에서 삭제하지 않습니다.
+
+### 이미지 스토리지로 MinIO 사용
+
+이미지 스토리지는 `APP_PROFILE`과 별도로 `STORAGE_PROVIDER=minio|s3`로 선택합니다. 생략하면 `home`은 `minio`, `aws`는 `s3`입니다. AWS 배포에서 MinIO를 쓰려면 아래 키를 담은 파일을 준비해 스크립트에 전달합니다.
+
+```sh
+# minio.env
+S3_ENDPOINT=https://minio.example.com
+AWS_S3_BUCKET=yg-img-storage
+AWS_S3_PUBLIC_URL=https://minio.example.com
+AWS_ACCESS_KEY_ID=<MinIO access key>
+AWS_SECRET_ACCESS_KEY=<MinIO secret key>
+```
+
+```sh
+export YG_STORAGE_PROVIDER=minio
+export YG_MINIO_ENV_FILE=/path/to/minio.env
+./scripts/generate-aws-env.sh
+```
+
+브라우저가 presigned URL로 MinIO에 직접 업로드하므로 `S3_ENDPOINT`는 브라우저에서 접근할 수 있는 공개 주소여야 합니다. 이미지 URL은 `${AWS_S3_PUBLIC_URL}/${AWS_S3_BUCKET}/<key>` 형식이며, 버킷에는 익명 `s3:GetObject`만 허용하는 정책이 필요합니다. 접근키는 해당 버킷만 쓸 수 있는 전용 계정으로 발급하세요.
 
 ## 인증·환경 호환성
 

@@ -31,6 +31,7 @@ export class Settings {
       requireTLS: boolean;
     },
     readonly storage: {
+      provider: 'minio' | 's3';
       endpoint?: string;
       region: string;
       bucket: string;
@@ -66,14 +67,18 @@ export function loadSettings(env: NodeJS.ProcessEnv): Settings {
   const profile = env.APP_PROFILE ?? env.SPRING_PROFILES_ACTIVE ?? 'home';
   if (profile !== 'home' && profile !== 'aws')
     throw new Error('APP_PROFILE must be home or aws');
+  const storageProvider =
+    env.STORAGE_PROVIDER || (profile === 'home' ? 'minio' : 's3');
+  if (storageProvider !== 'minio' && storageProvider !== 's3')
+    throw new Error('STORAGE_PROVIDER must be minio or s3');
   if (
-    profile === 'home' &&
+    storageProvider === 'minio' &&
     (!(env.S3_ENDPOINT || env.AWS_S3_ENDPOINT) ||
       !(env.AWS_ACCESS_KEY_ID || env.AWS_ACCESS_KEY) ||
       !env.AWS_SECRET_ACCESS_KEY)
   )
     throw new Error(
-      'home profile requires S3_ENDPOINT, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY',
+      'MinIO storage requires S3_ENDPOINT, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY',
     );
   return new Settings(
     {
@@ -122,6 +127,7 @@ export function loadSettings(env: NodeJS.ProcessEnv): Settings {
           env.SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE) === 'true',
     },
     {
+      provider: storageProvider,
       endpoint: env.S3_ENDPOINT || env.AWS_S3_ENDPOINT,
       region: env.AWS_REGION || 'ap-northeast-2',
       bucket: required('AWS_S3_BUCKET'),

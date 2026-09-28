@@ -54,10 +54,11 @@
 - 서류·최종 합격의 null/false/true를 구분한다. 조회 쿼리에서 조건 생략 또는 `null`은 기존대로 IS NULL이며, 문자열 `false`를 true로 변환하지 않는다.
 - refresh cookie에 SameSite를 명시하고 카카오 refresh token 회전 시 쿠키도 갱신한다.
 - SQL 오류의 바인딩 값 로깅을 끄고 응답에 내부 DB 오류를 노출하지 않는다. Nest 전이 의존성 multer는 패치된 2.3.0으로 고정한다.
+- 이미지 스토리지 선택을 `APP_PROFILE`에서 분리해 `STORAGE_PROVIDER=minio|s3`로 지정한다. 생략하면 home은 minio, aws는 s3로 기존 동작과 같으며, AWS 배포에서도 MinIO를 사용할 수 있다.
 
 ### 검증
 
-- `pnpm check`: Biome lint/format, strict TypeScript 검사, Nest 빌드, 통합 테스트 22개.
+- `pnpm check`: Biome lint/format, strict TypeScript 검사, Nest 빌드, 통합 테스트 23개.
 - `pnpm docker:build`: Node.js 24 운영 이미지와 Flyway 이미지 빌드.
 - `pnpm test:container`: 실제 운영 이미지의 HTTP 요청으로 MySQL 저장 확인, 비root 실행 확인.
 - `pnpm audit --prod`: 알려진 취약점 없음.
