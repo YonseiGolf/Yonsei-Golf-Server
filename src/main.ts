@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
+import { loadSettings } from './adapter/config/settings';
 import { createApp } from './bootstrap';
-import { loadSettings } from './config/settings';
 
 async function main(): Promise<void> {
   if (existsSync('.env')) process.loadEnvFile('.env');

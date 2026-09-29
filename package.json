@@ -13,14 +13,15 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
-    "test": "pnpm test:integration",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "tsc -p tsconfig.test.json && node --test .test-dist/test/architecture.test.js .test-dist/test/domain.test.js",
     "test:integration": "tsc -p tsconfig.test.json && node --test --test-concurrency=1 .test-dist/test/integration.test.js",
     "test:container": "tsc -p tsconfig.test.json && node --test .test-dist/test/runtime-smoke.test.js",
     "docker:build": "docker build --target runtime -t yonsei-golf-server:nestjs-local . && docker build --target migrations -t yonsei-golf-server:flyway-local .",
     "db:up": "docker compose up -d mysql mailpit minio minio-init",
     "db:migrate": "docker compose run --rm flyway migrate",
     "db:validate": "docker compose run --rm flyway validate",
-    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test:integration"
+    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test:unit && pnpm test:integration"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

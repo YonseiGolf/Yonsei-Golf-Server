@@ -27,11 +27,11 @@ pnpm docker:build
 pnpm test:container
 ```
 
-`pnpm check`는 Biome 검사, TypeScript 타입 검사, Nest 빌드, 통합 테스트를 실행합니다. 통합 테스트는 매번 임시 MySQL 8.4 컨테이너에 실제 Flyway V1~V9를 적용하고, Nest HTTP 요청과 실제 DB 행을 검증합니다. Repository·SQL·트랜잭션을 모킹하거나 SQLite로 대체하지 않습니다. 카카오는 로컬 HTTP 서버, 메일은 로컬 SMTP 서버, 이미지 업로드는 실제 MinIO 컨테이너를 사용합니다. 테스트 설정은 운영 `.env`를 읽지 않습니다.
+`pnpm check`는 Biome 검사, TypeScript 타입 검사, Nest 빌드, 아키텍처·도메인 단위 테스트, 통합 테스트를 실행합니다. 단위 테스트(`pnpm test:unit`)는 Docker 없이 헥사고날 계층 규칙과 도메인 규칙을 검사합니다. 통합 테스트는 매번 임시 MySQL 8.4 컨테이너에 실제 Flyway V1~V9를 적용하고, Nest HTTP 요청과 실제 DB 행을 검증합니다. Repository·SQL·트랜잭션을 모킹하거나 SQLite로 대체하지 않습니다. 카카오는 로컬 HTTP 서버, 메일은 로컬 SMTP 서버, 이미지 업로드는 실제 MinIO 컨테이너를 사용합니다. 테스트 설정은 운영 `.env`를 읽지 않습니다.
 
 `pnpm test:container`는 빌드한 Flyway 이미지와 Node.js 24 운영 이미지를 기동해 HTTP 요청이 MySQL에 저장되는지 검증합니다. 모든 테스트 컨테이너는 종료 시 정리됩니다. 첫 실행에는 이미지 다운로드 시간이 필요합니다.
 
-개별 명령: `pnpm lint`, `pnpm lint:fix`, `pnpm typecheck`, `pnpm build`, `pnpm test:integration`.
+개별 명령: `pnpm lint`, `pnpm lint:fix`, `pnpm typecheck`, `pnpm build`, `pnpm test:unit`, `pnpm test:integration`.
 
 CI는 `TZ=UTC`와 `TZ=Asia/Seoul`에서 통합 테스트를 각각 실행합니다. 로컬에서도 `TZ=UTC pnpm test:integration`으로 시간대에 따른 날짜 회귀를 확인할 수 있습니다.
 
@@ -39,19 +39,25 @@ CI는 `TZ=UTC`와 `TZ=Asia/Seoul`에서 통합 테스트를 각각 실행합니�
 
 ```text
 src/
-  users/          카카오 로그인, JWT, 권한, 회원
-  boards/         게시판, 댓글, 템플릿
-  applications/   모집, 면접 시간, 지원서
-  email/          SMTP, 발송 이력과 재시도 처리
-  storage/        S3/MinIO presigned PUT URL
-  database/       TypeORM 설정과 공통 매핑
-  common/         응답, 검증, 날짜, 예외 처리
+  domain/         엔티티와 도메인 규칙 (user, board, recruitment, apply)
+  application/    기능 슬라이스별 유스케이스와 포트 (provided·required)
+    user/           카카오 로그인, 토큰, 가입, 권한, 회원
+    board/          게시판, 댓글, 템플릿
+    recruitment/    모집 기간, 면접 시간, 모집 시작 알림 메일
+    apply/          지원서, 접수·결과 메일, 사진 업로드 URL
+    shared/         페이지, ID, 날짜, 메일 발송 계약
+  adapter/        바깥 세계와 닿는 구현
+    webapi/         컨트롤러, 인증 가드, 예외 필터, 요청 로그
+    security/       JWT
+    integration/    카카오, SMTP, S3/MinIO
+    config/         환경 변수, TypeORM 설정, Nest 모듈 조립
+  support/        오류 체계와 역할 데코레이터
 db/migration/     기존 Flyway SQL (V1~V9)
-test/             실제 MySQL 통합 테스트와 운영 이미지 테스트
+test/             아키텍처·도메인 단위 테스트, 실제 MySQL 통합 테스트, 운영 이미지 테스트
 legacy/spring/    이관 전 Java 소스·테스트·빌드·운영 자료
 ```
 
-이관 범위, 동작 변경 및 검증 내용은 [이관 기록](docs/MIGRATION.md)에 정리되어 있습니다. `legacy/spring`은 참고용이며 현재 빌드나 배포에 포함되지 않습니다. 기존 비공개 `src/main/resources/application.properties`는 이동하거나 커밋하지 않으며, AWS 환경 파일 생성 스크립트의 입력으로 사용할 수 있습니다.
+의존은 `adapter → application → domain` 방향으로만 흐르는 헥사고날 구조이며, 규칙과 결정은 [아키텍처 문서](docs/ARCHITECTURE.md)에 있습니다. 이관 범위, 동작 변경 및 검증 내용은 [이관 기록](docs/MIGRATION.md)에 정리되어 있습니다. `legacy/spring`은 참고용이며 현재 빌드나 배포에 포함되지 않습니다. 기존 비공개 `src/main/resources/application.properties`는 이동하거나 커밋하지 않으며, AWS 환경 파일 생성 스크립트의 입력으로 사용할 수 있습니다.
 
 ## Flyway와 데이터
 
