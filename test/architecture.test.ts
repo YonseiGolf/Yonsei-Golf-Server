@@ -95,6 +95,8 @@ describe('architecture rules reject violations', () => {
       'adapter/webapi/m.ts': '@Module({})\nclass M {}',
       'application/user/r.ts': 'class R extends Repository<User> {}',
       'application/user/a.ts': '@Adapter()\nclass A {}',
+      // A role named in a comment is not a use.
+      'domain/user/doc.ts': '// like @Controller() in adapters\nconst x = 1;',
     });
     assert.equal(rolePlacement(files).length, 6);
   });

@@ -118,7 +118,7 @@ export function coreDependencies(files: SourceFile[]): string[] {
     }
     if (
       (layer === 'domain' || layer === 'application') &&
-      /\bfetch\(|process\.env/.test(file.text)
+      /\bfetch\(|process\.env/.test(file.code)
     )
       violations.push(
         `${file.path} calls fetch or reads process.env outside an adapter`,
@@ -254,7 +254,7 @@ const PLACEMENT: [RegExp, (file: string) => boolean, string][] = [
 export function rolePlacement(files: SourceFile[]): string[] {
   return files.flatMap((file) =>
     PLACEMENT.filter(
-      ([pattern, allowed]) => pattern.test(file.text) && !allowed(file.path),
+      ([pattern, allowed]) => pattern.test(file.code) && !allowed(file.path),
     ).map(([, , reason]) => `${file.path}: ${reason}`),
   );
 }

@@ -19,7 +19,8 @@ export interface ClassRef {
 export interface SourceFile {
   /** Relative to `src`, with `/` separators. */
   path: string;
-  text: string;
+  /** The source without comments, so a role mentioned in a comment is not a use. */
+  code: string;
   imports: ImportRef[];
   classes: ClassRef[];
 }
@@ -71,7 +72,8 @@ export function parseSource(filePath: string, text: string): SourceFile {
           .map((type) => type.expression.getText(source)),
       });
   }
-  return { path: filePath, text, imports, classes };
+  const code = ts.createPrinter({ removeComments: true }).printFile(source);
+  return { path: filePath, code, imports, classes };
 }
 
 export function loadSources(root: string): SourceFile[] {
