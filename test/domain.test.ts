@@ -6,15 +6,10 @@ import {
   NotificationType,
   notificationTypeOf,
 } from '../src/domain/apply/application-result-log';
-import { Board, Category, Reply } from '../src/domain/board/board';
 import { EmailAlarm } from '../src/domain/recruitment/email-alarm';
 import { Recruitment } from '../src/domain/recruitment/recruitment';
 import { User, UserClass, UserRole } from '../src/domain/user/user';
-import {
-  ConflictError,
-  ForbiddenError,
-  InvalidInputError,
-} from '../src/support/errors';
+import { ConflictError, InvalidInputError } from '../src/support/errors';
 
 // Domain rules run without Nest or a database.
 
@@ -55,35 +50,6 @@ describe('User', () => {
     user.changeClass(UserClass.BLACK_LIST);
     assert.equal(user.isBlocked(), true);
     assert.equal(user.hasMemberStatus(), true);
-  });
-});
-
-describe('Board', () => {
-  const post = { category: Category.FREE, title: '제목', content: '본문' };
-  it('lets only the writer edit or delete', () => {
-    const board = Board.write(post, '7', new Date());
-    assert.throws(
-      () => board.edit({ ...post, title: '변조' }, '8'),
-      ForbiddenError,
-    );
-    assert.throws(() => board.delete('8'), ForbiddenError);
-    board.edit({ ...post, title: '수정' }, '7');
-    assert.equal(board.title, '수정');
-    board.delete('7');
-    assert.equal(board.deleted, true);
-  });
-  it('hides deleted boards and boards without a writer', () => {
-    const board = Board.write(post, '7', new Date());
-    assert.equal(board.isVisible(), false);
-    board.writer = User.register(profile, '1');
-    assert.equal(board.isVisible(), true);
-    board.delete('7');
-    assert.equal(board.isVisible(), false);
-  });
-  it('lets only the writer delete a reply', () => {
-    const reply = Reply.write('댓글', '1', '7', new Date());
-    assert.throws(() => reply.checkDeletableBy('8'), ForbiddenError);
-    reply.checkDeletableBy('7');
   });
 });
 

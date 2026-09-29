@@ -13,7 +13,7 @@ src/
 ├── main.ts · bootstrap.ts · app.module.ts   진입점과 조립 루트. 어느 계층도 이 파일을 import 하지 않는다
 ├── domain/<애그리거트>                      TypeORM 엔티티·값·도메인 규칙. Nest 금지
 │   ├── common                               BaseEntity, BIT(1) 변환
-│   ├── user · board · recruitment · apply
+│   ├── user · recruitment · apply
 ├── application/<슬라이스>                   한 기능이 한 슬라이스. 공개 표면은 provided·required 둘뿐
 │   ├── provided/                            인바운드 포트(추상 클래스) + 요청 DTO·응답 타입
 │   ├── required/                            아웃바운드 포트: TypeORM 저장소, 카카오·JWT·S3 계약
@@ -32,7 +32,6 @@ src/
 | 슬라이스 | 책임 | 주요 포트 |
 | --- | --- | --- |
 | `user` | 카카오 로그인, 토큰, 가입·연결, 권한, 회원 등급 | provided: `LoginManager` `AccessVerifier` `UserRegister` `UserFinder` / required: `UserRepository` `KakaoOAuthClient` `TokenIssuer` |
-| `board` | 게시글, 댓글, 게시글 템플릿 | provided: `BoardRegister` `BoardFinder` `BoardTemplateRegister` `BoardTemplateFinder` |
 | `recruitment` | 모집 기간, 면접 시간, 모집 시작 알림 메일 | provided: `RecruitmentRegister` `RecruitmentFinder` `InterviewTimeRegister` `InterviewTimeFinder` `RecruitmentAlertManager` |
 | `apply` | 지원서 제출·조회·합격 여부, 접수·결과 메일, 사진 업로드 URL | provided: `ApplicationRegister` `ApplicationFinder` `ApplicationNotifier` `ApplicationPhotoUploader` / required: `ImageStorage` |
 | `health` | DB 상태 확인 | provided: `HealthChecker` |
@@ -43,8 +42,8 @@ src/
 
 - **domain**: `typeorm`과 `support/errors`만 import 한다. Nest·HTTP를 모른다. JPA 매핑을 허용한 참고 구조처럼
   TypeORM 데코레이터는 매핑 메타데이터로 허용하므로 완전한 영속성 독립 모델은 아니다.
-  엔티티는 정적 팩토리(`User.register`, `Board.write`, `Recruitment.open`, `Application.submit`)로 만들고,
-  상태 변경과 규칙은 의미 있는 메서드(`linkKakao`, `edit`, `delete`, `reschedule`, `markSent`)에 둔다.
+  엔티티는 정적 팩토리(`User.register`, `Recruitment.open`, `Application.submit`)로 만들고,
+  상태 변경과 규칙은 의미 있는 메서드(`linkKakao`, `changeClass`, `reschedule`, `markSent`)에 둔다.
 - **application**: `typeorm`, `class-validator`, `class-transformer`, `node:crypto`와 `@nestjs/common`의 `Logger`만
   쓴다. HTTP 예외·가드·컨트롤러·`fetch`·`process.env`는 어댑터의 일이다. 서비스는 `@ApplicationService()`를 붙인다.
 - **slice 경계**: 다른 슬라이스는 그 슬라이스의 `provided`로만 참조한다. `application/shared`는 모두가 쓸 수 있고

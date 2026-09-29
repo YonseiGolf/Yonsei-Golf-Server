@@ -36,8 +36,6 @@ import {
   ApplicationResultLog,
   NotificationType,
 } from '../src/domain/apply/application-result-log';
-import { Board, Reply } from '../src/domain/board/board';
-import { BoardTemplate } from '../src/domain/board/board-template';
 import { EmailAlarm } from '../src/domain/recruitment/email-alarm';
 import {
   InterviewTime,
@@ -152,9 +150,6 @@ describe('NestJS integration with real MySQL and Flyway', {
       'interview_time',
       'recruitment_period',
       'email_alarm',
-      'reply',
-      'board',
-      'board_template',
       'user',
     ])
       await db.query(`DELETE FROM \`${table}\``);
@@ -327,16 +322,24 @@ describe('NestJS integration with real MySQL and Flyway', {
       .set('Authorization', `Bearer ${token}`)
       .expect(403);
     await http()
-      .post('/boards')
+      .patch(`/admin/users/${member.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ userClass: UserClass.OB })
+      .expect(403);
+    await http()
+      .post('/users/loggedIn')
       .set('Authorization', `Bearer ${tokens.issueOAuthToken(member.id)}`)
-      .send({ category: 'FREE', title: 'x', content: 'x' })
       .expect(401);
     await http()
       .post('/oauth/kakao')
       .send({ kakaoCode: 'invalid' })
       .expect(401);
     await http().post('/users/signIn/refresh').expect(401);
-    assert.equal(await db.getRepository(Board).count(), 0);
+    assert.equal(
+      (await db.getRepository(User).findOneByOrFail({ id: member.id }))
+        .userClass,
+      UserClass.YB,
+    );
   });
 
   it('accepts Spring-compatible JWTs without kind and rejects expired JWTs', async () => {
@@ -407,149 +410,51 @@ describe('NestJS integration with real MySQL and Flyway', {
     assert.equal(leaders.body.data.leader.role, 'LEADER');
   });
 
-  it('creates, lists, edits and soft-deletes boards with real BIT and date mappings', async () => {
-    const owner = await fixtureUser();
-    const other = await fixtureUser(UserRole.MEMBER, '999');
-    const header = `Bearer ${tokens.issueAccessToken(owner)}`;
-    const dto = { category: 'FREE', title: '첫 글', content: '본문' };
-    await http()
-      .post('/boards')
-      .set('Authorization', header)
-      .send(dto)
-      .expect(200);
-    const board = await db
-      .getRepository(Board)
-      .findOneByOrFail({ title: dto.title });
-    assert.equal(board.deleted, false);
-    assert.equal(board.userId, String(owner.id));
-    const list = await http()
-      .get('/boards?category=FREE&page=0&size=1')
-      .expect(200);
-    assert.equal(list.body.data.totalElements, 1);
-    assert.match(list.body.data.content[0].createdAt, /^\d{2}-\d{2}-\d{2}$/);
-    await http()
-      .patch(`/boards/${board.id}`)
-      .set('Authorization', `Bearer ${tokens.issueAccessToken(other)}`)
-      .send({ ...dto, title: '변조' })
-      .expect(403);
-    await http()
-      .patch(`/boards/${board.id}`)
-      .set('Authorization', header)
-      .send({ ...dto, title: '수정' })
-      .expect(200);
-    assert.equal(
-      (await db.getRepository(Board).findOneByOrFail({ id: board.id })).title,
-      '수정',
-    );
-    await http()
-      .delete(`/boards/${board.id}`)
-      .set('Authorization', header)
-      .expect(200);
-    assert.equal(
-      (await db.getRepository(Board).findOneByOrFail({ id: board.id })).deleted,
-      true,
-    );
-    const empty = await http().get('/boards').expect(200);
-    assert.equal(empty.body.data.totalElements, 0);
-    await http().get(`/boards/${board.id}`).expect(404);
-  });
-
-  it('persists replies, includes writer details and restricts deletion to the author', async () => {
-    const owner = await fixtureUser();
-    const other = await fixtureUser(UserRole.MEMBER, '999');
-    const header = `Bearer ${tokens.issueAccessToken(owner)}`;
-    await http()
-      .post('/boards')
-      .set('Authorization', header)
-      .send({ category: 'NOTICE', title: '공지', content: '공지 내용' })
-      .expect(200);
-    const board = await db
-      .getRepository(Board)
-      .findOneByOrFail({ title: '공지' });
-    await http()
-      .post(`/boards/${board.id}/replies`)
-      .set('Authorization', header)
-      .send({ content: '댓글' })
-      .expect(200);
-    const reply = await db
-      .getRepository(Reply)
-      .findOneByOrFail({ boardId: board.id });
-    const detail = await http().get(`/boards/${board.id}`).expect(200);
-    assert.equal(detail.body.data.replies.replies[0].content, '댓글');
-    assert.match(detail.body.data.createdAt, /^\d{4}년 \d{2}월 \d{2}일/);
-    await http()
-      .delete(`/replies/${reply.id}`)
-      .set('Authorization', `Bearer ${tokens.issueAccessToken(other)}`)
-      .expect(403);
-    await http()
-      .delete(`/replies/${reply.id}`)
-      .set('Authorization', header)
-      .expect(200);
-    assert.equal(await db.getRepository(Reply).count(), 0);
-  });
-
-  it('creates, updates, retrieves and deletes templates through admin HTTP endpoints', async () => {
+  it('rejects invalid request bodies, paging and IDs without changing data', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
     const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await http()
-      .post('/admin/boards/templates')
-      .set('Authorization', header)
-      .send({ title: '양식', contents: '내용' })
-      .expect(200);
-    const template = await db
-      .getRepository(BoardTemplate)
-      .findOneByOrFail({ title: '양식' });
-    await http()
-      .patch(`/admin/boards/templates/${template.id}`)
-      .set('Authorization', header)
-      .send({ title: '새 양식', contents: '새 내용' })
-      .expect(200);
-    assert.equal(
-      (
-        await db
-          .getRepository(BoardTemplate)
-          .findOneByOrFail({ id: template.id })
-      ).contents,
-      '새 내용',
-    );
-    const list = await http()
-      .get('/admin/boards/templates')
-      .set('Authorization', header)
-      .expect(200);
-    assert.equal(list.body.data.templates.length, 1);
-    const detail = await http()
-      .get(`/admin/boards/templates/${template.id}`)
-      .set('Authorization', header)
-      .expect(200);
-    assert.equal(detail.body.data.contents, '새 내용');
-    await http()
-      .delete(`/admin/boards/templates/${template.id}`)
-      .set('Authorization', header)
-      .expect(200);
-    assert.equal(await db.getRepository(BoardTemplate).count(), 0);
-  });
-
-  it('rejects invalid request bodies and paging without persisting partial data', async () => {
-    const owner = await fixtureUser();
-    await http()
-      .post('/boards')
-      .set('Authorization', `Bearer ${tokens.issueAccessToken(owner)}`)
-      .send({ category: 'INVALID', title: '', content: 'x', userId: 999 })
+      .post('/users/signUp')
+      .set('Authorization', `Bearer ${tokens.issueOAuthToken('998')}`)
+      .send({ ...signup, name: '', role: UserRole.LEADER })
       .expect(400);
-    await http().get('/boards?size=100000').expect(400);
-    await http().get('/boards/not-an-id').expect(400);
-    assert.equal(await db.getRepository(Board).count(), 0);
+    await http()
+      .get('/admin/users?size=100000')
+      .set('Authorization', header)
+      .expect(400);
+    await http()
+      .patch('/admin/users/not-an-id')
+      .set('Authorization', header)
+      .send({ userClass: UserClass.OB })
+      .expect(400);
+    await http()
+      .patch(`/admin/users/${admin.id}`)
+      .set('Authorization', header)
+      .send({ userClass: 'INVALID' })
+      .expect(400);
+    assert.equal(await db.getRepository(User).count(), 1);
+    assert.equal(
+      (await db.getRepository(User).findOneByOrFail({ id: admin.id }))
+        .userClass,
+      UserClass.YB,
+    );
   });
 
-  it('applies all nine original migrations and responds to a database health check', async () => {
+  it('applies every migration, drops the unused tables and responds to a database health check', async () => {
     const history: { version: string; success: number }[] = await db.query(
       'SELECT version, success FROM flyway_schema_history ORDER BY installed_rank',
     );
     assert.deepEqual(
       history.map((row) => row.version),
-      ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
     );
     assert.ok(history.every((row) => row.success === 1));
+    const dropped: unknown[] = await db.query(
+      `SELECT table_name FROM information_schema.tables
+       WHERE table_schema = DATABASE()
+         AND table_name IN ('board', 'board_template', 'coupon', 'image', 'reply', 'user_coupon')`,
+    );
+    assert.deepEqual(dropped, []);
     assert.ok(app);
     await request(app.getHttpServer())
       .get('/healthcheck')

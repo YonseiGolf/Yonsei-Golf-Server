@@ -38,7 +38,8 @@ describe('architecture rules reject violations', () => {
     const files = fixture({
       'domain/user/user.ts': "import { x } from '../../application/user/x';",
       'application/user/x.ts': "import { y } from '../../adapter/config/y';",
-      'domain/board/board.ts': "import { A } from '../../support/stereotype';",
+      'domain/recruitment/recruitment.ts':
+        "import { A } from '../../support/stereotype';",
       'adapter/webapi/z.ts': "import { M } from '../../app.module';",
     });
     assert.equal(layerDependencies(files).length, 4);
@@ -111,7 +112,7 @@ describe('architecture rules reject violations', () => {
   });
   it('keeps port implementations in their place', () => {
     const files = fixture({
-      'application/board/x.service.ts':
+      'application/apply/x.service.ts':
         "import { UserFinder } from '../user/provided/user-finder';\nclass X implements UserFinder {}",
       'adapter/webapi/y.ts':
         "import { UserFinder } from '../../application/user/provided/user-finder';\nclass Y implements UserFinder {}",

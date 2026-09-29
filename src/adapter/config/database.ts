@@ -5,8 +5,6 @@ import {
   ClubActivity,
 } from '../../domain/apply/application';
 import { ApplicationResultLog } from '../../domain/apply/application-result-log';
-import { Board, Reply } from '../../domain/board/board';
-import { BoardTemplate } from '../../domain/board/board-template';
 import { EmailAlarm } from '../../domain/recruitment/email-alarm';
 import {
   InterviewTime,
@@ -17,9 +15,6 @@ import { Settings } from './settings';
 
 export const entities = [
   User,
-  Board,
-  Reply,
-  BoardTemplate,
   Application,
   ApplicationInterviewTime,
   ApplicationResultLog,

@@ -36,7 +36,7 @@
 - 기존 HTTP method와 경로 45개를 대조해 모두 보존했다.
 - `status/code/message/data`, Spring Page의 페이지 메타데이터, 기존 한국어 날짜 형식을 유지한다. 일부 성공 메시지 문구는 정리했다.
 - V1~V9 SQL을 `db/migration`으로 이동했으며 원본과 바이트 단위로 동일함을 확인했다. DDL을 추가하지 않았다.
-- 기존 스키마의 미사용 coupon, user_coupon, image, refresh_token 테이블과 데이터는 그대로 둔다.
+- 기존 스키마의 미사용 coupon, user_coupon, image, refresh_token 테이블과 데이터는 그대로 둔다. 이관 후 V10에서 게시판 기능과 함께 board, board_template, reply, image, coupon, user_coupon 테이블을 삭제했다.
 - Spring JWT의 `userProfile`, HS256, Base64 key 해석을 유지하며 `kind` 없는 기존 토큰도 받는다.
 - 이미지의 `photo_key` 우선 조회와 기존 전체 URL fallback, home의 bucket 포함 URL, AWS의 CloudFront URL 정책을 유지한다.
 - 지원서 제출 가능 기간 검사와 결과메일의 기수 범위는 기존 동작을 유지한다. 제출 API는 기간을 강제하지 않으며, 결과메일 API는 전달된 합격 조건에 맞는 기수 전체를 대상으로 한다.

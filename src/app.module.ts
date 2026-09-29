@@ -1,7 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplyModule } from './adapter/config/apply.module';
-import { BoardModule } from './adapter/config/board.module';
 import { databaseOptions } from './adapter/config/database';
 import { HealthModule } from './adapter/config/health.module';
 import { RecruitmentModule } from './adapter/config/recruitment.module';
@@ -21,7 +20,6 @@ export class AppModule {
           retryAttempts: 1,
         }),
         UserModule,
-        BoardModule,
         RecruitmentModule,
         ApplyModule,
         HealthModule,
