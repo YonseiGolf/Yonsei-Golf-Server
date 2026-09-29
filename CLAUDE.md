@@ -34,7 +34,7 @@ adapter ──▶ application ──▶ domain      (support 는 계층 밖 공�
 
 - **API 계약**: 기존 HTTP 경로·응답 형식(`status/code/message/data`, Spring Page JSON)·오류 메시지를 유지한다.
   BIGINT ID는 내부에서 문자열로 다루고 응답은 `apiId`로 변환한다.
-- **DB**: 스키마는 Flyway(`db/migration`)만 바꾼다. 적용된 SQL은 고치지 않고 `V10__...`부터 추가한다.
+- **DB**: 스키마는 Flyway(`db/migration`)만 바꾼다. 적용된 SQL은 고치지 않고 `V11__...`부터 추가한다.
   TypeORM `synchronize`는 항상 꺼 둔다.
 - **테스트**: 통합 테스트가 기본이다. 실제 MySQL·Flyway에서 HTTP 요청과 DB 행을 검증하고, 저장소·SQL·트랜잭션을
   모킹하지 않는다. 카카오·SMTP는 로컬 테스트 서버, 스토리지는 MinIO 컨테이너를 쓴다. 도메인 규칙은 단위 테스트로도 잡는다.

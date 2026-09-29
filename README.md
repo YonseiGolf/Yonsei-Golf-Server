@@ -27,7 +27,7 @@ pnpm docker:build
 pnpm test:container
 ```
 
-`pnpm check`는 Biome 검사, TypeScript 타입 검사, Nest 빌드, 아키텍처·도메인 단위 테스트, 통합 테스트를 실행합니다. 단위 테스트(`pnpm test:unit`)는 Docker 없이 헥사고날 계층 규칙과 도메인 규칙을 검사합니다. 통합 테스트는 매번 임시 MySQL 8.4 컨테이너에 실제 Flyway V1~V9를 적용하고, Nest HTTP 요청과 실제 DB 행을 검증합니다. Repository·SQL·트랜잭션을 모킹하거나 SQLite로 대체하지 않습니다. 카카오는 로컬 HTTP 서버, 메일은 로컬 SMTP 서버, 이미지 업로드는 실제 MinIO 컨테이너를 사용합니다. 테스트 설정은 운영 `.env`를 읽지 않습니다.
+`pnpm check`는 Biome 검사, TypeScript 타입 검사, Nest 빌드, 아키텍처·도메인 단위 테스트, 통합 테스트를 실행합니다. 단위 테스트(`pnpm test:unit`)는 Docker 없이 헥사고날 계층 규칙과 도메인 규칙을 검사합니다. 통합 테스트는 매번 임시 MySQL 8.4 컨테이너에 `db/migration`의 Flyway SQL 전체를 적용하고, Nest HTTP 요청과 실제 DB 행을 검증합니다. Repository·SQL·트랜잭션을 모킹하거나 SQLite로 대체하지 않습니다. 카카오는 로컬 HTTP 서버, 메일은 로컬 SMTP 서버, 이미지 업로드는 실제 MinIO 컨테이너를 사용합니다. 테스트 설정은 운영 `.env`를 읽지 않습니다.
 
 `pnpm test:container`는 빌드한 Flyway 이미지와 Node.js 24 운영 이미지를 기동해 HTTP 요청이 MySQL에 저장되는지 검증합니다. 모든 테스트 컨테이너는 종료 시 정리됩니다. 첫 실행에는 이미지 다운로드 시간이 필요합니다.
 
@@ -39,10 +39,9 @@ CI는 `TZ=UTC`와 `TZ=Asia/Seoul`에서 통합 테스트를 각각 실행합니�
 
 ```text
 src/
-  domain/         엔티티와 도메인 규칙 (user, board, recruitment, apply)
+  domain/         엔티티와 도메인 규칙 (user, recruitment, apply)
   application/    기능 슬라이스별 유스케이스와 포트 (provided·required)
     user/           카카오 로그인, 토큰, 가입, 권한, 회원
-    board/          게시판, 댓글, 템플릿
     recruitment/    모집 기간, 면접 시간, 모집 시작 알림 메일
     apply/          지원서, 접수·결과 메일, 사진 업로드 URL
     shared/         페이지, ID, 날짜, 메일 발송 계약
@@ -52,7 +51,7 @@ src/
     integration/    카카오, SMTP, S3/MinIO
     config/         환경 변수, TypeORM 설정, Nest 모듈 조립
   support/        오류 체계와 역할 데코레이터
-db/migration/     기존 Flyway SQL (V1~V9)
+db/migration/     Flyway SQL (V1~V9는 Spring 시절 원본, V10부터 추가)
 test/             아키텍처·도메인 단위 테스트, 실제 MySQL 통합 테스트, 운영 이미지 테스트
 legacy/spring/    이관 전 Java 소스·테스트·빌드·운영 자료
 ```
@@ -61,7 +60,7 @@ legacy/spring/    이관 전 Java 소스·테스트·빌드·운영 자료
 
 ## Flyway와 데이터
 
-`db/migration`의 기존 SQL은 내용과 체크섬을 보존했습니다. 새 스키마 변경은 `V10__description.sql`부터 추가합니다. 적용된 SQL이나 `flyway_schema_history`를 수정하지 마세요. TypeORM의 `synchronize`와 `migrationsRun`은 항상 `false`입니다.
+`db/migration`의 기존 SQL은 내용과 체크섬을 보존했습니다. 새 스키마 변경은 `V11__description.sql`부터 추가합니다. `V10`은 쓰지 않는 게시판·댓글·게시판 템플릿·이미지·쿠폰 테이블(`board`, `board_template`, `reply`, `image`, `coupon`, `user_coupon`)을 삭제합니다. 적용된 SQL이나 `flyway_schema_history`를 수정하지 마세요. TypeORM의 `synchronize`와 `migrationsRun`은 항상 `false`입니다.
 
 ```sh
 pnpm db:validate

@@ -17,7 +17,7 @@ export function seoulIso(date = new Date()): string {
 
 export function formatDate(
   value: Date | string | null,
-  pattern: 'short' | 'full' | 'month' | 'monthTime' | 'interview',
+  pattern: 'month' | 'monthTime' | 'interview',
 ): string | null {
   if (value === null) return null;
   const iso = value instanceof Date ? seoulIso(value) : value;
@@ -26,10 +26,6 @@ export function formatDate(
     day = iso.slice(8, 10),
     time = iso.slice(11, 16);
   switch (pattern) {
-    case 'short':
-      return `${year.slice(2)}-${month}-${day}`;
-    case 'full':
-      return `${year}년 ${month}월 ${day}일 ${iso.slice(11, 19)}`;
     case 'month':
       return `${month}월${day}일`;
     case 'monthTime':
