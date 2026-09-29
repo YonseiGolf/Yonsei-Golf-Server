@@ -20,26 +20,30 @@ import {
   Wait,
 } from 'testcontainers';
 import { DataSource } from 'typeorm';
+import { loadSettings, Settings } from '../src/adapter/config/settings';
+import { S3ImageStorage } from '../src/adapter/integration/storage/s3-image-storage';
 import { AppModule } from '../src/app.module';
+import { ApplicationNotifier } from '../src/application/apply/provided/application-notifier';
+import { RecruitmentFinder } from '../src/application/recruitment/provided/recruitment-finder';
+import { TokenIssuer } from '../src/application/user/required/token-issuer';
+import { configureApp } from '../src/bootstrap';
 import {
   Application,
   ApplicationInterviewTime,
-  ApplicationResultLog,
   ClubActivity,
-  EmailAlarm,
-  InterviewTime,
+} from '../src/domain/apply/application';
+import {
+  ApplicationResultLog,
   NotificationType,
+} from '../src/domain/apply/application-result-log';
+import { Board, Reply } from '../src/domain/board/board';
+import { BoardTemplate } from '../src/domain/board/board-template';
+import { EmailAlarm } from '../src/domain/recruitment/email-alarm';
+import {
+  InterviewTime,
   Recruitment,
-} from '../src/applications/application.entity';
-import { ImageUploadDto } from '../src/applications/applications.dto';
-import { RecruitmentService } from '../src/applications/recruitment.service';
-import { Board, BoardTemplate, Reply } from '../src/boards/board.entity';
-import { configureApp } from '../src/bootstrap';
-import { loadSettings, Settings } from '../src/config/settings';
-import { EmailService } from '../src/email/email.service';
-import { ImageService } from '../src/storage/image.service';
-import { AuthService } from '../src/users/auth';
-import { User, UserClass, UserRole } from '../src/users/user.entity';
+} from '../src/domain/recruitment/recruitment';
+import { User, UserClass, UserRole } from '../src/domain/user/user';
 import { CaptureLogger } from './support/capture-logger';
 import { ExternalServices } from './support/external-services';
 
@@ -50,7 +54,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   let mysql: StartedMySqlContainer | undefined;
   let app: INestApplication | undefined;
   let db: DataSource;
-  let auth: AuthService;
+  let tokens: TokenIssuer;
   let minio: StartedTestContainer | undefined;
   let storage: S3Client | undefined;
   const external = new ExternalServices();
@@ -135,7 +139,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     configureApp(app, settings);
     await app.init();
     db = app.get(DataSource);
-    auth = app.get(AuthService);
+    tokens = app.get(TokenIssuer);
   });
 
   beforeEach(async () => {
@@ -283,7 +287,7 @@ describe('NestJS integration with real MySQL and Flyway', {
 
   it('updates an existing unlinked member without losing their role or creating another row', async () => {
     const old = await fixtureUser(UserRole.LEADER, '0');
-    const header = `Bearer ${auth.oauthToken('999')}`;
+    const header = `Bearer ${tokens.issueOAuthToken('999')}`;
     await http()
       .post('/users/signUp')
       .set('Authorization', header)
@@ -298,7 +302,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     assert.equal(await db.getRepository(User).count(), 1);
     await http()
       .post('/users/signUp')
-      .set('Authorization', `Bearer ${auth.oauthToken('998')}`)
+      .set('Authorization', `Bearer ${tokens.issueOAuthToken('998')}`)
       .send({ ...signup, name: old.name, studentId: old.studentId })
       .expect(409);
   });
@@ -306,7 +310,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   it('rejects anonymous, forged, wrong-purpose and non-admin tokens before changing the database', async () => {
     const member = await fixtureUser();
     await http().get('/admin/users').expect(401);
-    const token = auth.accessToken(member);
+    const token = tokens.issueAccessToken(member);
     const parts = token.split('.');
     parts[1] = Buffer.from(
       JSON.stringify({
@@ -324,7 +328,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       .expect(403);
     await http()
       .post('/boards')
-      .set('Authorization', `Bearer ${auth.oauthToken(member.id)}`)
+      .set('Authorization', `Bearer ${tokens.issueOAuthToken(member.id)}`)
       .send({ category: 'FREE', title: 'x', content: 'x' })
       .expect(401);
     await http()
@@ -382,7 +386,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   it('persists admin member-class changes and returns pagination and leaders', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
     const member = await fixtureUser(UserRole.MEMBER, '56789');
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await http()
       .patch(`/admin/users/${member.id}`)
       .set('Authorization', header)
@@ -406,7 +410,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   it('creates, lists, edits and soft-deletes boards with real BIT and date mappings', async () => {
     const owner = await fixtureUser();
     const other = await fixtureUser(UserRole.MEMBER, '999');
-    const header = `Bearer ${auth.accessToken(owner)}`;
+    const header = `Bearer ${tokens.issueAccessToken(owner)}`;
     const dto = { category: 'FREE', title: '첫 글', content: '본문' };
     await http()
       .post('/boards')
@@ -425,7 +429,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     assert.match(list.body.data.content[0].createdAt, /^\d{2}-\d{2}-\d{2}$/);
     await http()
       .patch(`/boards/${board.id}`)
-      .set('Authorization', `Bearer ${auth.accessToken(other)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(other)}`)
       .send({ ...dto, title: '변조' })
       .expect(403);
     await http()
@@ -453,7 +457,7 @@ describe('NestJS integration with real MySQL and Flyway', {
   it('persists replies, includes writer details and restricts deletion to the author', async () => {
     const owner = await fixtureUser();
     const other = await fixtureUser(UserRole.MEMBER, '999');
-    const header = `Bearer ${auth.accessToken(owner)}`;
+    const header = `Bearer ${tokens.issueAccessToken(owner)}`;
     await http()
       .post('/boards')
       .set('Authorization', header)
@@ -475,7 +479,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     assert.match(detail.body.data.createdAt, /^\d{4}년 \d{2}월 \d{2}일/);
     await http()
       .delete(`/replies/${reply.id}`)
-      .set('Authorization', `Bearer ${auth.accessToken(other)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(other)}`)
       .expect(403);
     await http()
       .delete(`/replies/${reply.id}`)
@@ -486,7 +490,7 @@ describe('NestJS integration with real MySQL and Flyway', {
 
   it('creates, updates, retrieves and deletes templates through admin HTTP endpoints', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await http()
       .post('/admin/boards/templates')
       .set('Authorization', header)
@@ -529,7 +533,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     const owner = await fixtureUser();
     await http()
       .post('/boards')
-      .set('Authorization', `Bearer ${auth.accessToken(owner)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(owner)}`)
       .send({ category: 'INVALID', title: '', content: 'x', userId: 999 })
       .expect(400);
     await http().get('/boards?size=100000').expect(400);
@@ -555,7 +559,7 @@ describe('NestJS integration with real MySQL and Flyway', {
 
   it('persists recruitment changes and selects the latest semester with inclusive dates', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await http()
       .post('/admin/recruit')
       .set('Authorization', header)
@@ -577,7 +581,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     const latest = await http().get('/application/recruit').expect(200);
     assert.equal(latest.body.data.semester, 40);
     assert.equal(latest.body.data.startDate, '09월01일');
-    const service = app?.get(RecruitmentService);
+    const service = app?.get(RecruitmentFinder);
     assert.ok(service);
     assert.equal(await service.availability('2026-09-01'), true);
     assert.equal(await service.availability('2026-09-30'), true);
@@ -617,7 +621,7 @@ describe('NestJS integration with real MySQL and Flyway', {
 
   it('stores interview times in Seoul time and enforces MySQL foreign keys on deletion', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     const recruitment = await fixtureRecruitment();
     await http()
       .post(`/admin/recruit/${recruitment.id}/interview-times`)
@@ -700,7 +704,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     const admin = await fixtureUser(UserRole.LEADER);
     const detail = await http()
       .get(`/admin/forms/${application.id}`)
-      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
       .expect(200);
     assert.equal(detail.body.data.activities[0].clubName, '개발동아리');
     assert.equal(detail.body.data.activities[0].startDate, '2025-03-01');
@@ -757,7 +761,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     assert.equal(await db.getRepository(ApplicationResultLog).count(), 0);
     assert.equal(external.messages.length, 0);
     external.rejectMail = false;
-    await app?.get(EmailService).applicationNotification(application.id, null);
+    await app?.get(ApplicationNotifier).notify(application.id, null);
     assert.equal(await db.getRepository(ApplicationResultLog).count(), 1);
     assert.equal(external.messages.length, 1);
   });
@@ -768,7 +772,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       .getRepository(Application)
       .findOneByOrFail({ email: applicationDto.email });
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     const pending = await http()
       .get('/admin/forms?semester=40')
       .set('Authorization', header)
@@ -837,7 +841,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       .getRepository(Application)
       .update(application.id, { documentPass: true, finalPass: null });
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await Promise.all([
       http()
         .post('/admin/forms/results')
@@ -889,7 +893,7 @@ describe('NestJS integration with real MySQL and Flyway', {
 
   it('stores recruitment email subscriptions, sends through SMTP and leaves failed deliveries retryable', async () => {
     const admin = await fixtureUser(UserRole.LEADER);
-    const header = `Bearer ${auth.accessToken(admin)}`;
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
     await http()
       .post('/application/emailAlarm')
       .send({ email: 'waiting@example.test', semester: 40 })
@@ -946,7 +950,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       .expect(200);
     const waiting = await http()
       .get('/admin/email/apply-start-email?semester=0')
-      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
       .expect(200);
     assert.deepEqual(
       waiting.body.data.emailAlarms.map(
@@ -976,11 +980,11 @@ describe('NestJS integration with real MySQL and Flyway', {
       .expect(400);
     await http()
       .get('/admin/users')
-      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
       .expect(200);
     await http()
       .get('/admin/users?page=0&token=secret-value')
-      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
       .expect(400);
     await http()
       .get('/admin/users')
@@ -1029,7 +1033,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     const logged = JSON.stringify(logs.entries);
     assert.equal(logged.includes('not-an-email'), false);
     assert.equal(logged.includes('secret-value'), false);
-    assert.equal(logged.includes(auth.accessToken(admin)), false);
+    assert.equal(logged.includes(tokens.issueAccessToken(admin)), false);
   });
 
   it('uploads real bytes to MinIO using the issued presigned URL', async () => {
@@ -1084,7 +1088,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     const admin = await fixtureUser(UserRole.LEADER);
     const detail = await http()
       .get(`/admin/forms/${application.id}`)
-      .set('Authorization', `Bearer ${auth.accessToken(admin)}`)
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
       .expect(200);
     assert.equal(detail.body.data.photo, 'https://old.example.test/photo.jpg');
     assert.equal(detail.body.data.studentId, '9007199254740993');
@@ -1104,9 +1108,9 @@ describe('NestJS integration with real MySQL and Flyway', {
         publicUrl: 'https://images.example.test',
       },
     );
-    const images = new ImageService(awsSettings);
+    const images = new S3ImageStorage(awsSettings);
     assert.equal(
-      images.resolve('store-image/new.jpg', null),
+      images.publicUrl('store-image/new.jpg'),
       'https://images.example.test/store-image/new.jpg',
     );
     images.onModuleDestroy();
@@ -1143,20 +1147,18 @@ describe('NestJS integration with real MySQL and Flyway', {
     });
     assert.equal(settings.profile, 'aws');
     assert.equal(settings.storage.provider, 'minio');
-    const images = new ImageService(settings);
-    const { uploadUrl, uploadHeaders } = await images.presign(
-      Object.assign(new ImageUploadDto(), {
-        fileName: 'test.png',
-        contentType: 'image/png',
-        fileSize: 10,
-      }),
-    );
+    const images = new S3ImageStorage(settings);
+    const { uploadUrl, uploadHeaders } = await images.presignUpload({
+      key: 'store-image/test.png',
+      contentType: 'image/png',
+      contentLength: 10,
+    });
     assert.ok(
       uploadUrl.startsWith('https://minio.example.test/yg-img-storage/'),
     );
     assert.equal(uploadHeaders['x-amz-acl'], 'public-read');
     assert.equal(
-      images.resolve('store-image/new.jpg', null),
+      images.publicUrl('store-image/new.jpg'),
       'https://minio.example.test/yg-img-storage/store-image/new.jpg',
     );
     images.onModuleDestroy();

@@ -3,10 +3,11 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { createLogger } from './adapter/config/logging';
+import { Settings } from './adapter/config/settings';
+import { ApiExceptionFilter } from './adapter/webapi/api-exception.filter';
+import { requestLogger } from './adapter/webapi/request-logger';
 import { AppModule } from './app.module';
-import { ApiExceptionFilter } from './common/http';
-import { createLogger, requestLogger } from './common/logging';
-import { Settings } from './config/settings';
 
 export function configureApp(app: INestApplication, settings: Settings): void {
   app.use(requestLogger());

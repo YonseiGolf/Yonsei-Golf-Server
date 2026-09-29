@@ -1,32 +1,14 @@
-import {
-  Controller,
-  DynamicModule,
-  Get,
-  Module,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { ApplicationsModule } from './applications/applications.module';
-import { BoardsModule } from './boards/boards.module';
-import { Settings, SettingsModule } from './config/settings';
-import { databaseOptions } from './database/database';
-import { UsersModule } from './users/users.module';
+import { ApplyModule } from './adapter/config/apply.module';
+import { BoardModule } from './adapter/config/board.module';
+import { databaseOptions } from './adapter/config/database';
+import { HealthModule } from './adapter/config/health.module';
+import { RecruitmentModule } from './adapter/config/recruitment.module';
+import { Settings, SettingsModule } from './adapter/config/settings';
+import { UserModule } from './adapter/config/user.module';
 
-@Controller()
-class HealthController {
-  constructor(private readonly db: DataSource) {}
-  @Get('healthcheck')
-  async healthcheck() {
-    try {
-      await this.db.query('SELECT 1');
-    } catch {
-      throw new ServiceUnavailableException('Database unavailable');
-    }
-    return 'ok';
-  }
-}
-
+// The composition root: each slice module binds its ports to implementations.
 @Module({})
 export class AppModule {
   static register(settings: Settings): DynamicModule {
@@ -38,11 +20,12 @@ export class AppModule {
           ...databaseOptions(settings),
           retryAttempts: 1,
         }),
-        UsersModule,
-        BoardsModule,
-        ApplicationsModule,
+        UserModule,
+        BoardModule,
+        RecruitmentModule,
+        ApplyModule,
+        HealthModule,
       ],
-      controllers: [HealthController],
     };
   }
 }

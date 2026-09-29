@@ -50,7 +50,7 @@
 - 지원서·동아리 활동·면접 선택을 단일 트랜잭션으로 저장한다. 선택한 면접이 없거나 다른 기수라면 앞선 INSERT도 롤백된다.
 - 지원서 접수메일은 저장 커밋 후 발송한다. 메일 실패가 이미 접수된 지원서를 롤백하지 않는다.
 - 발송 성공 후 이력 또는 sent_at을 저장하므로 실패한 결과/모집 알림은 endpoint를 다시 호출해 재시도할 수 있다. DB 행 잠금으로 동시 중복 발송을 직렬화한다.
-- SMTP 수락 후 DB 커밋 전 프로세스 장애까지 포함한 exactly-once 전송은 보장하지 않는다. 접수메일의 자동 재시도 워커는 없으며, 실패 후 재발송에는 `EmailService.applicationNotification(id, null)` 호출이 필요하다.
+- SMTP 수락 후 DB 커밋 전 프로세스 장애까지 포함한 exactly-once 전송은 보장하지 않는다. 접수메일의 자동 재시도 워커는 없으며, 실패 후 재발송에는 `ApplicationNotifier.notify(id, null)` 호출이 필요하다(헥사고날 리팩토링 전에는 `EmailService.applicationNotification`).
 - 서류·최종 합격의 null/false/true를 구분한다. 조회 쿼리에서 조건 생략 또는 `null`은 기존대로 IS NULL이며, 문자열 `false`를 true로 변환하지 않는다.
 - refresh cookie에 SameSite를 명시하고 카카오 refresh token 회전 시 쿠키도 갱신한다.
 - SQL 오류의 바인딩 값 로깅을 끄고 응답에 내부 DB 오류를 노출하지 않는다. Nest 전이 의존성 multer는 패치된 2.3.0으로 고정한다.
