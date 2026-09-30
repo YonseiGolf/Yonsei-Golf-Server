@@ -154,6 +154,14 @@ docker compose --env-file .env.home -f compose.home.yml ps
 docker compose --env-file .env.home -f compose.home.yml logs --tail=100 app
 ```
 
+### 자동 배포
+
+`dev`에 머지되면 `be-deploy.yml`이 테스트 → 이미지 게시 → `deploy.yml` 순서로 실행합니다. `deploy.yml`의 러너는 Tailscale에 `tag:ci`로 붙어 맥미니 SSH에 `yg-server <커밋 SHA>`만 요청합니다. 맥미니의 SSH 키는 `~/deploy/deploy.sh`만 실행하도록 제한돼 있고(Tailscale 주소에서만, 셸·포워딩 불가), 스크립트가 `.env.home`의 이미지 태그를 바꿔 `pull`·`up -d`(Flyway 포함)를 실행합니다. 헬스체크가 실패하면 이전 태그로 되돌리고, 결과를 Slack으로 알립니다.
+
+특정 커밋으로 다시 배포하거나 롤백하려면 Actions → **Deploy to Mac mini** → Run workflow에 커밋 SHA(40자)를 넣습니다. 해당 커밋의 이미지가 Docker Hub에 있어야 합니다. Flyway는 되돌리지 않으므로, 스키마를 바꾼 커밋 이전으로 롤백할 때는 이전 코드가 새 스키마에서 동작하는지 확인합니다.
+
+필요한 저장소 secrets: `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`(Tailscale OAuth client, Auth Keys write, `tag:ci`), `MACMINI_SSH_KEY`, `MACMINI_KNOWN_HOSTS`.
+
 기존 DB를 옮길 때는 `mysql`만 먼저 시작해 덤프를 넣은 뒤 전체를 시작합니다. 덤프에 `flyway_schema_history`가 있어야 Flyway가 기존 이력을 검증하고 새 migration만 적용합니다.
 
 ```sh

@@ -43,3 +43,11 @@ jobs:
           tags: |
             birdiehyun/yg-server:flyway-${{ github.sha }}
             birdiehyun/yg-server:flyway-latest
+  deploy:
+    needs: publish
+    # 수동 실행을 다른 브랜치에서 해도 운영에는 dev만 배포한다.
+    if: github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      sha: ${{ github.sha }}
+    secrets: inherit

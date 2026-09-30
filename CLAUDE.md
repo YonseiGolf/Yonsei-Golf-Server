@@ -43,5 +43,5 @@ adapter ──▶ application ──▶ domain      (support 는 계층 밖 공�
 
 ## Git / PR
 
-- 브랜치: `feat/<주제>`, `fix/<주제>`, `refactor/<주제>`. PR은 `dev`로 보낸다. `dev` 머지 후 CI가 이미지를 게시한다.
+- 브랜치: `feat/<주제>`, `fix/<주제>`, `refactor/<주제>`. PR은 `dev`로 보낸다. `dev` 머지 후 CI가 이미지를 게시하고 맥미니에 배포한다(README "자동 배포").
 - 커밋 제목: `feat:`/`fix:`/`refactor:`/`test:`/`docs:`/`chore:` + 영어 명령문 한 줄.
