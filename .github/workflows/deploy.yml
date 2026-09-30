@@ -1,0 +1,57 @@
+name: Deploy to Mac mini
+
+# dev 이미지 게시(be-deploy.yml)가 끝나면 호출된다. 수동 실행으로 특정 커밋을 다시 배포하거나 롤백할 수 있다.
+# 러너가 Tailscale(tag:ci)로 붙어 맥미니 SSH에 "yg-server <SHA>"만 요청한다.
+# 맥미니 쪽 SSH 키는 배포 스크립트(~/deploy/deploy.sh)만 실행하도록 제한돼 있고,
+# 스크립트가 이미지 교체 → 헬스체크 → 실패 시 롤백 → Slack 알림을 맡는다.
+on:
+  workflow_call:
+    inputs:
+      sha:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 배포할 커밋 SHA (40자). Docker Hub에 이미지가 게시된 커밋이어야 합니다.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # 배포는 한 번에 하나씩, 진행 중인 배포는 취소하지 않는다.
+    concurrency:
+      group: macmini-deploy
+      cancel-in-progress: false
+    timeout-minutes: 15
+    environment: macmini
+    steps:
+      - name: Check commit SHA
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "커밋 SHA는 40자리 16진수여야 합니다: $SHA"; exit 1; }
+      - name: Join tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: 100.118.17.97
+      - name: Deploy on Mac mini
+        env:
+          SHA: ${{ inputs.sha }}
+          SSH_KEY: ${{ secrets.MACMINI_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.MACMINI_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/macmini
+          chmod 600 ~/.ssh/macmini
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/macmini -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 \
+            donghyun@100.118.17.97 "yg-server $SHA"
