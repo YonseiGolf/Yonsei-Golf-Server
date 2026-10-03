@@ -5,32 +5,45 @@ import {
   NotificationType,
   notificationTypeOf,
 } from '../../domain/apply/application-result-log';
+import { MailTemplateType } from '../../domain/mail/mail-template';
 import { ApplicationService } from '../../support/stereotype';
+import { MailTemplateFinder } from '../mail/provided/mail-template-finder';
 import { MailSender } from '../shared/mail-sender';
-import { applicationMail, confirmationMail } from './application-mails';
 import { ApplicationQueryService } from './application-query.service';
 import { ApplicationNotifier } from './provided/application-notifier';
 import { ResultDto } from './provided/apply-requests';
+
+const resultTemplates: Record<NotificationType, MailTemplateType> = {
+  [NotificationType.DOCUMENT_PASS]: MailTemplateType.DOCUMENT_PASS,
+  [NotificationType.FINAL_PASS]: MailTemplateType.FINAL_PASS,
+  [NotificationType.FAIL]: MailTemplateType.FAIL,
+};
 
 @ApplicationService()
 export class ApplicationNotificationService implements ApplicationNotifier {
   constructor(
     private readonly db: DataSource,
     private readonly mail: MailSender,
+    private readonly templates: MailTemplateFinder,
     private readonly query: ApplicationQueryService,
   ) {}
 
   async confirmEmail(email: string): Promise<void> {
-    await this.mail.send(
-      email,
-      confirmationMail.subject,
-      confirmationMail.text,
-    );
+    const mail = (
+      await this.templates.find(MailTemplateType.EMAIL_CONFIRMATION)
+    ).render();
+    await this.mail.send(email, mail.subject, mail.text);
   }
   async notify(
     applicationId: string,
     type: NotificationType | null,
   ): Promise<void> {
+    // Read outside the transaction, which would otherwise wait on a second pooled connection.
+    const template = await this.templates.find(
+      type === null
+        ? MailTemplateType.APPLICATION_RECEIPT
+        : resultTemplates[type],
+    );
     // Serialize concurrent sends for the same application. SMTP is not transactional:
     // a crash after SMTP acceptance but before commit can still cause a duplicate on retry.
     await this.db.transaction(async (manager) => {
@@ -47,7 +60,7 @@ export class ApplicationNotificationService implements ApplicationNotifier {
         })
       )
         return;
-      const mail = applicationMail(type, application.name);
+      const mail = template.render(application.name);
       await this.mail.send(application.email, mail.subject, mail.text);
       await logs.save(
         ApplicationResultLog.record(applicationId, type, new Date()),

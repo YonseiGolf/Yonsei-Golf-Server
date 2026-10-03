@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplyModule } from './adapter/config/apply.module';
 import { databaseOptions } from './adapter/config/database';
 import { HealthModule } from './adapter/config/health.module';
+import { MailTemplateModule } from './adapter/config/mail-template.module';
 import { RecruitmentModule } from './adapter/config/recruitment.module';
 import { Settings, SettingsModule } from './adapter/config/settings';
 import { UserModule } from './adapter/config/user.module';
@@ -20,6 +21,7 @@ export class AppModule {
           retryAttempts: 1,
         }),
         UserModule,
+        MailTemplateModule,
         RecruitmentModule,
         ApplyModule,
         HealthModule,

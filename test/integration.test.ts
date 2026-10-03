@@ -36,6 +36,10 @@ import {
   ApplicationResultLog,
   NotificationType,
 } from '../src/domain/apply/application-result-log';
+import {
+  MailTemplate,
+  MailTemplateType,
+} from '../src/domain/mail/mail-template';
 import { EmailAlarm } from '../src/domain/recruitment/email-alarm';
 import {
   InterviewTime,
@@ -150,6 +154,7 @@ describe('NestJS integration with real MySQL and Flyway', {
       'interview_time',
       'recruitment_period',
       'email_alarm',
+      'mail_template',
       'user',
     ])
       await db.query(`DELETE FROM \`${table}\``);
@@ -446,7 +451,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     );
     assert.deepEqual(
       history.map((row) => row.version),
-      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
     );
     assert.ok(history.every((row) => row.success === 1));
     const dropped: unknown[] = await db.query(
@@ -870,6 +875,142 @@ describe('NestJS integration with real MySQL and Flyway', {
       .post('/application/emailAlarm')
       .send({ email: 'negative@example.test', semester: -1 })
       .expect(400);
+  });
+
+  it('sends the mail templates admins save and the default again after a reset', async () => {
+    const admin = await fixtureUser(UserRole.LEADER);
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
+    const member = tokens.issueAccessToken(
+      await fixtureUser(UserRole.MEMBER, '777'),
+    );
+    type Listed = {
+      type: string;
+      subject: string;
+      placeholders: string[];
+      customized: boolean;
+    };
+    const list = async () =>
+      (
+        await http()
+          .get('/admin/email/templates')
+          .set('Authorization', header)
+          .expect(200)
+      ).body.data as Listed[];
+    const defaults = await list();
+    assert.deepEqual(
+      defaults.map((template) => [
+        template.type,
+        template.placeholders,
+        template.customized,
+      ]),
+      [
+        ['EMAIL_CONFIRMATION', [], false],
+        ['APPLICATION_RECEIPT', ['{{이름}}'], false],
+        ['DOCUMENT_PASS', ['{{이름}}'], false],
+        ['FINAL_PASS', ['{{이름}}'], false],
+        ['FAIL', ['{{이름}}'], false],
+        ['RECRUITMENT_START', [], false],
+      ],
+    );
+    await http().get('/admin/email/templates').expect(401);
+    await http()
+      .get('/admin/email/templates')
+      .set('Authorization', `Bearer ${member}`)
+      .expect(403);
+    await http()
+      .patch('/admin/email/templates/APPLICATION_RECEIPT')
+      .set('Authorization', `Bearer ${member}`)
+      .send({ subject: 'Hacked', body: 'Hacked' })
+      .expect(403);
+    for (const [type, body] of [
+      ['RECRUITMENT_START', 'Hi {{이름}}'],
+      ['APPLICATION_RECEIPT', 'Hi {{name}}'],
+      ['UNKNOWN', 'Hi'],
+    ])
+      await http()
+        .patch(`/admin/email/templates/${type}`)
+        .set('Authorization', header)
+        .send({ subject: 'Subject', body })
+        .expect(400);
+    assert.equal(await db.getRepository(MailTemplate).count(), 0);
+
+    // ASCII wording keeps the SMTP message readable without a MIME decoder.
+    await http()
+      .patch('/admin/email/templates/APPLICATION_RECEIPT')
+      .set('Authorization', header)
+      .send({ subject: 'Received {{이름}}', body: 'Hi {{이름}}' })
+      .expect(200);
+    await http()
+      .patch('/admin/email/templates/APPLICATION_RECEIPT')
+      .set('Authorization', header)
+      .send({
+        subject: 'Thanks {{이름}}',
+        body: 'Hello {{이름}}, your form arrived.',
+      })
+      .expect(200);
+    await http()
+      .patch('/admin/email/templates/RECRUITMENT_START')
+      .set('Authorization', header)
+      .send({
+        subject: 'Recruiting now',
+        body: 'Apply at https://yonsei-golf.kr/apply',
+      })
+      .expect(200);
+    assert.equal(await db.getRepository(MailTemplate).count(), 2);
+    const saved = await list();
+    assert.deepEqual(
+      saved
+        .filter((template) => template.customized)
+        .map((template) => [template.type, template.subject]),
+      [
+        ['APPLICATION_RECEIPT', 'Thanks {{이름}}'],
+        ['RECRUITMENT_START', 'Recruiting now'],
+      ],
+    );
+
+    await http()
+      .post('/application')
+      .send({ ...applicationDto, name: 'Kim' })
+      .expect(200);
+    assert.match(external.messages[0] ?? '', /^Subject: Thanks Kim\r?$/m);
+    assert.match(external.messages[0] ?? '', /Hello Kim, your form arrived\./);
+    await http()
+      .post('/application/emailAlarm')
+      .send({ email: 'waiting@example.test', semester: 40 })
+      .expect(200);
+    await http()
+      .post('/admin/email/apply-start-email')
+      .set('Authorization', header)
+      .expect(200);
+    assert.match(external.messages[1] ?? '', /^Subject: Recruiting now\r?$/m);
+    assert.match(
+      external.messages[1] ?? '',
+      /Apply at https:\/\/yonsei-golf\.kr\/apply/,
+    );
+
+    await http()
+      .delete('/admin/email/templates/APPLICATION_RECEIPT')
+      .set('Authorization', header)
+      .expect(200);
+    assert.equal(
+      await db
+        .getRepository(MailTemplate)
+        .countBy({ type: MailTemplateType.APPLICATION_RECEIPT }),
+      0,
+    );
+    const reset = await list();
+    assert.deepEqual(
+      reset.find((template) => template.type === 'APPLICATION_RECEIPT'),
+      defaults.find((template) => template.type === 'APPLICATION_RECEIPT'),
+    );
+    await http()
+      .post('/application')
+      .send({ ...applicationDto, name: 'Lee', email: 'second@example.test' })
+      .expect(200);
+    assert.equal(external.messages.length, 3);
+    // The Korean default subject is MIME-encoded, unlike the saved ASCII one.
+    assert.match(external.messages[2] ?? '', /^Subject: =\?UTF-8\?/im);
+    assert.doesNotMatch(external.messages[2] ?? '', /Thanks|Hello Lee/);
   });
 
   it('logs one line per request with its ID, caller and failure reason', async () => {
