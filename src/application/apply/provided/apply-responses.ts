@@ -7,6 +7,11 @@ export interface ApplicationSummaryResponse {
   interviewTime: string | null;
   documentPass: boolean | null;
   finalPass: boolean | null;
+  /**
+   * When the mail for the current decisions was sent (`YYYY-MM-DD HH:mm`, Korean time):
+   * the receipt while undecided, else that result stage's mail. Null if it was not sent.
+   */
+  mailSentAt: string | null;
 }
 
 export interface ActivityResponse {

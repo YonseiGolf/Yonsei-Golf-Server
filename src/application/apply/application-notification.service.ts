@@ -15,8 +15,9 @@ import { ResultDto } from './provided/apply-requests';
 
 const resultTemplates: Record<NotificationType, MailTemplateType> = {
   [NotificationType.DOCUMENT_PASS]: MailTemplateType.DOCUMENT_PASS,
+  [NotificationType.DOCUMENT_FAIL]: MailTemplateType.DOCUMENT_FAIL,
   [NotificationType.FINAL_PASS]: MailTemplateType.FINAL_PASS,
-  [NotificationType.FAIL]: MailTemplateType.FAIL,
+  [NotificationType.FINAL_FAIL]: MailTemplateType.FINAL_FAIL,
 };
 
 @ApplicationService()
