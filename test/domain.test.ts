@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import { defaultMailTemplates } from '../src/application/mail/default-mail-templates';
 import { Application, ClubActivity } from '../src/domain/apply/application';
 import {
+  dueNotificationOf,
   NotificationType,
   notificationTypeOf,
 } from '../src/domain/apply/application-result-log';
@@ -129,21 +130,28 @@ describe('Application', () => {
     assert.throws(() => ClubActivity.validate(activity), InvalidInputError);
     ClubActivity.validate({ ...activity, endDate: null });
   });
-  it('announces a result by the pass decisions', () => {
+  it('announces a separate result stage for each pass decision', () => {
     assert.equal(
       notificationTypeOf(true, null),
       NotificationType.DOCUMENT_PASS,
     );
     assert.equal(notificationTypeOf(true, true), NotificationType.FINAL_PASS);
-    assert.equal(notificationTypeOf(true, false), NotificationType.FAIL);
-    assert.equal(notificationTypeOf(false, null), NotificationType.FAIL);
+    assert.equal(notificationTypeOf(true, false), NotificationType.FINAL_FAIL);
+    assert.equal(
+      notificationTypeOf(false, null),
+      NotificationType.DOCUMENT_FAIL,
+    );
+  });
+  it('is due the receipt while undecided and the stage mail afterwards', () => {
+    assert.equal(dueNotificationOf(null, null), null);
+    assert.equal(dueNotificationOf(true, false), NotificationType.FINAL_FAIL);
   });
 });
 
 describe('MailTemplate', () => {
   it('fills every {{이름}} with the name, reading $ patterns literally', () => {
     const mail = MailTemplate.write(
-      MailTemplateType.FAIL,
+      MailTemplateType.FINAL_FAIL,
       '{{이름}}님 결과',
       '{{이름}}님,\n{{이름}}님께 알립니다.',
     ).render('$&홍길동');
@@ -152,7 +160,7 @@ describe('MailTemplate', () => {
   });
   it('rejects placeholders the type cannot fill, blank text and multi-line subjects', () => {
     for (const [type, subject, body] of [
-      [MailTemplateType.FAIL, '결과', '{{이룸}}님'],
+      [MailTemplateType.FINAL_FAIL, '결과', '{{이룸}}님'],
       [MailTemplateType.DOCUMENT_PASS, '{{ 이름 }}', '본문'],
       [MailTemplateType.RECRUITMENT_START, '모집', '{{이름}}님'],
       [MailTemplateType.EMAIL_CONFIRMATION, '{{이름}}', '본문'],
@@ -182,10 +190,11 @@ describe('MailTemplate', () => {
       const { subject, body } = defaultMailTemplates[type];
       MailTemplate.write(type, subject, body);
     }
-    const { subject, body } = defaultMailTemplates[MailTemplateType.FAIL];
+    const { subject, body } = defaultMailTemplates[MailTemplateType.FINAL_FAIL];
     assert.match(
-      MailTemplate.write(MailTemplateType.FAIL, subject, body).render('홍길동')
-        .text,
+      MailTemplate.write(MailTemplateType.FINAL_FAIL, subject, body).render(
+        '홍길동',
+      ).text,
       /^홍길동님 연세골프에 지원해주셔서 감사합니다\./,
     );
   });

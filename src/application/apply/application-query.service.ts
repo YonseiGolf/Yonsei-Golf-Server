@@ -1,4 +1,6 @@
+import { In } from 'typeorm';
 import { Application } from '../../domain/apply/application';
+import { dueNotificationOf } from '../../domain/apply/application-result-log';
 import { NotFoundError } from '../../support/errors';
 import { ApplicationService } from '../../support/stereotype';
 import { InterviewTimeFinder } from '../recruitment/provided/interview-time-finder';
@@ -14,6 +16,7 @@ import {
 } from './provided/apply-responses';
 import { ApplicationInterviewTimeRepository } from './required/application-interview-time-repository';
 import { ApplicationRepository } from './required/application-repository';
+import { ApplicationResultLogRepository } from './required/application-result-log-repository';
 import { ClubActivityRepository } from './required/club-activity-repository';
 
 @ApplicationService()
@@ -22,6 +25,7 @@ export class ApplicationQueryService implements ApplicationFinder {
     private readonly applications: ApplicationRepository,
     private readonly activities: ClubActivityRepository,
     private readonly interviewChoices: ApplicationInterviewTimeRepository,
+    private readonly resultLogs: ApplicationResultLogRepository,
     private readonly interviewTimes: InterviewTimeFinder,
     private readonly photos: ApplicationPhotoService,
   ) {}
@@ -72,15 +76,32 @@ export class ApplicationQueryService implements ApplicationFinder {
       .skip(query.page * query.size)
       .take(query.size)
       .getManyAndCount();
+    const logs = applications.length
+      ? await this.resultLogs.findBy({
+          applicationId: In(applications.map((application) => application.id)),
+        })
+      : [];
     return pageResponse(
-      applications.map((application) => ({
-        id: apiId(application.id),
-        photo: this.photos.photoUrl(application.photoKey, application.photo),
-        name: application.name,
-        interviewTime: formatDate(application.interviewTime, 'monthTime'),
-        documentPass: application.documentPass,
-        finalPass: application.finalPass,
-      })),
+      applications.map((application) => {
+        const due = dueNotificationOf(
+          application.documentPass,
+          application.finalPass,
+        );
+        const sent = logs.find(
+          (log) =>
+            log.applicationId === application.id &&
+            log.notificationType === due,
+        );
+        return {
+          id: apiId(application.id),
+          photo: this.photos.photoUrl(application.photoKey, application.photo),
+          name: application.name,
+          interviewTime: formatDate(application.interviewTime, 'monthTime'),
+          documentPass: application.documentPass,
+          finalPass: application.finalPass,
+          mailSentAt: formatDate(sent?.sentAt ?? null, 'interview'),
+        };
+      }),
       total,
       query,
     );
