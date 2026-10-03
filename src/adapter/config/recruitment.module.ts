@@ -19,10 +19,11 @@ import {
 import { RecruitmentController } from '../webapi/recruitment/recruitment.controller';
 import { RecruitmentAlertController } from '../webapi/recruitment/recruitment-alert.controller';
 import { MailModule } from './mail.module';
+import { MailTemplateModule } from './mail-template.module';
 import { repositoryProvider } from './repository';
 
 @Module({
-  imports: [MailModule],
+  imports: [MailModule, MailTemplateModule],
   controllers: [RecruitmentController, RecruitmentAlertController],
   providers: [
     repositoryProvider(RecruitmentRepository, Recruitment),

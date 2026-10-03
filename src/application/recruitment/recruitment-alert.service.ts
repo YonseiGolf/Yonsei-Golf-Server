@@ -1,6 +1,8 @@
 import { DataSource, IsNull } from 'typeorm';
+import { MailTemplateType } from '../../domain/mail/mail-template';
 import { EmailAlarm } from '../../domain/recruitment/email-alarm';
 import { ApplicationService } from '../../support/stereotype';
+import { MailTemplateFinder } from '../mail/provided/mail-template-finder';
 import { apiId } from '../shared/api-id';
 import { seoulIso } from '../shared/dates';
 import { MailSender } from '../shared/mail-sender';
@@ -15,6 +17,7 @@ export class RecruitmentAlertService implements RecruitmentAlertManager {
     private readonly db: DataSource,
     private readonly alarms: EmailAlarmRepository,
     private readonly mail: MailSender,
+    private readonly templates: MailTemplateFinder,
   ) {}
 
   async subscribe(request: EmailAlarmDto): Promise<void> {
@@ -43,6 +46,9 @@ export class RecruitmentAlertService implements RecruitmentAlertManager {
       where: { sentAt: IsNull() },
       order: { id: 'ASC' },
     });
+    const mail = (
+      await this.templates.find(MailTemplateType.RECRUITMENT_START)
+    ).render();
     for (const candidate of candidates) {
       await this.db.transaction(async (manager) => {
         const repository = manager.getRepository(EmailAlarm);
@@ -51,11 +57,7 @@ export class RecruitmentAlertService implements RecruitmentAlertManager {
           lock: { mode: 'pessimistic_write' },
         });
         if (!alarm || alarm.isSent()) return;
-        await this.mail.send(
-          alarm.email,
-          '연세대학교 골프동아리입니다.',
-          '연세대학교 골프동아리입니다. \n연세대학교 골프동아리 모집이 시작되었습니다.\n https://yonsei-golf.kr/apply 에서 확인해주세요',
-        );
+        await this.mail.send(alarm.email, mail.subject, mail.text);
         alarm.markSent(new Date());
         await repository.save(alarm);
       });

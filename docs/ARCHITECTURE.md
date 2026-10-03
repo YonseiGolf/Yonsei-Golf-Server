@@ -13,11 +13,11 @@ src/
 ├── main.ts · bootstrap.ts · app.module.ts   진입점과 조립 루트. 어느 계층도 이 파일을 import 하지 않는다
 ├── domain/<애그리거트>                      TypeORM 엔티티·값·도메인 규칙. Nest 금지
 │   ├── common                               BaseEntity, BIT(1) 변환
-│   ├── user · recruitment · apply
+│   ├── user · recruitment · apply · mail
 ├── application/<슬라이스>                   한 기능이 한 슬라이스. 공개 표면은 provided·required 둘뿐
 │   ├── provided/                            인바운드 포트(추상 클래스) + 요청 DTO·응답 타입
 │   ├── required/                            아웃바운드 포트: TypeORM 저장소, 카카오·JWT·S3 계약
-│   ├── (슬라이스 루트)                      포트를 구현하는 서비스·QueryService·메일 문구
+│   ├── (슬라이스 루트)                      포트를 구현하는 서비스·QueryService·기본 메일 문구
 │   └── shared/                              여러 슬라이스가 쓰는 계약: 페이지, ID, 날짜, 이메일 DTO, MailSender
 ├── adapter/
 │   ├── webapi/<슬라이스>                    컨트롤러(@WebApiAdapter) → provided 포트
@@ -34,9 +34,12 @@ src/
 | `user` | 카카오 로그인, 토큰, 가입·연결, 권한, 회원 등급 | provided: `LoginManager` `AccessVerifier` `UserRegister` `UserFinder` / required: `UserRepository` `KakaoOAuthClient` `TokenIssuer` |
 | `recruitment` | 모집 기간, 면접 시간, 모집 시작 알림 메일 | provided: `RecruitmentRegister` `RecruitmentFinder` `InterviewTimeRegister` `InterviewTimeFinder` `RecruitmentAlertManager` |
 | `apply` | 지원서 제출·조회·합격 여부, 접수·결과 메일, 사진 업로드 URL | provided: `ApplicationRegister` `ApplicationFinder` `ApplicationNotifier` `ApplicationPhotoUploader` / required: `ImageStorage` |
+| `mail` | 메일 양식(제목·본문) 조회·수정·기본 문구 복원, `{{이름}}` 치환 | provided: `MailTemplateFinder` `MailTemplateRegister` / required: `MailTemplateRepository` |
 | `health` | DB 상태 확인 | provided: `HealthChecker` |
 
-슬라이스 사이 의존은 `apply → recruitment.provided.InterviewTimeFinder` 하나다(지원서의 면접 선택 검증·표시).
+슬라이스 사이 의존은 `apply → recruitment.provided.InterviewTimeFinder`(지원서의 면접 선택 검증·표시)와
+`apply`·`recruitment → mail.provided.MailTemplateFinder`(보낼 메일의 양식)다. 관리자가 저장하지 않은 양식은
+`application/mail/default-mail-templates.ts`의 기본 문구로 보낸다.
 
 ## 계층 규칙
 

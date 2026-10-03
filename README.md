@@ -39,11 +39,12 @@ CI는 `TZ=UTC`와 `TZ=Asia/Seoul`에서 통합 테스트를 각각 실행합니�
 
 ```text
 src/
-  domain/         엔티티와 도메인 규칙 (user, recruitment, apply)
+  domain/         엔티티와 도메인 규칙 (user, recruitment, apply, mail)
   application/    기능 슬라이스별 유스케이스와 포트 (provided·required)
     user/           카카오 로그인, 토큰, 가입, 권한, 회원
     recruitment/    모집 기간, 면접 시간, 모집 시작 알림 메일
     apply/          지원서, 접수·결과 메일, 사진 업로드 URL
+    mail/           관리자가 고치는 메일 양식(제목·본문)과 기본 문구
     shared/         페이지, ID, 날짜, 메일 발송 계약
   adapter/        바깥 세계와 닿는 구현
     webapi/         컨트롤러, 인증 가드, 예외 필터, 요청 로그

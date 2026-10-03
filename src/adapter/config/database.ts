@@ -5,6 +5,7 @@ import {
   ClubActivity,
 } from '../../domain/apply/application';
 import { ApplicationResultLog } from '../../domain/apply/application-result-log';
+import { MailTemplate } from '../../domain/mail/mail-template';
 import { EmailAlarm } from '../../domain/recruitment/email-alarm';
 import {
   InterviewTime,
@@ -21,6 +22,7 @@ export const entities = [
   ClubActivity,
   EmailAlarm,
   InterviewTime,
+  MailTemplate,
   Recruitment,
 ];
 

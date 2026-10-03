@@ -19,11 +19,12 @@ import {
 import { S3ImageStorage } from '../integration/storage/s3-image-storage';
 import { ApplicationController } from '../webapi/apply/application.controller';
 import { MailModule } from './mail.module';
+import { MailTemplateModule } from './mail-template.module';
 import { RecruitmentModule } from './recruitment.module';
 import { repositoryProvider } from './repository';
 
 @Module({
-  imports: [MailModule, RecruitmentModule],
+  imports: [MailModule, MailTemplateModule, RecruitmentModule],
   controllers: [ApplicationController],
   providers: [
     repositoryProvider(ApplicationRepository, Application),
