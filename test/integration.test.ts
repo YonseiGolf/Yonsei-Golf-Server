@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { after, before, beforeEach, describe, it } from 'node:test';
 import {
@@ -451,7 +452,7 @@ describe('NestJS integration with real MySQL and Flyway', {
     );
     assert.deepEqual(
       history.map((row) => row.version),
-      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
     );
     assert.ok(history.every((row) => row.success === 1));
     const dropped: unknown[] = await db.query(
@@ -742,6 +743,129 @@ describe('NestJS integration with real MySQL and Flyway', {
       .expect(400);
   });
 
+  it('mails each result stage once and lists whether the current stage was mailed', async () => {
+    await http().post('/application').send(applicationDto).expect(200);
+    const application = await db
+      .getRepository(Application)
+      .findOneByOrFail({ email: applicationDto.email });
+    const admin = await fixtureUser(UserRole.LEADER);
+    const header = `Bearer ${tokens.issueAccessToken(admin)}`;
+    // The list filters by decision, so each call names the table the application is in now.
+    const mailSentAt = async (filter = '') =>
+      (
+        await http()
+          .get(`/admin/forms?semester=40${filter}`)
+          .set('Authorization', header)
+          .expect(200)
+      ).body.data.content[0].mailSentAt as string | null;
+    const decide = (documentPass: boolean | null, finalPass: boolean | null) =>
+      http()
+        .patch(`/admin/forms/${application.id}/pass`)
+        .set('Authorization', header)
+        .send({ documentPass, finalPass })
+        .expect(200);
+    const sendResults = (documentPass: boolean, finalPass: boolean | null) =>
+      http()
+        .post('/admin/forms/results')
+        .set('Authorization', header)
+        .send({ documentPass, finalPass })
+        .expect(200);
+
+    // The receipt went out on submission.
+    assert.match((await mailSentAt()) ?? '', /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+    await decide(false, null);
+    assert.equal(await mailSentAt('&documentPass=false'), null);
+    await sendResults(false, null);
+    await sendResults(false, null);
+    assert.equal(external.messages.length, 2);
+    assert.ok(await mailSentAt('&documentPass=false'));
+    // A final failure is a different stage from the document failure already mailed.
+    await decide(true, false);
+    const finalFail = '&documentPass=true&finalPass=false';
+    assert.equal(await mailSentAt(finalFail), null);
+    await sendResults(true, false);
+    await sendResults(true, false);
+    assert.equal(external.messages.length, 3);
+    assert.ok(await mailSentAt(finalFail));
+    assert.deepEqual(
+      (
+        await db.getRepository(ApplicationResultLog).find({
+          where: { applicationId: application.id },
+          order: { id: 'ASC' },
+        })
+      ).map((log) => log.notificationType),
+      [null, NotificationType.DOCUMENT_FAIL, NotificationType.FINAL_FAIL],
+    );
+  });
+
+  it('splits past FAIL mails and a saved FAIL wording into the document and final stages', async () => {
+    const applications = db.getRepository(Application);
+    await http().post('/application').send(applicationDto).expect(200);
+    await http()
+      .post('/application')
+      .send({ ...applicationDto, email: 'final@example.test' })
+      .expect(200);
+    const documentFail = await applications.findOneByOrFail({
+      email: applicationDto.email,
+    });
+    const finalFail = await applications.findOneByOrFail({
+      email: 'final@example.test',
+    });
+    await applications.update(documentFail.id, { documentPass: false });
+    await applications.update(finalFail.id, {
+      documentPass: true,
+      finalPass: false,
+    });
+    for (const id of [documentFail.id, finalFail.id, '999999'])
+      await db.query(
+        `INSERT INTO application_result_log (application_id, notification_type, sent_at)
+         VALUES (?, 'FAIL', NOW(6))`,
+        [id],
+      );
+    await db.query(
+      `INSERT INTO mail_template (type, subject, body) VALUES ('FAIL', 'Sorry', 'Sorry {{이름}}')`,
+    );
+    const migration = await readFile(
+      path.resolve('db/migration/V12__split_fail_notifications.sql'),
+      'utf8',
+    );
+    for (const statement of migration.split(';'))
+      if (statement.replace(/--.*$/gm, '').trim()) await db.query(statement);
+
+    const stages = async (applicationId: string) =>
+      (
+        await db
+          .getRepository(ApplicationResultLog)
+          .find({ where: { applicationId }, order: { id: 'ASC' } })
+      ).map((log) => log.notificationType);
+    assert.deepEqual(await stages(documentFail.id), [
+      null,
+      NotificationType.DOCUMENT_FAIL,
+    ]);
+    assert.deepEqual(await stages(finalFail.id), [
+      null,
+      NotificationType.FINAL_FAIL,
+    ]);
+    assert.deepEqual(await stages('999999'), [NotificationType.DOCUMENT_FAIL]);
+    assert.deepEqual(
+      (
+        await db.getRepository(MailTemplate).find({ order: { type: 'ASC' } })
+      ).map((template) => [template.type, template.body]),
+      [
+        [MailTemplateType.DOCUMENT_FAIL, 'Sorry {{이름}}'],
+        [MailTemplateType.FINAL_FAIL, 'Sorry {{이름}}'],
+      ],
+    );
+    // Already mailed, so sending the final failure again stays a no-op.
+    const admin = await fixtureUser(UserRole.LEADER);
+    await http()
+      .post('/admin/forms/results')
+      .set('Authorization', `Bearer ${tokens.issueAccessToken(admin)}`)
+      .send({ documentPass: true, finalPass: false })
+      .expect(200);
+    assert.equal(external.messages.length, 2);
+  });
+
   it('records result notifications after SMTP success and serializes concurrent duplicate requests', async () => {
     await http().post('/application').send(applicationDto).expect(200);
     const application = await db
@@ -907,8 +1031,9 @@ describe('NestJS integration with real MySQL and Flyway', {
         ['EMAIL_CONFIRMATION', [], false],
         ['APPLICATION_RECEIPT', ['{{이름}}'], false],
         ['DOCUMENT_PASS', ['{{이름}}'], false],
+        ['DOCUMENT_FAIL', ['{{이름}}'], false],
         ['FINAL_PASS', ['{{이름}}'], false],
-        ['FAIL', ['{{이름}}'], false],
+        ['FINAL_FAIL', ['{{이름}}'], false],
         ['RECRUITMENT_START', [], false],
       ],
     );

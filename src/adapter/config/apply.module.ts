@@ -9,6 +9,7 @@ import { ApplicationPhotoUploader } from '../../application/apply/provided/appli
 import { ApplicationRegister } from '../../application/apply/provided/application-register';
 import { ApplicationInterviewTimeRepository } from '../../application/apply/required/application-interview-time-repository';
 import { ApplicationRepository } from '../../application/apply/required/application-repository';
+import { ApplicationResultLogRepository } from '../../application/apply/required/application-result-log-repository';
 import { ClubActivityRepository } from '../../application/apply/required/club-activity-repository';
 import { ImageStorage } from '../../application/apply/required/image-storage';
 import {
@@ -16,6 +17,7 @@ import {
   ApplicationInterviewTime,
   ClubActivity,
 } from '../../domain/apply/application';
+import { ApplicationResultLog } from '../../domain/apply/application-result-log';
 import { S3ImageStorage } from '../integration/storage/s3-image-storage';
 import { ApplicationController } from '../webapi/apply/application.controller';
 import { MailModule } from './mail.module';
@@ -29,6 +31,7 @@ import { repositoryProvider } from './repository';
   providers: [
     repositoryProvider(ApplicationRepository, Application),
     repositoryProvider(ClubActivityRepository, ClubActivity),
+    repositoryProvider(ApplicationResultLogRepository, ApplicationResultLog),
     repositoryProvider(
       ApplicationInterviewTimeRepository,
       ApplicationInterviewTime,
